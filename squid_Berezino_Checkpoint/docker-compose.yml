@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  berezino_checkpoint:
+    image: ubuntu/squid # Official Squid image, supports arm64
+    container_name: Berezino_Checkpoint
+    hostname: berezino-checkpoint # Thematic hostname
+    restart: unless-stopped
+    ports:
+      - "3128:3128" # Default Squid HTTP port
+      - "3129:3129" # Squid HTTPS/SSL-Bump port (or other as configured in squid.conf)
+      # - "3130:3130" # Squid ICAP port (if ever needed)
+    volumes:
+      - ./squid.conf:/etc/squid/squid.conf # Mount custom squid.conf
+      - ./certs:/etc/squid/certs # For SSL CA certificate and key
+      - /mnt/usbdata/Berezino_Checkpoint/cache:/var/spool/squid # Squid cache
+      - /mnt/usbdata/Berezino_Checkpoint/logs:/var/log/squid # Squid logs
+    cap_add:
+      - NET_ADMIN # Required for some transparent proxying features and tproxy
+    # networks:
+    #   # If you have a custom Docker network for your services, define and assign it here.
+    #   # For now, it will use the default bridge network.
+    #   # Ensure the RPi host can route traffic from wlan0 to Docker's network.
+    #   proxy_network:
+
+# networks:
+#   proxy_network:
+#     driver: bridge

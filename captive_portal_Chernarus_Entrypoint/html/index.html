@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chernarus Network Access</title>
+    <style>
+        body { font-family: 'Courier New', Courier, monospace; background-color: #282a36; color: #f8f8f2; line-height: 1.6; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background-color: #44475a; padding: 20px; border-radius: 8px; border: 1px solid #6272a4; }
+        h1 { color: #50fa7b; border-bottom: 1px solid #50fa7b; padding-bottom: 10px; }
+        p { margin-bottom: 15px; }
+        a { color: #8be9fd; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .warning { background-color: #ffb86c; color: #282a36; padding: 15px; border-radius: 4px; border-left: 5px solid #ff5555; }
+        .button {
+            display: inline-block;
+            background-color: #50fa7b;
+            color: #282a36;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover { background-color: #42e068; }
+        ul { list-style-type: square; padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Chernarus Secure Network</h1>
+        <p>To ensure secure and filtered internet access via <strong>Berezino_Checkpoint</strong>, you need to install our network's root CA certificate on your device.</p>
+
+        <div class="warning">
+            <p><strong>Important:</strong> Without this certificate, you will experience security warnings and may not be able to access many websites (especially HTTPS sites).</p>
+        </div>
+
+        <h2>Certificate Installation Guide</h2>
+        <p>Please follow these steps:</p>
+        <ol>
+            <li>
+                <strong>Download the CA Certificate:</strong>
+                <!-- User must place their myCA.pem (or .crt) file in the html directory and update this link -->
+                <p><a href="/myCA.pem" download="Chernarus_Root_CA.pem" class="button">Download Chernarus_Root_CA.pem</a></p>
+                <p>(If the download doesn't start, ensure `myCA.pem` is present in the `captive_portal_Chernarus_Entrypoint/html/` directory on the server and this link points to the correct filename.)</p>
+            </li>
+            <li>
+                <strong>Install the Certificate:</strong> The installation process varies by operating system:
+                <ul>
+                    <li><strong>Windows:</strong> Double-click the downloaded file, click "Install Certificate...", choose "Local Machine", click "Next", select "Place all certificates in the following store", click "Browse...", choose "Trusted Root Certification Authorities", click "OK", "Next", and "Finish".</li>
+                    <li><strong>macOS:</strong> Double-click the downloaded file. Keychain Access will open. Find the certificate (usually in 'login' keychain), double-click it, expand "Trust", and set "When using this certificate:" to "Always Trust".</li>
+                    <li><strong>iOS (iPhone/iPad):</strong> Download the certificate. Go to Settings > General > Profile (or VPN & Device Management). Tap on the downloaded profile and follow prompts to install. Then, go to Settings > General > About > Certificate Trust Settings and enable full trust for the root certificate.</li>
+                    <li><strong>Android:</strong> Download the certificate. Go to Settings > Security > Encryption & credentials (or Advanced > Encryption & credentials) > Install a certificate (or Install from storage). Choose "CA certificate" or "Wi-Fi certificate". You may be prompted to set a device PIN or password if you haven't already.</li>
+                    <li><strong>Linux:</strong> The process varies by distribution. Generally, you need to copy the `.pem` or `.crt` file to `/usr/local/share/ca-certificates/` and then run `sudo update-ca-certificates`.</li>
+                </ul>
+            </li>
+            <li><strong>Reconnect to Wi-Fi:</strong> After installing the certificate, you might need to disconnect and reconnect to the `rpi` Wi-Fi network.</li>
+        </ol>
+        <p>Once the certificate is installed and trusted, your internet traffic will be securely processed by `Berezino_Checkpoint`.</p>
+        <hr>
+        <p><small>Project: Surviving Chernarus - Report any issues to the administrator.</small></p>
+    </div>
+</body>
+</html>

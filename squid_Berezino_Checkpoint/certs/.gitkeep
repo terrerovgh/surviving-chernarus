@@ -1,0 +1,3 @@
+# This file is here to ensure the 'certs' directory is tracked by Git.
+# Place your myCA.pem (or equivalent CA certificate and key) in this directory
+# for Squid SSL Bumping. See the main guidance document for details.
