@@ -37,12 +37,10 @@ services:
     container_name: Pihole_DNS_Filter
     hostname: pihole-dns-filter
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
       - "8081:80/tcp"
     environment:
-      TZ: 'America/Chicago'
-      WEBPASSWORD: 'ChangeThisPasswordPlease' # IMPORTANT: Change this password!
+      TZ: '${TZ}'
+      WEBPASSWORD: '${PIHOLE_WEBPASSWORD}' # IMPORTANT: Change this password!
       DNSMASQ_LISTENING: 'all'
     volumes:
       - pihole_etc_pihole:/etc/pihole
@@ -52,20 +50,6 @@ services:
     networks:
       - frontend_network
     restart: unless-stopped
-
-  dhcp_server:
-    image: networkboot/dhcpd
-    container_name: Hotspot_DHCP_Server
-    hostname: hotspot-dhcp-server
-    network_mode: "host" # Critical for DHCP
-    volumes:
-      - ./hotspot_config/dhcp/dhcpd.conf:/data/dhcpd.conf # Path inside container might vary based on image
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    restart: unless-stopped
-    # User MUST verify and change "wlan0" to their actual WiFi interface
-    command: ["-cf", "/data/dhcpd.conf", "-f", "wlan0"]
 
   dashboard_placeholder:
     image: nginx:alpine
