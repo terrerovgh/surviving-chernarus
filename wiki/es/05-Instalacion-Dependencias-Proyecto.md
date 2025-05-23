@@ -114,3 +114,10 @@ Una vez que todas las dependencias están instaladas y configuradas, puedes clon
     ```
 
 Con estos pasos, tendrás todas las dependencias necesarias instaladas y el código fuente del proyecto listo para la configuración y el despliegue de los servicios.
+
+## Dependencias de `iptables`
+Para la configuración de las reglas de firewall y redirección de tráfico, el proyecto utiliza `iptables`. En Arch Linux, se recomienda el paquete `iptables-nft`, que proporciona la interfaz `iptables` clásica sobre el backend `nftables` e incluye los servicios `systemd` para la persistencia de reglas:
+```bash
+sudo pacman -Syu iptables-nft
+```
+La configuración detallada de `iptables` y su persistencia se explica en la página `[[09-Configurar-Redireccion-Trafico]]` y en los scripts relevantes dentro del directorio `scripts/`.

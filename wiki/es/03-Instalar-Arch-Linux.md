@@ -46,6 +46,7 @@ Con la imagen de Arch Linux ya en la microSD, es momento de arrancar tu Raspberr
     *   `su -` (para cambiar al usuario root, introduce la contraseña `root`)
     *   `passwd root` (sigue las instrucciones para cambiar la contraseña del usuario `root`)
     *   Escribe `exit` para volver al usuario `alarm` si es necesario.
+    **Nota de Seguridad:** Cambiar las contraseñas por defecto es un paso crítico. Para más información sobre la gestión de secretos y contraseñas en este proyecto, consulta la página `[[14-Gestion-Secretos]]` y el archivo `SECURITY.md` en la raíz del repositorio.
 6.  **Configuración Básica del Sistema:**
     *   **Hostname:** Asigna un nombre de host a tu Raspberry Pi. Reemplaza `nombre-deseado` con el nombre que prefieras (e.g., `rpi5-arch`).
         ```bash
@@ -88,4 +89,4 @@ Una vez configurado lo básico, es fundamental actualizar tu sistema para tener 
 2.  Confirma la actualización presionando `Y` cuando se te solicite.
 3.  Este comando (`sudo pacman -Syu`) es el que usarás regularmente para mantener tu sistema Arch Linux actualizado. Se recomienda ejecutarlo periódicamente.
 
-¡Felicidades! Ahora tienes una instalación base de Arch Linux funcionando en tu Raspberry Pi 5, lista para las siguientes etapas del proyecto Escrowed Kathy.
+¡Felicidades! Ahora tienes una instalación base de Arch Linux funcionando en tu Raspberry Pi 5, lista para las siguientes etapas del proyecto "Chernarus Beacon".

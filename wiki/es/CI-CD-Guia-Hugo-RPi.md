@@ -25,6 +25,7 @@ Antes de comenzar, asegúrate de contar con lo siguiente:
 *   **Repositorio `terrerovgh/surviving-chernarus`:** Este repositorio debe contener un proyecto Hugo funcional.
 *   **Raspberry Pi 5:** Con Arch Linux instalado, configurado con una conexión a internet estable y acceso SSH (recomendado).
 *   **Conocimientos básicos:** Es útil tener familiaridad con la línea de comandos de Linux, Git (control de versiones), y el funcionamiento básico de Hugo.
+*   **Seguridad:** Antes de configurar el CI/CD, revisa las prácticas generales de seguridad del proyecto en `SECURITY.md` y la gestión de secretos en `[[14-Gestion-Secretos]]`.
 
 ## 3. Configuración del Workflow de GitHub Actions
 
