@@ -4,6 +4,9 @@ Welcome to "Operación: The Perimeter," a project to establish a secure and moni
 
 This README provides a consolidated overview and deployment plan. Detailed setup guides for each component are available in their respective directories.
 
+**Important Documents:**
+*   [Security Best Practices](./SECURITY.md) - Please review this for crucial security information.
+
 ## Project Components and Thematic Names:
 
 *   **Wi-Fi Hotspot (`Chernarus_Beacon`):** Provides wireless access. (`wlan0` interface, network `192.168.73.0/24`)
@@ -62,6 +65,36 @@ surviving-chernarus/
 ## II. Deployment and Execution Summary
 
 **Refer to the detailed README files within each component's directory for in-depth explanations and troubleshooting.**
+
+### Important: Initial Security Setup
+**Failure to set these credentials will result in an insecure Pi-hole setup (default or no password) and a Wi-Fi network using a known placeholder password.**
+
+**1. Configure Pi-hole Admin Password**
+The default Pi-hole web admin password is no longer hardcoded in the main `docker-compose.yml` file. You must set it using an environment variable.
+
+*   Create a file named `.env` in the root directory of this project (the same directory where `docker-compose.yml` is located).
+*   Add the following content to the `.env` file:
+    ```env
+    PIHOLE_WEBPASSWORD=your_very_strong_and_unique_password_here
+    ```
+*   **Crucially, replace `your_very_strong_and_unique_password_here` with a strong, unique password.**
+*   `docker-compose` (version 1.27+ or `docker compose` v2) will automatically load this `.env` file when you run `docker-compose up` (or `docker compose up`) and set the `PIHOLE_WEBPASSWORD` environment variable for the `pihole` service.
+*   This password is required to access the Pi-hole admin interface, typically found at `http://<RPi_IP_Address>:8081/admin/` (e.g., `http://192.168.73.1:8081/admin/`).
+
+**2. Configure Wi-Fi Passphrase (WPA Key)**
+The default Wi-Fi passphrase in `hotspot_config/hostapd.conf` has been changed to a placeholder. You **must** set your own password.
+
+*   Manually edit the `hotspot_config/hostapd.conf` file.
+*   Find the line:
+    ```
+    wpa_passphrase=CHANGEME_SET_YOUR_WPA_PASSPHRASE
+    ```
+*   Replace `CHANGEME_SET_YOUR_WPA_PASSPHRASE` with your own strong and unique Wi-Fi password. For example:
+    ```
+    wpa_passphrase=mySecureWiFiPassword123!
+    ```
+*   It is critical to use a strong WPA2 passphrase (long, complex, and not easily guessable) to secure your Wi-Fi network.
+*   The `hostapd` service, which runs directly on the Raspberry Pi OS, uses this configuration file. The new passphrase will take effect when `hostapd` is started or restarted. This typically happens upon system boot or when manually managing the service (e.g., `sudo systemctl restart hostapd`).
 
 **Phase 1: Prepare the Raspberry Pi OS & Network**
 1.  **Static IP for `eth0` (Internet Interface):** Ensure your Raspberry Pi has a predictable static IP address on its main Ethernet interface (e.g., `eth0`) if it doesn't already. This is good practice for a server.
