@@ -1,0 +1,79 @@
+# Workflow name
+name: CI/CD Hugo Site to Raspberry Pi
+
+# Triggers: This workflow runs on pushes to the main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # Build job: Builds the Hugo site using a GitHub-hosted runner
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          submodules: true  # Checkout submodules if any (e.g., themes)
+
+      # Step 2: Setup Hugo
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.110.0' # Specify Hugo version
+          extended: true          # Use Hugo extended version
+
+      # Step 3: Build the Hugo site
+      - name: Build Hugo site
+        run: hugo --minify # Build the site and minify output
+
+      # Step 4: Upload the build artifact (the 'public' directory)
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: hugo-site-public # Name of the artifact
+          path: public          # Path to the directory to upload
+
+  # Deploy job: Deploys the built site to the self-hosted Raspberry Pi runner
+  deploy:
+    runs-on: self-hosted # This job runs on the self-hosted runner (Raspberry Pi)
+    needs: build         # This job depends on the successful completion of the 'build' job
+    steps:
+      # Step 1: Download the build artifact
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: hugo-site-public # Name of the artifact to download
+          path: ./downloaded-site # Destination path for the downloaded artifact
+
+      # Step 2: Deploy to Nginx (or other web server)
+      # This step assumes you have a 'deploy.sh' script in your repository root
+      # and that your self-hosted runner has permissions to execute it and
+      # place files in the web server's root directory.
+      - name: Deploy to Nginx
+        run: |
+          echo "Starting deployment..."
+          if [ -f ./deploy.sh ]; then
+            chmod +x ./deploy.sh
+            sh ./deploy.sh ./downloaded-site
+            echo "Deployment script executed."
+          else
+            echo "ERROR: deploy.sh not found!"
+            exit 1
+          fi
+        # Example of what deploy.sh might contain:
+        # #!/bin/bash
+        # # Check if source directory is provided
+        # if [ -z "$1" ]; then
+        #   echo "Usage: $0 <source_directory>"
+        #   exit 1
+        # fi
+        # SOURCE_DIR="$1"
+        # TARGET_DIR="/var/www/html" # Adjust to your Nginx web root
+        # echo "Cleaning target directory: $TARGET_DIR"
+        # sudo rm -rf "$TARGET_DIR"/*
+        # echo "Copying new site files from $SOURCE_DIR to $TARGET_DIR"
+        # sudo cp -r "$SOURCE_DIR"/* "$TARGET_DIR"/
+        # echo "Deployment finished."
