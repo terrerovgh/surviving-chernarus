@@ -10,3 +10,7 @@
 * [Configurar Redirección Tráfico](09-Configurar-Redireccion-Trafico.md)
 * [Arranque y Pruebas](10-Arranque-y-Pruebas.md)
 * [Solución Problemas](11-Solucion-Problemas.md)
+* [Configuración Runner Autoalojado](12-Configuracion-Runner-Autoalojado.md)
+* [GitHub CLI Autenticación](13-GitHub-CLI-Autenticacion.md)
+* [Gestión de Secretos](14-Gestion-Secretos.md)
+* [CI/CD Guía Hugo RPi](CI-CD-Guia-Hugo-RPi.md)

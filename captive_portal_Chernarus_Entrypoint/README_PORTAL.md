@@ -36,25 +36,26 @@ This guide provides instructions for setting up the `Chernarus_Entrypoint` capti
 
 ## III. Docker Compose Setup (Nginx Portal Server)
 
-The `captive_portal_Chernarus_Entrypoint/docker-compose.yml` file defines the Nginx service.
+The `Chernarus_Entrypoint` Nginx service, which serves the captive portal, is defined and managed by the main `docker-compose.yml` file located at the **root directory of the project repository**, not by a separate `docker-compose.yml` within the `captive_portal_Chernarus_Entrypoint/` directory.
 
-1.  **Navigate to the Directory:**
-    Open a terminal on your Raspberry Pi and change to the directory containing this `docker-compose.yml` file:
+1.  **To Start the Portal Service (and other project services):**
+    Navigate to the root directory of your cloned repository (e.g., `~/projects/surviving-chernarus/`).
+    Then, run:
     ```bash
-    cd path/to/your/cloned/repository/captive_portal_Chernarus_Entrypoint/
+    sudo docker-compose up -d chernarus_entrypoint
     ```
-2.  **Start Nginx Service:**
+    Or, to start all services defined in the main `docker-compose.yml` (recommended for initial setup):
     ```bash
-    docker-compose up -d
+    sudo docker-compose up -d
     ```
-    This will pull the `nginx:alpine` image and start the `Chernarus_Entrypoint` container. The portal will be accessible on the Raspberry Pi's IP at port 8080 (e.g., `http://192.168.73.1:8080`).
+    The portal will be accessible on the Raspberry Pi's `wlan0` IP at port `8080` (e.g., `http://192.168.73.1:8080`, assuming `192.168.73.1` is your RPi's `wlan0` IP), as configured in the main `docker-compose.yml`.
 
-3.  **Check Container Status:**
+2.  **Check Container Status:**
     ```bash
     docker ps
     docker logs Chernarus_Entrypoint
     ```
-    Ensure Nginx is running without errors. You should be able to access `http://<RPi_IP>:8080` (e.g., `http://192.168.73.1:8080`) from a device on the RPi's network (or from the RPi itself).
+    Ensure Nginx is running without errors. You should be able to access `http://192.168.73.1:8080` (or your RPi's `wlan0` IP on port 8080) from a device on the RPi's network (or from the RPi itself).
 
 ## IV. `iptables` Traffic Redirection
 
@@ -87,40 +88,62 @@ The `scripts/setup_captive_portal_redirect.sh` script configures `iptables` to r
     1.  `scripts/setup_hotspot_nat.sh` (Basic NAT and forwarding for internet access)
     2.  `scripts/setup_captive_portal_redirect.sh` (This portal redirection script - for HTTP)
     3.  `scripts/redirect_to_squid.sh` (Redirects HTTP and HTTPS to Squid)
-    The portal script attempts to insert its rule first, ensuring it's processed before Squid's HTTP redirection.
+    The portal script attempts to insert its rule first, ensuring it's processed before Squid's HTTP redirection. This order ensures the captive portal rule (from `setup_captive_portal_redirect.sh`) redirects HTTP traffic first. Additionally, `redirect_to_squid.sh` now includes a specific `RETURN` rule to prevent traffic directly accessing the portal on port 8080 from being re-redirected to Squid, further ensuring correct routing.
 
 *   **Alternative (No Automatic Redirection):** If you prefer not to redirect all HTTP traffic:
     *   Do not run `scripts/setup_captive_portal_redirect.sh`.
-    *   Modify Nginx in `captive_portal_Chernarus_Entrypoint/docker-compose.yml` to listen directly on port 80 (e.g., `ports: - "80:80"`), assuming no other service on the Pi uses port 80.
+    *   Modify Nginx in the main `docker-compose.yml` for the `chernarus_entrypoint` service to listen directly on port 80 of `192.168.73.1` (e.g., `ports: - "192.168.73.1:80:80"`), assuming no other service on the Pi uses port 80 on that IP.
     *   Instruct users to manually visit a specific address like `http://192.168.73.1` or a friendly DNS name (e.g., `http://welcome.chernarus.local`) that you configure in Pi-hole to point to `192.168.73.1`.
 
 4.  **Persistence:**
     The `iptables` rules are volatile. After confirming functionality:
-    *   Install `iptables-persistent` if not already done: `sudo apt-get update && sudo apt-get install -y iptables-persistent`
-    *   Save the rules: `sudo netfilter-persistent save`
-    *   If you re-run any of the `iptables` setup scripts or manually change rules, remember to save them again.
+    *   **For Debian/Ubuntu based systems (like Raspberry Pi OS):**
+        ```bash
+        sudo apt-get update && sudo apt-get install -y iptables-persistent
+        sudo netfilter-persistent save
+        ```
+    *   **For Arch Linux based systems:**
+        `iptables-nft` is commonly used, providing the `iptables` command interface with an `nftables` backend, and includes services for persistence.
+        ```bash
+        # For Arch Linux, iptables-nft provides the modern iptables interface
+        # and includes services for persistence.
+        sudo pacman -Syu iptables-nft
+        sudo systemctl enable iptables.service # To save rules on shutdown/load on boot
+        sudo systemctl enable ip6tables.service # If using IPv6 rules
+        # Then save rules using:
+        sudo iptables-save > /etc/iptables/iptables.rules
+        sudo ip6tables-save > /etc/iptables/ip6tables.rules # If using IPv6
+        ```
+        **Note:** The exact package and commands for `iptables` persistence can vary slightly on Arch Linux depending on whether you are using the `nftables` backend (common) or legacy `iptables`, and which helper utilities you prefer (e.g., `systemd` services vs. older scripts). The `iptables-nft` with `systemd` services is a common modern approach. Always consult the [Arch Wiki for iptables](https://wiki.archlinux.org/title/Iptables) and [nftables](https://wiki.archlinux.org/title/Nftables) for the most current practices. For simplicity, this guide focuses on the `iptables-nft` approach.
+    *   If you re-run any of the `iptables` setup scripts or manually change rules, remember to save them again using the appropriate method for your system.
 
 ## V. Testing
 
 1.  Ensure `Chernarus_Entrypoint` (Nginx) and `Berezino_Checkpoint` (Squid) Docker containers are running.
-2.  Ensure `iptables` rules from all relevant scripts (`setup_hotspot_nat.sh`, `setup_captive_portal_redirect.sh`, `redirect_to_squid.sh`) have been applied in the correct order.
-3.  Connect a **new client device** to the `rpi` Wi-Fi hotspot.
-4.  Open a web browser on the client and attempt to visit an **HTTP** website (e.g., `http://neverssl.com` or `http://example.com`). You should be redirected to the `Chernarus_Entrypoint` portal page (`http://192.168.73.1:8080`).
-5.  From the portal page, download the `Chernarus_Root_CA.pem` (or `.crt`) file.
+    Ensure `iptables` rules from all relevant scripts (`scripts/setup_hotspot_nat.sh`, `scripts/setup_captive_portal_redirect.sh`, `scripts/redirect_to_squid.sh`) have been applied in the correct order (see Section IV).
+3.  Connect a **new client device** to the `rpi` Wi-Fi hotspot (SSID `rpi`).
+4.  Open a web browser on the client and attempt to visit an **HTTP** website (e.g., `http://neverssl.com` or `http://example.com`). You should be redirected to the `Chernarus_Entrypoint` portal page, which is served from `http://192.168.73.1:8080`.
+5.  From the portal page, download the CA certificate file (e.g., `Chernarus_Root_CA.pem`).
 6.  Install and trust the CA certificate on the client device as per the instructions on the portal page.
-7.  Attempt to visit an **HTTPS** website (e.g., `https://google.com`). It should now load correctly, with the certificate being issued by your "BerezinoCheckpointCA".
-8.  Verify that HTTP sites still redirect to the portal (this is the behavior of the simplified redirection).
+7.  Attempt to visit an **HTTPS** website (e.g., `https://google.com`). It should now load correctly, with the certificate being issued by your CA (e.g., "BerezinoCheckpointCA").
+8.  Verify that HTTP sites still redirect to the portal (this is the behavior of the simplified redirection approach described in Section IV).
 
 ## VI. Stopping the Portal
 
-To stop the Nginx portal service:
+The `Chernarus_Entrypoint` Nginx service is managed as part of the main `docker-compose.yml` at the root of the repository.
+To stop the Nginx portal service (and other services defined in the main `docker-compose.yml`):
 ```bash
-cd path/to/your/cloned/repository/captive_portal_Chernarus_Entrypoint/
+cd path/to/your/cloned/repository/ # Navigate to the root of the repository
 docker-compose down
 ```
-This does not remove the `iptables` redirection rules. If you want to disable portal redirection, you'll need to manually remove the specific `iptables` rule or flush the `PREROUTING` chain (carefully, if other rules exist) and re-apply only the Squid redirection.
-Example to delete the portal rule (if it's the first one in PREROUTING nat):
-`sudo iptables -t nat -D PREROUTING 1`
-Then re-save with `sudo netfilter-persistent save`.
+To stop only the portal service if you wish to keep other services running (though they are inter-dependent):
+```bash
+cd path/to/your/cloned/repository/
+docker-compose stop chernarus_entrypoint
+```
+This does not remove the `iptables` redirection rules. If you want to disable portal redirection:
+1.  Manually remove the specific `iptables` rule. You can list rules with `sudo iptables -t nat -L PREROUTING --line-numbers` and then delete by line number: `sudo iptables -t nat -D PREROUTING <line_number>`.
+2.  Alternatively, flush all rules (with caution, as this removes all NAT rules) and re-apply only those needed (e.g., from `setup_hotspot_nat.sh` and `redirect_to_squid.sh` if Squid is still in use).
+3.  Save the changed `iptables` rules using the persistence method appropriate for your OS (see Section IV.4).
 
-This completes the setup for the `Chernarus_Entrypoint` captive portal.
+This completes the setup guide for the `Chernarus_Entrypoint` captive portal.

@@ -98,6 +98,8 @@ Usaremos `nmcli` para modificar una conexión existente y asignarle una IP está
 
 **Nota:** La configuración de la dirección IP para la interfaz de red que actuará como hotspot (por ejemplo, `uap0` que crearemos más adelante) será diferente y se gestionará directamente en la configuración del software del hotspot.
 
+**Nota Adicional para el Hotspot:** La configuración de la interfaz `wlan0` para el hotspot (con IP estática `192.168.73.1/24`) se detalla en la página `[[06-Configurar-Hotspot]]`. El método allí descrito (usando `systemd-networkd` o configuración manual de IP) es independiente de la gestión de NetworkManager para las interfaces cliente de la Raspberry Pi (como `eth0` o `wlan0` si se usa para conectarse a otra red Wi-Fi).
+
 ## Verificar Configuración de Red
 Después de cualquier cambio, es bueno verificar que todo funcione como se espera. Aquí algunos comandos útiles:
 

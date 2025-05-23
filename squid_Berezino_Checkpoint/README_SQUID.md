@@ -109,9 +109,12 @@ Regularly rotating your CA certificate is crucial for security. A compromised ke
     4.  **Update Squid Configuration (Option B - If using different filenames in squid.conf):**
         Alternatively, if you prefer to keep versioned filenames, edit `squid_Berezino_Checkpoint/squid.conf` and update the `cert=` and `key=` parameters to point to the new files (e.g., `cert=/etc/squid/certs/myCA_new.pem key=/etc/squid/certs/myCA_new.key`).
     5.  **Restart Squid Container:**
+        From the **project root directory** (e.g., `~/projects/surviving-chernarus`), run:
         ```bash
-        docker-compose restart Berezino_Checkpoint 
-        # Or: docker-compose down && docker-compose up -d
+        sudo docker-compose restart berezino_checkpoint
+        # Or, to fully recreate the container:
+        # sudo docker-compose down
+        # sudo docker-compose up -d berezino_checkpoint # or just 'sudo docker-compose up -d' for all services
         ```
     6.  **Distribute the New Public CA:**
         The new public certificate (`myCA_new.pem` or the new `myCA.pem`, or its `.der` equivalent) must be distributed and installed on all client devices. Users will see certificate errors until this is done.
@@ -149,23 +152,34 @@ The provided `squid_Berezino_Checkpoint/squid.conf` is configured for:
 **Note on `sslcrtd_program` Path:**
 The path to `security_file_certgen` (the program Squid uses to generate certificates for SSL Bumping) is set to `/usr/lib/squid/security_file_certgen` in `squid.conf`. This is common for the `ubuntu/squid` Docker image. If Squid fails to start or SSL bumping doesn't work, check the Squid container logs (`docker logs Berezino_Checkpoint`) for errors related to this program. The path might differ in rare cases or future image updates.
 
-## IV. Docker Compose Setup
+## IV. Docker Compose Service Definition (Main Project `docker-compose.yml`)
 
-The `squid_Berezino_Checkpoint/docker-compose.yml` file defines the Squid service.
+The `Berezino_Checkpoint` Squid proxy service is defined and managed by the main `docker-compose.yml` file located at the **root directory of the project repository**. There is no separate `docker-compose.yml` within the `squid_Berezino_Checkpoint/` directory for this service.
 
-1.  **Review Volumes:** Ensure the volume paths for cache and logs (`/mnt/usbdata/Berezino_Checkpoint/...`) are correct and the directories exist with proper permissions on your Raspberry Pi (as per Step I).
-2.  **Navigate to the Directory:**
-    Open a terminal on your Raspberry Pi and change to the directory containing the `docker-compose.yml` file:
+Refer to the `services.berezino_checkpoint` section in the main `docker-compose.yml` at the project root. Key aspects include:
+*   **Image:** `ubuntu/squid`
+*   **Ports:** Mapping container ports `3128` and `3129` to the host IP `192.168.73.1`.
+*   **Volumes:**
+    *   `./squid_Berezino_Checkpoint/squid.conf:/etc/squid/squid.conf`
+    *   `./squid_Berezino_Checkpoint/certs:/etc/squid/certs`
+    *   `/mnt/usbdata/Berezino_Checkpoint/cache:/var/spool/squid`
+    *   `/mnt/usbdata/Berezino_Checkpoint/logs:/var/log/squid`
+*   **`cap_add: [NET_ADMIN]`**
+
+1.  **Review Volumes:** Ensure the host paths for cache and logs (e.g., `/mnt/usbdata/Berezino_Checkpoint/...`) are correct and the directories exist with proper permissions on your Raspberry Pi (as per Step I).
+2.  **Starting the Squid Service:**
+    Navigate to the **project root directory** (e.g., `~/projects/surviving-chernarus`).
+    To start all services, including Squid:
     ```bash
-    cd path/to/your/cloned/repository/squid_Berezino_Checkpoint/
+    sudo docker-compose up -d
     ```
-3.  **Start Squid Service:**
+    To start only the Squid service (if other services are already configured and running):
     ```bash
-    docker-compose up -d
+    sudo docker-compose up -d berezino_checkpoint
     ```
     This will pull the `ubuntu/squid` image (if not already present) and start the `Berezino_Checkpoint` container in detached mode.
 
-4.  **Check Container Status:**
+3.  **Check Container Status:**
     ```bash
     docker ps
     docker logs Berezino_Checkpoint
@@ -192,16 +206,24 @@ To transparently redirect traffic from hotspot clients to the Squid proxy runnin
     This script adds rules to the `nat` table's `PREROUTING` chain to redirect HTTP (port 80) and HTTPS (port 443) traffic from `wlan0` clients to Squid's respective ports (3128 and 3129) on the host machine.
 
 4.  **Docker Networking and `127.0.0.1`:**
-    The `iptables` rules redirect traffic to `127.0.0.1` (localhost) on the Raspberry Pi. Docker, through its port mappings defined in `docker-compose.yml` (e.g., `ports: - "3128:3128"`), makes the Squid container's ports accessible on the host's `127.0.0.1` interface. This is a standard method for redirecting host traffic to a Docker container.
-    The script also includes rules to allow traffic *to* the Pi-hole/RPi itself on `wlan0` (DNS, DHCP, captive portal) to bypass this redirection.
+    The `iptables` rules in `scripts/redirect_to_squid.sh` are configured to redirect traffic to `$RPI_WLAN_IP` (e.g., `192.168.73.1`) on the Raspberry Pi. Docker, through its port mappings defined in the main `docker-compose.yml` (e.g., `ports: - "192.168.73.1:3128:3128"`), makes the Squid container's ports accessible on this specific host IP.
+    The script also includes `RETURN` rules to allow traffic to the Pi-hole/RPi itself on `wlan0` (for DNS on port 53, DHCP via the host-networked DHCP server on ports 67/68, and the captive portal on port 8080) to bypass redirection to Squid.
 
-5.  **Persistence:**
-    The `iptables` rules are volatile and will be lost on reboot.
-    *   If you installed `iptables-persistent` during the hotspot setup, save the current rules:
+5.  **Persistence (Arch Linux):**
+    The `iptables` rules are volatile and will be lost on reboot. To make them persistent on Arch Linux:
+    *   Ensure `iptables-nft` is installed: `sudo pacman -Syu --needed iptables-nft`.
+    *   After running all `iptables` configuration scripts (`setup_hotspot_nat.sh`, `setup_captive_portal_redirect.sh`, `redirect_to_squid.sh`), save the rules:
         ```bash
-        sudo netfilter-persistent save
+        sudo iptables-save > /etc/iptables/iptables.rules
+        # If using IPv6 rules:
+        # sudo ip6tables-save > /etc/iptables/ip6tables.rules
         ```
-    *   If you modify rules or run other `iptables` scripts, remember to re-save.
+    *   Enable the `iptables` service to load rules on boot:
+        ```bash
+        sudo systemctl enable iptables.service
+        # sudo systemctl enable ip6tables.service # If using IPv6
+        ```
+    *   If you modify rules or re-run any `iptables` scripts, remember to re-save them.
 
 ## VI. Testing and Verification
 
@@ -222,12 +244,15 @@ To transparently redirect traffic from hotspot clients to the Squid proxy runnin
 
 ## VII. Stopping Squid
 
-To stop the Squid proxy:
+To stop the Squid proxy service, navigate to the **project root directory** and run:
 ```bash
-cd path/to/your/cloned/repository/squid_Berezino_Checkpoint/
-docker-compose down
+sudo docker-compose stop berezino_checkpoint
 ```
-Remember that `iptables` rules will remain until reboot or manually flushed/removed. If you stop Squid, you might want to remove or disable the redirection rules to restore direct internet access for hotspot clients.
+To stop all services defined in the main `docker-compose.yml`:
+```bash
+sudo docker-compose down
+```
+Remember that `iptables` rules will remain until reboot or manually flushed/removed. If you stop Squid, you might want to remove or disable the redirection rules from `scripts/redirect_to_squid.sh` (and potentially `scripts/setup_captive_portal_redirect.sh` if it interferes) to restore direct internet access for hotspot clients. Then re-save your `iptables` rules.
 
 ## Troubleshooting:
 

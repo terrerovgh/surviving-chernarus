@@ -1,58 +1,61 @@
 # Operación: The Perimeter - Raspberry Pi Network Security Setup
 
-Welcome to "Operación: The Perimeter," a project to establish a secure and monitored Wi-Fi hotspot environment using a Raspberry Pi 5. This setup includes a Wi-Fi access point, DHCP services integrated with Pi-hole, a transparent caching and filtering Squid proxy, and a captive portal for user guidance on CA certificate installation.
+Welcome to "Operación: The Perimeter," a project to establish a secure and monitored Wi-Fi hotspot environment using a Raspberry Pi 5. This setup includes a Wi-Fi access point, a dedicated Docker-based DHCP server, Pi-hole for DNS filtering, a transparent caching and filtering Squid proxy, and a captive portal for user guidance on CA certificate installation.
 
-This README provides a consolidated overview and deployment plan. Detailed setup guides for each component are available in their respective directories.
+This README provides a consolidated overview and deployment plan. Detailed setup guides for each component are available in their respective directories and the project wiki.
 
 **Important Documents:**
 *   [Security Best Practices](./SECURITY.md) - Please review this for crucial security information.
 
 ## Project Components and Thematic Names:
 
-*   **Wi-Fi Hotspot (`Chernarus_Beacon`):** Provides wireless access. (`wlan0` interface, network `192.168.73.0/24`)
-*   **DHCP & DNS (via `StarySobor_RadioPost` - Pi-hole):** Manages IP assignments and DNS for the hotspot. (Pi-hole instance assumed to be running on the RPi at `192.168.73.1`)
-*   **Squid Proxy (`Berezino_Checkpoint`):** Transparently proxies HTTP/HTTPS traffic for caching and potential filtering. (Docker container)
+*   **Wi-Fi Hotspot (`Chernarus_Beacon`):** Provides wireless access via `hostapd` (`wlan0` interface, network `192.168.73.0/24`).
+*   **DHCP Server (`Hotspot_DHCP_Server`):** A dedicated Docker container (`networkboot/dhcpd`) manages IP assignments for the hotspot.
+*   **DNS Filter (`Pihole_DNS_Filter` - Pi-hole):** Pi-hole, running in a Docker container, provides DNS resolution and ad-blocking for hotspot clients. (Pi-hole instance accessible at `192.168.73.1`).
+*   **Squid Proxy (`Berezino_Checkpoint`):** Transparently proxies HTTP/HTTPS traffic for caching and SSL inspection. (Docker container)
 *   **Captive Portal (`Chernarus_Entrypoint`):** Guides users to install the necessary CA certificate for HTTPS inspection. (Docker container, Nginx)
 
 ## I. Generated Files and Key Directories
 
 **Hotspot Configuration (`Chernarus_Beacon`):**
-*   `hotspot_config/hostapd.conf` (Wi-Fi AP configuration)
-*   `hotspot_config/pihole_custom_dnsmasq.conf` (DHCP configuration for Pi-hole/dnsmasq)
-*   `scripts/setup_hotspot_nat.sh` (NAT and forwarding script for basic internet access)
-*   `GUIDANCE_AND_EXPLANATIONS.md` (Detailed setup guide for the hotspot component)
+*   `hotspot_config/hostapd.conf` (Wi-Fi AP configuration, managed by `hostapd` service on the host).
+*   `hotspot_config/dhcp/dhcpd.conf` (Configuration for the `Hotspot_DHCP_Server` Docker container).
+*   `scripts/setup_hotspot_nat.sh` (NAT and forwarding script for basic internet access).
+*   `GUIDANCE_AND_EXPLANATIONS.md` (Detailed setup guide for the hotspot component, OS-level networking, and `hostapd`).
 
-**Squid Proxy (`Berezino_Checkpoint`):**
-*   `squid_Berezino_Checkpoint/docker-compose.yml` (Docker Compose for Squid)
-*   `squid_Berezino_Checkpoint/squid.conf` (Squid proxy configuration)
-*   `squid_Berezino_Checkpoint/certs/.gitkeep` (Placeholder for SSL CA certificate - **user must add `myCA.pem` here**)
-*   `scripts/redirect_to_squid.sh` (iptables script to redirect traffic to Squid)
-*   `squid_Berezino_Checkpoint/README_SQUID.md` (Detailed setup guide for the Squid proxy component)
+**Dockerized Services (Managed via main `docker-compose.yml` in project root):**
+*   **Pi-hole (`Pihole_DNS_Filter`):** DNS server. Configuration primarily through its web UI and environment variables in `docker-compose.yml`.
+*   **DHCP Server (`Hotspot_DHCP_Server`):** Uses `hotspot_config/dhcp/dhcpd.conf`.
+*   **Squid Proxy (`Berezino_Checkpoint`):**
+    *   `squid_Berezino_Checkpoint/squid.conf` (Squid proxy configuration, mounted into container).
+    *   `squid_Berezino_Checkpoint/certs/`: Directory for SSL CA certificate (user must add `myCA.pem` and `myCA.key`).
+*   `scripts/redirect_to_squid.sh` (iptables script to redirect traffic to Squid).
+*   `squid_Berezino_Checkpoint/README_SQUID.md` (Detailed setup guide for the Squid proxy component).
+*   **Captive Portal (`Chernarus_Entrypoint`):**
+    *   `captive_portal_Chernarus_Entrypoint/html/index.html` (Portal page for CA certificate download, mounted into Nginx container).
+    *   `captive_portal_Chernarus_Entrypoint/html/`: Directory for portal assets including CA cert for download.
+*   `scripts/setup_captive_portal_redirect.sh` (iptables script to redirect users to portal).
+*   `captive_portal_Chernarus_Entrypoint/README_PORTAL.md` (Detailed setup guide for the captive portal component).
 
-**Captive Portal (`Chernarus_Entrypoint`):**
-*   `captive_portal_Chernarus_Entrypoint/docker-compose.yml` (Docker Compose for Nginx portal)
-*   `captive_portal_Chernarus_Entrypoint/html/index.html` (Portal page for CA certificate download)
-*   `captive_portal_Chernarus_Entrypoint/html/.gitkeep` (Ensures `html` directory for `index.html` and CA cert - **user must add CA cert (e.g., `myCA.pem` or `.crt`) here for download**)
-*   `scripts/setup_captive_portal_redirect.sh` (iptables script to redirect users to portal)
-*   `captive_portal_Chernarus_Entrypoint/README_PORTAL.md` (Detailed setup guide for the captive portal component)
+**Main Docker Compose File:**
+*   `docker-compose.yml` (in project root): Defines and manages all Dockerized services (Pi-hole, DHCP, Squid, Nginx portal).
 
-**Repository Structure Overview:**
+**Repository Structure Overview (Key Files):**
 ```
 surviving-chernarus/
+├── docker-compose.yml                # Main Docker Compose file for all services
 ├── hotspot_config/
 │   ├── hostapd.conf
-│   └── pihole_custom_dnsmasq.conf
+│   └── dhcp/
+│       └── dhcpd.conf
 ├── squid_Berezino_Checkpoint/
-│   ├── certs/
+│   ├── certs/                        # For myCA.pem, myCA.key
 │   │   └── .gitkeep
-│   ├── docker-compose.yml
 │   ├── README_SQUID.md
 │   └── squid.conf
 ├── captive_portal_Chernarus_Entrypoint/
-│   ├── docker-compose.yml
-│   ├── html/
-│   │   ├── .gitkeep
-│   │   └── index.html
+│   ├── html/                         # For index.html, CA cert download
+│   │   └── .gitkeep
 │   └── README_PORTAL.md
 ├── scripts/
 │   ├── redirect_to_squid.sh
@@ -101,10 +104,12 @@ The default Wi-Fi passphrase in `hotspot_config/hostapd.conf` has been changed t
 2.  **Static IP for `wlan0` (Hotspot Interface):** Configure `wlan0` with the static IP `192.168.73.1` (netmask `255.255.255.0`). This can be done via `/etc/dhcpcd.conf` or network management tools. The `GUIDANCE_AND_EXPLANATIONS.md` provides an example.
 3.  **Install Required OS Packages:**
     ```bash
-    sudo apt-get update
-    sudo apt-get install -y hostapd iptables-persistent docker.io docker-compose
+    sudo pacman -Syu --needed hostapd iptables-nft docker docker-compose
     ```
-    (Note: `docker.io` and `docker-compose` package names might vary. Use official Docker installation guides for Raspberry Pi OS if needed.)
+    *   `hostapd`: For the Wi-Fi access point.
+    *   `iptables-nft`: For firewall management (provides `iptables` command with nftables backend).
+    *   `docker` & `docker-compose`: For running containerized services.
+    (Ensure you follow Arch Linux specific instructions for installing these if not already present, as per the wiki `[[05-Instalacion-Dependencias-Proyecto]]`.)
 4.  **Enable Docker Service:**
     ```bash
     sudo systemctl enable docker
@@ -129,73 +134,77 @@ The default Wi-Fi passphrase in `hotspot_config/hostapd.conf` has been changed t
     ```
 2.  **Review and Customize (CRITICAL):**
     *   **`hotspot_config/hostapd.conf`:** Set a strong `wpa_passphrase`. Verify `country_code`.
-    *   **SSL CA Certificate:**
-        1.  Generate your CA certificate (e.g., `myCA.pem` containing both key and cert). Refer to `squid_Berezino_Checkpoint/README_SQUID.md` for guidance.
-        2.  Place this `myCA.pem` into `squid_Berezino_Checkpoint/certs/`.
-        3.  Place a copy of the public certificate part (e.g., `myCA.pem` or `myCA.crt`) into `captive_portal_Chernarus_Entrypoint/html/` for download by clients.
-        4.  Ensure the download link in `captive_portal_Chernarus_Entrypoint/html/index.html` (e.g., `href="/myCA.pem"`) correctly points to the certificate file you placed in the `html` directory.
-    *   Review all scripts in `scripts/` directory to ensure interface names (`eth0`, `wlan0`) match your system.
+    *   **SSL CA Certificate (for Squid):**
+        1.  Generate your CA certificate (`myCA.pem`) and private key (`myCA.key`). Refer to `squid_Berezino_Checkpoint/README_SQUID.md` for detailed guidance.
+        2.  Place `myCA.pem` and `myCA.key` into `squid_Berezino_Checkpoint/certs/`.
+        3.  Place a copy of the public certificate (e.g., `myCA.pem` or a `.crt` version of it) into `captive_portal_Chernarus_Entrypoint/html/` for client download.
+        4.  Ensure the download link in `captive_portal_Chernarus_Entrypoint/html/index.html` (e.g., `href="/myCA.pem"`) correctly points to the certificate file.
+    *   Review all scripts in `scripts/` directory to ensure interface names (e.g., `WLAN_IF="wlan0"`, `ETH_IF="eth0"`) match your system.
+    *   Review `hotspot_config/dhcp/dhcpd.conf` to ensure IP ranges and DNS settings are correct.
 
-**Phase 3: Setup Hotspot (`Chernarus_Beacon`)**
-(See `GUIDANCE_AND_EXPLANATIONS.md` for details)
-1.  **`hostapd`:**
+**Phase 3: Setup Host-level Services (`hostapd` and Networking)**
+(See `GUIDANCE_AND_EXPLANATIONS.md` and `[[06-Configurar-Hotspot]]` for details)
+1.  **`hostapd` (Wi-Fi Access Point):**
     ```bash
     sudo cp hotspot_config/hostapd.conf /etc/hostapd/hostapd.conf
-    # Edit /etc/default/hostapd and set DAEMON_CONF="/etc/hostapd/hostapd.conf"
-    sudo sed -i 's|^#DAEMON_CONF=.*|DAEMON_CONF="/etc/hostapd/hostapd.conf"|' /etc/default/hostapd
+    # For Arch Linux, /etc/default/hostapd is not typically used.
+    # Ensure hostapd service unit file points to /etc/hostapd/hostapd.conf or uses it by default.
     sudo systemctl unmask hostapd
     sudo systemctl enable hostapd
-    sudo systemctl start hostapd
+    sudo systemctl start hostapd # Start hostapd after wlan0 has its static IP.
     ```
-2.  **DHCP (via Pi-hole/dnsmasq):**
-    ```bash
-    sudo cp hotspot_config/pihole_custom_dnsmasq.conf /etc/dnsmasq.d/02-chernarus-hotspot-dhcp.conf # Example name
-    sudo pihole restartdns # or sudo systemctl restart pihole-FTL.service
-    ```
-    Verify in Pi-hole admin DHCP settings.
-3.  **NAT & Forwarding (Basic Internet):**
+    *Ensure `wlan0` has its static IP `192.168.73.1/24` configured (e.g., via `systemd-networkd` as per wiki) before starting `hostapd`.*
+
+2.  **NAT & Forwarding (Basic Internet):**
     ```bash
     chmod +x scripts/setup_hotspot_nat.sh
     sudo ./scripts/setup_hotspot_nat.sh
-    sudo netfilter-persistent save # Persist iptables rules
+    # Persistence is handled in Phase 5
     ```
 
-**Phase 4: Setup Captive Portal (`Chernarus_Entrypoint`)**
-(See `captive_portal_Chernarus_Entrypoint/README_PORTAL.md` for details)
-1.  **Docker Service:** Navigate to `captive_portal_Chernarus_Entrypoint/`.
+**Phase 4: Start Dockerized Services (Pi-hole, DHCP, Squid, Portal)**
+(See component READMEs and relevant Wiki pages for details)
+1.  **Navigate to Project Root:** Ensure you are in the root directory of the cloned repository (e.g., `/opt/surviving-chernarus`).
+2.  **Start All Services:**
     ```bash
     sudo docker-compose up -d
     ```
-    Check logs: `sudo docker-compose logs -f chernarus_entrypoint`
-2.  **`iptables` Redirection to Portal:**
+    This command will:
+    *   Pull necessary Docker images (Pi-hole, Squid, Nginx, `networkboot/dhcpd`).
+    *   Create and start containers for `Pihole_DNS_Filter`, `Hotspot_DHCP_Server`, `Berezino_Checkpoint` (Squid), and `Chernarus_Entrypoint` (Nginx portal).
+3.  **Verify Docker Services:**
+    ```bash
+    sudo docker ps -a
+    # Check logs for any specific container if issues arise, e.g.:
+    # sudo docker logs Pihole_DNS_Filter
+    # sudo docker logs Hotspot_DHCP_Server
+    ```
+
+**Phase 5: Apply Traffic Redirection Rules & Persist `iptables`**
+1.  **`iptables` Redirection to Portal & Squid:**
+    Ensure you are in the project root directory.
     ```bash
     chmod +x scripts/setup_captive_portal_redirect.sh
     sudo ./scripts/setup_captive_portal_redirect.sh
-    # This script attempts to insert rules at the top. Review rule order if issues.
-    sudo netfilter-persistent save
-    ```
 
-**Phase 5: Setup Squid Proxy (`Berezino_Checkpoint`)**
-(See `squid_Berezino_Checkpoint/README_SQUID.md` for details)
-1.  **Docker Service:** Navigate to `squid_Berezino_Checkpoint/`.
-    ```bash
-    sudo docker-compose up -d
-    ```
-    Check logs: `sudo docker-compose logs -f berezino_checkpoint`
-2.  **`iptables` Redirection to Squid:**
-    ```bash
     chmod +x scripts/redirect_to_squid.sh
     sudo ./scripts/redirect_to_squid.sh
-    # This script adds rules after the portal's expected rules.
-    sudo netfilter-persistent save
+2.  **Persist `iptables` Rules (Arch Linux):**
+    ```bash
+    sudo iptables-save > /etc/iptables/iptables.rules
+    # If using IPv6 rules as well:
+    # sudo ip6tables-save > /etc/iptables/ip6tables.rules
+    # Ensure the iptables service is enabled to load rules on boot:
+    sudo systemctl enable iptables.service
+    # sudo systemctl enable ip6tables.service # If using IPv6
     ```
 
 **Order of `iptables` Script Execution for NAT Table (`PREROUTING` chain for `wlan0`):**
-The system relies on `iptables` rules being applied in a specific sequence. If you need to reset or reapply:
-1.  `scripts/setup_hotspot_nat.sh` (Basic NAT/Forwarding - less specific, broader rules)
-2.  `scripts/setup_captive_portal_redirect.sh` (Redirects HTTP to portal - more specific, should be early)
-3.  `scripts/redirect_to_squid.sh` (Redirects HTTP/HTTPS to Squid - processes what's left or bypasses portal for HTTPS)
-Always save rules with `sudo netfilter-persistent save` after changes.
+It is critical that the `iptables` scripts are run in the correct order after any flush or on initial setup:
+1.  `sudo ./scripts/setup_hotspot_nat.sh` (Establishes basic NAT, forwarding, and INPUT rules for essential services).
+2.  `sudo ./scripts/setup_captive_portal_redirect.sh` (Inserts rules to redirect HTTP traffic to the captive portal).
+3.  `sudo ./scripts/redirect_to_squid.sh` (Adds rules to redirect HTTP/HTTPS to Squid, ensuring portal and local services are bypassed correctly).
+Always save the final ruleset using `iptables-save` as shown above.
 
 **Phase 6: Client Device Configuration**
 1.  Connect a client device to the `rpi` Wi-Fi SSID.
@@ -207,11 +216,11 @@ Always save rules with `sudo netfilter-persistent save` after changes.
 ## III. Assumptions and Clarifications
 
 *   **`project_rules.md` and `user_rules.md`:** These files were not accessible. Configurations are based on standard practices.
-*   **Pi-hole (`StarySobor_RadioPost`) Setup:** Assumes Pi-hole is already installed, functional, and accessible at `192.168.73.1` for DNS by hotspot clients.
-*   **Internet Connectivity:** Assumes `eth0` (or your primary internet interface) is configured for internet access.
-*   **Firewall Base State:** Assumes a relatively permissive default `iptables` policy. The provided scripts add necessary rules for the project's functionality.
-*   **Security of CA Key:** The CA private key is highly sensitive. Protect it. The `.pem` file in `squid_Berezino_Checkpoint/certs/` should have restricted permissions on the host.
-*   **Thematic Hostnames in DNS:** For hostnames like `berezino-checkpoint` to be resolvable by clients, add them to Pi-hole's "Local DNS Records" pointing to `192.168.73.1`.
-*   **`iptables` vs. `nftables`:** This solution uses `iptables`. If your system uses `nftables` as the default backend, script adjustments will be needed.
+*   **Pi-hole (`Pihole_DNS_Filter`) and DHCP Server (`Hotspot_DHCP_Server`) Setup:** These are Dockerized services managed by the main `docker-compose.yml`. Pi-hole is assumed to be accessible at `192.168.73.1` for DNS. The DHCP server provides IPs on the `192.168.73.0/24` network.
+*   **Internet Connectivity:** Assumes `eth0` (or your primary internet interface as defined in `scripts/setup_hotspot_nat.sh`) is configured for internet access.
+*   **Firewall Base State:** Assumes a relatively permissive default `iptables` policy on the host. The provided scripts add necessary rules.
+*   **Security of CA Key:** The Squid CA private key (`myCA.key`) is highly sensitive. Protect it as per `squid_Berezino_Checkpoint/README_SQUID.md`.
+*   **Thematic Hostnames in DNS:** For hostnames like `berezino-checkpoint` or `chernarus-entrypoint` to be resolvable by clients, add them to Pi-hole's "Local DNS Records" pointing to `192.168.73.1`.
+*   **`iptables` Backend:** This solution uses `iptables` commands. On Arch Linux, `iptables-nft` provides these commands using the `nftables` kernel backend, which is the modern approach.
 
-This concludes the setup for "Operación: The Perimeter". Review all component READMEs and configurations carefully before and during deployment. Remember to test each phase incrementally. Good luck, survivor!
+This concludes the setup for "Chernarus Beacon" (Operación: The Perimeter). Review all component READMEs, Wiki pages, and configurations carefully before and during deployment. Remember to test each phase incrementally. Good luck, survivor!

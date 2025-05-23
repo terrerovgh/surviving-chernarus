@@ -39,11 +39,12 @@ The services running in Docker containers (Pi-hole, Squid, Nginx) should also be
     ```
     Review the release notes for each image if significant changes are expected.
 
-### 1.4. Network Services (hostapd, dnsmasq, etc.)
-Core network services like `hostapd` (for the Wi-Fi hotspot) and `dnsmasq` (often used by Pi-hole or as part of the DHCP server setup if not containerized) are typically updated via system package management:
+### 1.4. Network Services (hostapd)
+The core network service `hostapd` (for the Wi-Fi hotspot), which runs on the host OS, is typically updated via system package management:
 ```bash
 sudo pacman -Syu
 ```
+Pi-hole uses `dnsmasq` internally for its DNS functions, and this is updated when the Pi-hole Docker image is updated (see section 1.3). The DHCP server is also a Docker container (`Hotspot_DHCP_Server`) and is updated similarly by pulling a new image if available.
 
 ## 2. Monitor for Vulnerabilities (CVEs)
 
@@ -66,7 +67,12 @@ Ensure all default credentials are changed and strong, unique passwords/passphra
 *   Wi-Fi WPA passphrase
 
 ## 4. Firewall Configuration
-Proper firewall rules are essential. Ensure your `iptables` rules (managed via `scripts/setup_hotspot_nat.sh` and `scripts/redirect_to_squid.sh`) are correctly configured and saved using `iptables-persistent`. These rules should restrict access to services as much as possible.
+Proper firewall rules are essential. Ensure your `iptables` rules (managed via `scripts/setup_hotspot_nat.sh`, `scripts/setup_captive_portal_redirect.sh`, and `scripts/redirect_to_squid.sh`) are correctly configured.
+For persistence on Arch Linux:
+1.  Ensure `iptables-nft` is installed: `sudo pacman -Syu --needed iptables-nft`.
+2.  Save rules after all scripts have been run: `sudo iptables-save > /etc/iptables/iptables.rules`.
+3.  Enable the service to load rules on boot: `sudo systemctl enable iptables.service`.
+These rules should restrict access to services as much as possible. Refer to `[[09-Configurar-Redireccion-Trafico]]` for more details on the `iptables` setup.
 
 ## 5. CA Certificate Management (Squid)
 If using Squid for SSL bumping, manage your CA certificate and private key securely. Refer to `squid_Berezino_Checkpoint/README_SQUID.md` for details on generation, permissions, and rotation.

@@ -86,6 +86,7 @@ Para obtener el token que necesitas pegar:
     *   Para operaciones generales de repositorio y para que el runner interactúe con el repositorio (como clonar, reportar estado, etc.), el scope `repo` es fundamental. Este scope otorga control total sobre tus repositorios (privados y públicos).
     *   Si planeas usar `gh` para gestionar workflows (e.g., `gh workflow run`), necesitarás el scope `workflow`.
     *   **Para este caso, selecciona al menos `repo`.** Lee la descripción de cada scope cuidadosamente antes de seleccionarlo.
+    *   Para una guía más general sobre las buenas prácticas con PATs (scopes, expiración, etc.), consulta la página `[[14-Gestion-Secretos]]` y el archivo `SECURITY.md` del proyecto.
 10. Haz clic en el botón **Generate token** en la parte inferior de la página.
 11. **¡IMPORTANTE! Copia el token generado inmediatamente.** GitHub solo te mostrará el token una vez. No podrás volver a verlo. Guárdalo temporalmente en un lugar seguro hasta que lo pegues en la terminal.
 
