@@ -25,26 +25,34 @@ echo "Configuring iptables to redirect traffic from $WLAN_IF to Squid..."
 
 echo "Ensuring traffic directly to $RPI_WLAN_IP (e.g., DNS, Captive Portal) is NOT redirected..."
 # Allow traffic destined for the Pi-hole/RPi itself on wlan0 to bypass redirection
-# This is critical for DNS, DHCP, and the captive portal access.
+# This is critical for DNS (53), DHCP (67,68), and the Captive Portal (8080, and potentially 80/443 if not immediately redirected to 8080 by other rules).
+# The captive portal (Chernarus_Entrypoint) runs on $RPI_WLAN_IP:8080.
+# The setup_captive_portal_redirect.sh script redirects initial HTTP (80) traffic to $RPI_WLAN_IP:8080.
+# This rule ensures that traffic explicitly going to $RPI_WLAN_IP:8080 is not further redirected to Squid.
+sudo iptables -t nat -A PREROUTING -i $WLAN_IF -d $RPI_WLAN_IP -p tcp --dport 8080 -j RETURN # Captive portal on 8080
+
+# General RETURN rules for traffic to the RPi itself that should not be proxied.
+# Note: The captive portal redirect script already handles port 80 redirection to 8080.
+# The rule for port 80/443 here is a safeguard for any direct traffic to RPi on these ports that wasn't caught by portal redirect.
 sudo iptables -t nat -A PREROUTING -i $WLAN_IF -d $RPI_WLAN_IP -p tcp -m multiport --dports 80,443 -j RETURN
 sudo iptables -t nat -A PREROUTING -i $WLAN_IF -d $RPI_WLAN_IP -p udp -m multiport --dports 53,67,68 -j RETURN
 
 
-echo "Redirecting HTTP traffic (port 80) from $HOTSPOT_NET (excluding to $RPI_WLAN_IP) to Squid port $SQUID_HTTP_PORT..."
-sudo iptables -t nat -A PREROUTING -i $WLAN_IF -s $HOTSPOT_NET -p tcp --dport 80 -d ! $RPI_WLAN_IP -j DNAT --to-destination 127.0.0.1:$SQUID_HTTP_PORT
+echo "Redirecting HTTP traffic (port 80) from $HOTSPOT_NET (excluding to $RPI_WLAN_IP) to Squid on $RPI_WLAN_IP:$SQUID_HTTP_PORT..."
+sudo iptables -t nat -A PREROUTING -i $WLAN_IF -s $HOTSPOT_NET -p tcp --dport 80 -d ! $RPI_WLAN_IP -j DNAT --to-destination $RPI_WLAN_IP:$SQUID_HTTP_PORT
 
-echo "Redirecting HTTPS traffic (port 443) from $HOTSPOT_NET (excluding to $RPI_WLAN_IP) to Squid port $SQUID_HTTPS_PORT..."
-sudo iptables -t nat -A PREROUTING -i $WLAN_IF -s $HOTSPOT_NET -p tcp --dport 443 -d ! $RPI_WLAN_IP -j DNAT --to-destination 127.0.0.1:$SQUID_HTTPS_PORT
+echo "Redirecting HTTPS traffic (port 443) from $HOTSPOT_NET (excluding to $RPI_WLAN_IP) to Squid on $RPI_WLAN_IP:$SQUID_HTTPS_PORT..."
+sudo iptables -t nat -A PREROUTING -i $WLAN_IF -s $HOTSPOT_NET -p tcp --dport 443 -d ! $RPI_WLAN_IP -j DNAT --to-destination $RPI_WLAN_IP:$SQUID_HTTPS_PORT
 
 # === Allowing Squid Traffic ===
 # If the INPUT policy is DROP, you might need to explicitly allow traffic to Squid's ports.
 # However, Docker typically manages its own rules for exposing container ports.
 # The DOCKER chain in the nat table and FORWARD chain usually handle this.
-# For traffic originating from clients and DNATed to 127.0.0.1 (host),
-# the host's INPUT chain will see it.
-echo "Ensuring host can accept traffic to Squid ports (if INPUT policy is not ACCEPT)..."
-sudo iptables -A INPUT -i $WLAN_IF -p tcp --dport $SQUID_HTTP_PORT -s $HOTSPOT_NET -d 127.0.0.1 -j ACCEPT
-sudo iptables -A INPUT -i $WLAN_IF -p tcp --dport $SQUID_HTTPS_PORT -s $HOTSPOT_NET -d 127.0.0.1 -j ACCEPT
+# For traffic originating from clients and DNATed to $RPI_WLAN_IP (the Pi itself),
+# the host's INPUT chain will see it. These rules allow the Pi to accept this traffic.
+echo "Ensuring host can accept traffic to Squid ports on $RPI_WLAN_IP (if INPUT policy is not ACCEPT)..."
+sudo iptables -A INPUT -i $WLAN_IF -p tcp --dport $SQUID_HTTP_PORT -s $HOTSPOT_NET -d $RPI_WLAN_IP -j ACCEPT
+sudo iptables -A INPUT -i $WLAN_IF -p tcp --dport $SQUID_HTTPS_PORT -s $HOTSPOT_NET -d $RPI_WLAN_IP -j ACCEPT
 
 # If Squid container is on a custom Docker network and not using host networking,
 # ensure FORWARD rules from wlan0 to that Docker bridge are in place.

@@ -1,13 +1,17 @@
 version: '3.8'
 
 services:
+  # IMPORTANT: The IP address '192.168.73.1' used below for port bindings
+  # is assumed to be the Raspberry Pi's static IP address on the wlan0 interface
+  # (the hotspot network). Please verify and change this if your wlan0 IP is different.
+  # Using a specific IP enhances security by not exposing services on other interfaces (e.g., eth0).
   chernarus_entrypoint:
     image: nginx:alpine
     container_name: Chernarus_Entrypoint
     hostname: chernarus-entrypoint
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "192.168.73.1:8080:80" # Captive portal web server
     volumes:
       - ./captive_portal_Chernarus_Entrypoint/html:/usr/share/nginx/html:ro
     networks:
@@ -19,14 +23,15 @@ services:
     hostname: berezino-checkpoint
     restart: unless-stopped
     ports:
-      - "3128:3128"
-      - "3129:3129"
+      - "192.168.73.1:3128:3128" # HTTP proxy port
+      - "192.168.73.1:3129:3129" # HTTPS SSL-bump port
     volumes:
       - ./squid_Berezino_Checkpoint/squid.conf:/etc/squid/squid.conf
       - ./squid_Berezino_Checkpoint/certs:/etc/squid/certs
       - /mnt/usbdata/Berezino_Checkpoint/cache:/var/spool/squid
       - /mnt/usbdata/Berezino_Checkpoint/logs:/var/log/squid
     cap_add:
+      # NET_ADMIN is often required for transparent proxying (intercepting network traffic).
       - NET_ADMIN
     networks:
       - frontend_network
@@ -37,18 +42,24 @@ services:
     container_name: Pihole_DNS_Filter
     hostname: pihole-dns-filter
     ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "8081:80/tcp"
+      - "192.168.73.1:53:53/tcp"  # DNS TCP
+      - "192.168.73.1:53:53/udp"  # DNS UDP
+      - "192.168.73.1:8081:80/tcp" # Pi-hole admin interface
     environment:
       TZ: 'America/Chicago'
-      WEBPASSWORD: 'ChangeThisPasswordPlease' # IMPORTANT: Change this password!
+      # WEBPASSWORD: 'ChangeThisPasswordPlease' # IMPORTANT: Set this via an environment variable (e.g., in an .env file)
+      # Create a .env file in the same directory as docker-compose.yml with the line:
+      # PIHOLE_WEBPASSWORD=your_strong_password_here
+      # Then, ensure the line below is active to use it:
+      WEBPASSWORD: "${PIHOLE_WEBPASSWORD}" # Reads from .env file or environment variable
       DNSMASQ_LISTENING: 'all'
     volumes:
       - pihole_etc_pihole:/etc/pihole
       - pihole_etc_dnsmasq_d:/etc/dnsmasq.d
     cap_add:
-      - NET_ADMIN # For potential advanced features
+      # NET_ADMIN might be used for advanced Pi-hole features like conditional forwarding or network diagnostics.
+      # Review if essential for your setup.
+      - NET_ADMIN
     networks:
       - frontend_network
     restart: unless-stopped
@@ -57,7 +68,11 @@ services:
     image: networkboot/dhcpd
     container_name: Hotspot_DHCP_Server
     hostname: hotspot-dhcp-server
-    network_mode: "host" # Critical for DHCP
+    # network_mode: "host" is used because DHCP servers need to directly interact with the host's
+    # network interface (wlan0 in this case) to receive broadcast DHCP requests from clients
+    # on the LAN and assign IP addresses. This reduces container isolation but is often
+    # necessary for DHCP server functionality in Docker unless more complex networking like macvlan is used.
+    network_mode: "host"
     volumes:
       - ./hotspot_config/dhcp/dhcpd.conf:/data/dhcpd.conf # Path inside container might vary based on image
     cap_add:
@@ -72,7 +87,9 @@ services:
     container_name: Dashboard_Placeholder
     hostname: dashboard-placeholder
     ports:
-      - "8082:80" # Admin/Metrics dashboard placeholder
+      # Bound to localhost only, assuming this is an admin/metrics dashboard for local access on the Pi.
+      # If intended for hotspot clients, change to "192.168.73.1:8082:80".
+      - "127.0.0.1:8082:80"
     networks:
       - backend_network
     restart: unless-stopped

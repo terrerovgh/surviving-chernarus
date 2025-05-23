@@ -25,37 +25,117 @@ This guide provides instructions for setting up the `Berezino_Checkpoint` Squid 
     # You might need to set permissions for this UID or use a volume driver that handles it.
     # For simplicity, you can initially try with open permissions and refine later:
     sudo chmod -R 777 /mnt/usbdata/Berezino_Checkpoint/cache
-    sudo chmod -R 777 /mnt/usbdata/Berezino_Checkpoint/logs
+    sudo chmod -R 777 /mnt/usbdata/Berenizo_Checkpoint/logs
     ```
 
-## II. SSL Bumping CA Certificate Generation
+## II. Managing CA Certificate and Key for SSL Bumping
 
-For Squid to intercept and inspect HTTPS traffic (`SSL Bumping`), you must generate your own Certificate Authority (CA) certificate and private key. This CA will be used by Squid to dynamically create certificates for the websites users visit.
+For Squid to intercept and inspect HTTPS traffic (`SSL Bumping`), you must generate and manage your own Certificate Authority (CA) certificate and private key. This CA is used by Squid to dynamically create certificates for the websites users visit. The `squid_Berezino_Checkpoint/certs/` directory is mapped to `/etc/squid/certs/` inside the Docker container.
 
-1.  **Generate CA Certificate and Key:**
-    Use a tool like OpenSSL. On your Raspberry Pi or another Linux machine, run:
+### 1. CA Certificate and Key Generation
+
+The current `squid.conf` is configured to use `myCA.pem` as the public certificate (`cert=`) and `myCA.key` as the private key (`key=`).
+
+*   **Generate the CA private key and public certificate:**
+    Use OpenSSL on your Raspberry Pi or another Linux machine. The following command generates a 4096-bit RSA key (`myCA.key`) and a self-signed certificate (`myCA.pem`) valid for 10 years.
     ```bash
-    openssl req -new -newkey rsa:2048 -days 3650 -nodes -x509 -keyout myCA.key -out myCA.crt -subj "/CN=BerezinoCheckpointCA/O=ChernarusNetwork/OU=ProxyServices"
+    openssl req -new -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes \
+      -out myCA.pem \
+      -keyout myCA.key \
+      -subj "/CN=BerezinoCheckpointCA/O=ChernarusNetwork/OU=ProxyServices"
     ```
-    This creates `myCA.key` (private key) and `myCA.crt` (certificate).
+    This creates:
+    *   `myCA.key`: Your private key. **Protect this file!**
+    *   `myCA.pem`: Your public CA certificate in PEM format. This is what Squid uses via the `cert=` directive.
 
-2.  **Combine into a PEM file:**
-    Squid's `squid.conf` is configured to use a single `.pem` file. Concatenate the key and certificate:
+*   **Create a DER version for client distribution (optional but recommended):**
+    Some devices prefer the DER format for importing CA certificates.
     ```bash
-    cat myCA.crt myCA.key > myCA.pem
+    openssl x509 -in myCA.pem -outform DER -out myCA.der
     ```
+    You will distribute either `myCA.pem` or `myCA.der` to clients.
 
-3.  **Place `myCA.pem` in the Certs Directory:**
-    Copy the generated `myCA.pem` file into the `squid_Berezino_Checkpoint/certs/` directory (which you cloned from the repository). This directory is mapped to `/etc/squid/certs/` inside the Docker container.
+*   **Place files in the `certs` directory:**
+    Copy the generated `myCA.pem` and `myCA.key` files into the `squid_Berezino_Checkpoint/certs/` directory.
     ```bash
-    # Assuming you are in the directory where you generated myCA.pem
-    cp myCA.pem path/to/your/cloned/repository/squid_Berezino_Checkpoint/certs/
+    # Assuming you are in the directory where you generated the files
+    cp myCA.pem myCA.key path/to/your/cloned/repository/squid_Berezino_Checkpoint/certs/
+    ```
+    The `squid.conf` provided is already set up to look for these filenames:
+    ```
+    http_port 3129 transparent ssl-bump generate-host-certificates=on dynamic_cert_mem_cache_size=4MB cert=/etc/squid/certs/myCA.pem key=/etc/squid/certs/myCA.key
     ```
 
-4.  **Client Trust (Crucial):**
-    Each client device (laptops, phones) connecting to the `rpi` hotspot **MUST** install and trust your `myCA.crt` (the certificate part, not the key) in their system or browser trust store.
-    *   Without this, clients will see severe certificate errors for every HTTPS site.
-    *   The `Chernarus_Entrypoint` captive portal (to be set up later) will provide instructions and a download link for `myCA.crt` for users.
+### 2. Security of Certificate and Key
+
+*   **Protect Your Private Key:** The private key (`myCA.key`) is extremely sensitive. Anyone with access to it can impersonate any website to your proxy users. **Guard it carefully.**
+*   **File Permissions:** Restrict permissions on the host system for the `certs` directory and its contents.
+    Navigate to your repository root:
+    ```bash
+    chmod 700 ./squid_Berezino_Checkpoint/certs
+    chmod 600 ./squid_Berezino_Checkpoint/certs/myCA.key
+    chmod 644 ./squid_Berezino_Checkpoint/certs/myCA.pem
+    # If you created myCA.der, its permissions can also be 644
+    chmod 644 ./squid_Berezino_Checkpoint/certs/myCA.der
+    ```
+*   **Version Control:** **DO NOT COMMIT `myCA.key` or `myCA.pem` (or `.der`) TO GIT.** The `.gitignore` file in the repository should already be configured to ignore these files, but it's good practice to ensure they are not accidentally staged or committed. The `certs` directory contains a `.gitkeep` file to ensure the directory structure is present in the repository without including the sensitive files.
+
+### 3. Certificate Rotation Policy
+
+Regularly rotating your CA certificate is crucial for security. A compromised key or a key nearing its expiry date poses a risk. Aim to rotate annually or biennially.
+
+*   **Manual Rotation Steps:**
+    1.  **Generate a new key and certificate pair:**
+        Use the OpenSSL commands from section II.1, but use new filenames, e.g., `myCA_new.key` and `myCA_new.pem`.
+        ```bash
+        # Example:
+        openssl req -new -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes \
+          -out myCA_new.pem \
+          -keyout myCA_new.key \
+          -subj "/CN=BerezinoCheckpointCA-v2/O=ChernarusNetwork/OU=ProxyServices" # Consider updating CN
+        ```
+    2.  **Place new files in the `certs` directory:**
+        Copy `myCA_new.key` and `myCA_new.pem` into `./squid_Berezino_Checkpoint/certs/`.
+    3.  **Update Squid Configuration (Option A - Simpler):**
+        *   Securely back up your old `myCA.key` and `myCA.pem`.
+        *   Rename `myCA_new.key` to `myCA.key` and `myCA_new.pem` to `myCA.pem` within the `./squid_Berezino_Checkpoint/certs/` directory.
+        ```bash
+        # In ./squid_Berezino_Checkpoint/certs/
+        mv myCA.key myCA_old.key
+        mv myCA.pem myCA_old.pem
+        mv myCA_new.key myCA.key
+        mv myCA_new.pem myCA.pem
+        ```
+    4.  **Update Squid Configuration (Option B - If using different filenames in squid.conf):**
+        Alternatively, if you prefer to keep versioned filenames, edit `squid_Berezino_Checkpoint/squid.conf` and update the `cert=` and `key=` parameters to point to the new files (e.g., `cert=/etc/squid/certs/myCA_new.pem key=/etc/squid/certs/myCA_new.key`).
+    5.  **Restart Squid Container:**
+        ```bash
+        docker-compose restart Berezino_Checkpoint 
+        # Or: docker-compose down && docker-compose up -d
+        ```
+    6.  **Distribute the New Public CA:**
+        The new public certificate (`myCA_new.pem` or the new `myCA.pem`, or its `.der` equivalent) must be distributed and installed on all client devices. Users will see certificate errors until this is done.
+    7.  **Securely Delete Old Private Key:**
+        Once you've confirmed the new certificate and key are working correctly and clients have been updated, securely delete the old private key (e.g., `myCA_old.key`).
+        *   Using `shred` (if available):
+            ```bash
+            shred -u ./squid_Berezino_Checkpoint/certs/myCA_old.key
+            ```
+        *   If `shred` is not available, overwrite it multiple times manually before deleting (less secure but better than a simple `rm`):
+            ```bash
+            # Example: find actual size and overwrite (replace 1234 with actual size)
+            # dd if=/dev/urandom of=./squid_Berezino_Checkpoint/certs/myCA_old.key bs=1 count=1234 conv=notrunc
+            # rm ./squid_Berezino_Checkpoint/certs/myCA_old.key
+            ```
+    8.  **Document Rotation:** Note the date of this rotation and schedule the next one.
+
+*   **Automated Rotation:** Automating certificate rotation is an advanced topic, potentially involving tools like `certbot` (if you were using a publicly signed CA, which is not the case here) or custom scripting. For this setup, manual rotation is assumed.
+
+### 4. Client Configuration (Trusting the CA)
+
+Each client device (laptops, phones) connecting to the `rpi` hotspot **MUST** install and trust your public CA certificate (`myCA.pem` or `myCA.der`) in their system or browser trust store.
+*   Without this, clients will experience certificate errors for every HTTPS site, as their browser will not recognize the authority signing the dynamically generated certificates from Squid.
+*   The `Chernarus_Entrypoint` captive portal (to be set up later) should provide instructions and a download link for the CA certificate.
 
 ## III. Squid Configuration (`squid.conf`)
 
