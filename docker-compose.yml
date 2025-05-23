@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  chernarus_entrypoint:
+    image: nginx:alpine
+    container_name: Chernarus_Entrypoint
+    hostname: chernarus-entrypoint
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./captive_portal_Chernarus_Entrypoint/html:/usr/share/nginx/html:ro
+    networks:
+      - frontend_network
+
+  berezino_checkpoint:
+    image: ubuntu/squid
+    container_name: Berezino_Checkpoint
+    hostname: berezino-checkpoint
+    restart: unless-stopped
+    ports:
+      - "3128:3128"
+      - "3129:3129"
+    volumes:
+      - ./squid_Berezino_Checkpoint/squid.conf:/etc/squid/squid.conf
+      - ./squid_Berezino_Checkpoint/certs:/etc/squid/certs
+      - /mnt/usbdata/Berezino_Checkpoint/cache:/var/spool/squid
+      - /mnt/usbdata/Berezino_Checkpoint/logs:/var/log/squid
+    cap_add:
+      - NET_ADMIN
+    networks:
+      - frontend_network
+      - backend_network
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: Pihole_DNS_Filter
+    hostname: pihole-dns-filter
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8081:80/tcp"
+    environment:
+      TZ: 'America/Chicago'
+      WEBPASSWORD: 'ChangeThisPasswordPlease' # IMPORTANT: Change this password!
+      DNSMASQ_LISTENING: 'all'
+    volumes:
+      - pihole_etc_pihole:/etc/pihole
+      - pihole_etc_dnsmasq_d:/etc/dnsmasq.d
+    cap_add:
+      - NET_ADMIN # For potential advanced features
+    networks:
+      - frontend_network
+    restart: unless-stopped
+
+  dhcp_server:
+    image: networkboot/dhcpd
+    container_name: Hotspot_DHCP_Server
+    hostname: hotspot-dhcp-server
+    network_mode: "host" # Critical for DHCP
+    volumes:
+      - ./hotspot_config/dhcp/dhcpd.conf:/data/dhcpd.conf # Path inside container might vary based on image
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    restart: unless-stopped
+    # User MUST verify and change "wlan0" to their actual WiFi interface
+    command: ["-cf", "/data/dhcpd.conf", "-f", "wlan0"]
+
+  dashboard_placeholder:
+    image: nginx:alpine
+    container_name: Dashboard_Placeholder
+    hostname: dashboard-placeholder
+    ports:
+      - "8082:80" # Admin/Metrics dashboard placeholder
+    networks:
+      - backend_network
+    restart: unless-stopped
+
+  logging_placeholder:
+    image: alpine/socat # Or just alpine if socat isn't strictly needed for placeholder
+    container_name: Logging_Placeholder
+    hostname: logging-placeholder
+    command: tail -f /dev/null # Keep container running
+    networks:
+      - backend_network
+    restart: unless-stopped
+
+networks:
+  frontend_network:
+    driver: bridge
+  backend_network:
+    driver: bridge
+
+# Volumes will be defined as needed by services
+volumes:
+  pihole_etc_pihole: {}
+  pihole_etc_dnsmasq_d: {}
