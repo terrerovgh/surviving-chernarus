@@ -1,0 +1,89 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+#  🏴‍☠️ CHERNARUS SURVIVAL PROTOCOL - GIT EXCLUSION MANIFEST 🏴‍☠️
+# ═══════════════════════════════════════════════════════════════════════════════
+#  Mission: Protect classified intel from version control exposure
+#  Status: CLASSIFIED - Operator Terrerov Access Only
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Trae AI IDE - Configuraciones locales clasificadas
+.trae/
+
+# Archivos temporales del sistema
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs de operaciones
+*.log
+logs/
+
+# Archivos de backup y respaldos
+*.bak
+*.backup
+*.orig
+
+# Configuraciones locales sensibles
+.env
+.env.local
+.env.*.local
+config.local.*
+
+# Claves y certificados (NUNCA versionar)
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+ssh_keys/
+certs/
+
+# Archivos de contraseñas
+passwords.txt
+secrets.txt
+*.passwd
+
+# Cache y archivos compilados
+*.cache
+*.pyc
+__pycache__/
+*.o
+*.so
+*.dylib
+
+# Directorios de dependencias
+node_modules/
+venv/
+.venv/
+
+# Archivos de configuración de IDE locales
+.vscode/
+.idea/
+*.sublime-*
+
+# Archivos específicos de Arch Linux
+*.pkg.tar.xz
+*.pkg.tar.zst
+src/
+pkg/
+
+# Archivos de configuración de red sensibles
+wpa_supplicant.conf
+networkmanager.conf
+
+# Scripts con credenciales embebidas
+*_with_secrets.sh
+*_private.sh
+
+# Archivos de estado del sistema
+/var/
+/tmp/
+/proc/
+/sys/
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  🔒 PROTOCOLO DE SEGURIDAD: Mantener intel clasificado fuera del repositorio
+# ═══════════════════════════════════════════════════════════════════════════════
