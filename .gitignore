@@ -67,7 +67,7 @@ venv/
 # Archivos específicos de Arch Linux
 *.pkg.tar.xz
 *.pkg.tar.zst
-src/
+
 pkg/
 
 # Archivos de configuración de red sensibles
