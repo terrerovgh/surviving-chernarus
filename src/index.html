@@ -1,118 +1,275 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>SVG Ellipses Sphere</title>
-  <link rel="stylesheet" href="./css/style.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>terrerov@terminal:~$ whoami</title>
+    <meta name="description" content="Terrerov - Full Stack Developer & Linux Terminal Enthusiast">
+    <meta name="keywords" content="developer, linux, terminal, portfolio, github, projects">
+    <meta name="author" content="Terrerov">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.terrerov.com/">
+    <meta property="og:title" content="terrerov@terminal:~$ whoami">
+    <meta property="og:description" content="Full Stack Developer & Linux Terminal Enthusiast">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.terrerov.com/">
+    <meta property="twitter:title" content="terrerov@terminal:~$ whoami">
+    <meta property="twitter:description" content="Full Stack Developer & Linux Terminal Enthusiast">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💻</text></svg>">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-<!-- partial:index.partial.html -->
-<svg viewBox="-5 -5 110 110" stroke-width="0">
-	<g fill="none" id="sphere" transform="rotate(135 50 50)" stroke-width="0" stroke="rgba(0,255,120,0.5)" filter="drop-shadow(0 0 1 rgba(255,255,255, 0.8))">
-		<ellipse cx="50" cy="3" rx="17" ry="4">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="0s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="0s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="6" rx="23.748684174075834" ry="4.4">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-0.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="10" rx="30" ry="4.84">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-0.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="14" rx="34.698703145794944" ry="5.324">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-0.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="18" rx="38.4187454245971" ry="5.8564">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-0.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="22" rx="41.42463035441595" ry="6.44204">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="26" rx="43.86342439892262" ry="7.086244">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="30" rx="45.8257569495584" ry="7.7948684">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="34" rx="47.37087712930805" ry="8.57435524">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="38" rx="48.53864439804639" ry="9.431790764">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="42" rx="49.35585071701226" ry="10.3749698404">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="46" rx="49.83974317750845" ry="11.41246682444">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="50" rx="50" ry="12.553713506884012">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="54" rx="49.83974317750845" ry="11.41246682444">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="58" rx="49.35585071701227" ry="10.3749698404">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="62" rx="48.53864439804639" ry="9.431790764">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="66" rx="47.37087712930804" ry="8.57435524">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="70" rx="45.825756949558404" ry="7.7948684">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="74" rx="43.86342439892262" ry="7.086244">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="78" rx="41.42463035441595" ry="6.44204">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="82" rx="38.4187454245971" ry="5.8564">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="86" rx="34.698703145794944" ry="5.324">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="90" rx="30" ry="4.84">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="94" rx="23.74868417407584" ry="4.4">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-		<ellipse cx="50" cy="96.75" rx="18" ry="3.5">
-			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
-			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
-		</ellipse>
-	</g>
-</svg>
-<!-- partial -->
-  
+    <!-- Terminal Header -->
+    <div class="terminal-header">
+        <div class="terminal-controls">
+            <span class="control close"></span>
+            <span class="control minimize"></span>
+            <span class="control maximize"></span>
+        </div>
+        <div class="terminal-title">terrerov@chernarus:~$</div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Central Sphere -->
+        <div class="sphere-container">
+            <svg viewBox="-5 -5 110 110" stroke-width="0" class="sphere-svg">
+                <defs>
+                    <filter id="glitch-filter">
+                        <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+                        <feOffset dx="2" dy="0" result="r"/>
+                        <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0" in="SourceGraphic" result="gb"/>
+                        <feBlend mode="screen" in="r" in2="gb"/>
+                    </filter>
+                </defs>
+                <g fill="none" id="sphere" transform="rotate(135 50 50)" stroke-width="0" stroke="rgba(0,255,120,0.8)" filter="drop-shadow(0 0 3px rgba(0,255,120, 0.6))">
+                    <!-- Sphere ellipses with enhanced animations -->
+                    <ellipse cx="50" cy="3" rx="17" ry="4">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="0s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="0s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="6" rx="23.748684174075834" ry="4.4">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-0.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="10" rx="30" ry="4.84">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-0.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="14" rx="34.698703145794944" ry="5.324">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-0.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="18" rx="38.4187454245971" ry="5.8564">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-0.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="22" rx="41.42463035441595" ry="6.44204">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-1s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="26" rx="43.86342439892262" ry="7.086244">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-1.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="30" rx="45.8257569495584" ry="7.7948684">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-1.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="34" rx="47.37087712930805" ry="8.57435524">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-1.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="38" rx="48.53864439804639" ry="9.431790764">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-1.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="42" rx="49.35585071701226" ry="10.3749698404">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="46" rx="49.83974317750845" ry="11.41246682444">
+                        <animate attributeName="stroke-width" values="0.1;1.5;0.1" dur="5s" begin="-2.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <ellipse cx="50" cy="50" rx="50" ry="12.553713506884012">
+                        <animate attributeName="stroke-width" values="0.1;2;0.1" dur="5s" begin="-2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+                        <animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+                    </ellipse>
+                    <!-- Continue with remaining ellipses... -->
+                </g>
+            </svg>
+        </div>
+
+        <!-- Vertical Menu -->
+        <nav class="vertical-menu">
+            <div class="menu-item" data-target="projects">
+                <span class="menu-icon">📁</span>
+                <span class="menu-text">./projects</span>
+            </div>
+            <div class="menu-item" data-target="resume">
+                <span class="menu-icon">📄</span>
+                <span class="menu-text">./resume.pdf</span>
+            </div>
+            <div class="menu-item" data-target="contact">
+                <span class="menu-icon">📧</span>
+                <span class="menu-text">./contact.sh</span>
+            </div>
+        </nav>
+
+        <!-- Terminal Output -->
+        <div class="terminal-output">
+            <div class="terminal-line">
+                <span class="prompt">terrerov@chernarus:~$</span>
+                <span class="command typing-animation">whoami</span>
+            </div>
+            <div class="terminal-line response">
+                <span class="output">Full Stack Developer & Linux Enthusiast</span>
+            </div>
+            <div class="terminal-line">
+                <span class="prompt">terrerov@chernarus:~$</span>
+                <span class="cursor">_</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Windows -->
+    <!-- Projects Modal -->
+    <div class="modal" id="projects-modal">
+        <div class="modal-content terminal-window">
+            <div class="modal-header">
+                <span class="modal-title">terrerov@github:~/projects$</span>
+                <span class="modal-close" data-modal="projects">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="terminal-line">
+                    <span class="prompt">terrerov@github:~/projects$</span>
+                    <span class="command">ls -la</span>
+                </div>
+                <div class="project-list">
+                    <div class="project-item">
+                        <span class="file-permissions">drwxr-xr-x</span>
+                        <span class="file-name">surviving-chernarus/</span>
+                        <span class="file-description">Personal life methodology & digital ecosystem</span>
+                    </div>
+                    <div class="project-item">
+                        <span class="file-permissions">-rwxr-xr-x</span>
+                        <span class="file-name">portfolio-website</span>
+                        <span class="file-description">This terminal-style portfolio</span>
+                    </div>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">terrerov@github:~/projects$</span>
+                    <a href="https://github.com/terrerovgh" target="_blank" class="github-link">open github.com/terrerovgh</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Modal -->
+    <div class="modal" id="resume-modal">
+        <div class="modal-content terminal-window">
+            <div class="modal-header">
+                <span class="modal-title">terrerov@system:~/resume$</span>
+                <span class="modal-close" data-modal="resume">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="terminal-line">
+                    <span class="prompt">terrerov@system:~/resume$</span>
+                    <span class="command">cat resume.txt</span>
+                </div>
+                <div class="resume-content">
+                    <div class="resume-section">
+                        <h3>## SKILLS</h3>
+                        <div class="skill-category">
+                            <strong>Languages:</strong> JavaScript, Python, Go, Bash, SQL
+                        </div>
+                        <div class="skill-category">
+                            <strong>Frontend:</strong> React, Vue.js, HTML5, CSS3, GSAP
+                        </div>
+                        <div class="skill-category">
+                            <strong>Backend:</strong> Node.js, Express, FastAPI, PostgreSQL
+                        </div>
+                        <div class="skill-category">
+                            <strong>DevOps:</strong> Docker, Kubernetes, Linux, Git, CI/CD
+                        </div>
+                    </div>
+                    <div class="resume-section">
+                        <h3>## EXPERIENCE</h3>
+                        <div class="experience-item">
+                            <strong>Full Stack Developer</strong> | 2020 - Present<br>
+                            • Developing scalable web applications<br>
+                            • Linux system administration<br>
+                            • DevOps and automation
+                        </div>
+                    </div>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">terrerov@system:~/resume$</span>
+                    <span class="cursor">_</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal" id="contact-modal">
+        <div class="modal-content terminal-window">
+            <div class="modal-header">
+                <span class="modal-title">terrerov@network:~/contact$</span>
+                <span class="modal-close" data-modal="contact">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="terminal-line">
+                    <span class="prompt">terrerov@network:~/contact$</span>
+                    <span class="command">./contact.sh --list</span>
+                </div>
+                <div class="contact-list">
+                    <div class="contact-item">
+                        <span class="contact-method">📧 Email:</span>
+                        <a href="mailto:contact@terrerov.com" class="contact-link">contact@terrerov.com</a>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-method">🐙 GitHub:</span>
+                        <a href="https://github.com/terrerovgh" target="_blank" class="contact-link">github.com/terrerovgh</a>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-method">💼 LinkedIn:</span>
+                        <a href="https://linkedin.com/in/terrerov" target="_blank" class="contact-link">linkedin.com/in/terrerov</a>
+                    </div>
+                    <div class="contact-item">
+                        <span class="contact-method">🐦 Twitter:</span>
+                        <a href="https://twitter.com/terrerov" target="_blank" class="contact-link">@terrerov</a>
+                    </div>
+                </div>
+                <div class="terminal-line">
+                    <span class="prompt">terrerov@network:~/contact$</span>
+                    <span class="cursor">_</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Glitch Overlay -->
+    <div class="glitch-overlay"></div>
+
+    <!-- JavaScript -->
+    <script src="./js/main.js"></script>
 </body>
 </html>
