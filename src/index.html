@@ -1,135 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>terrerov - chernarus surviving...</title>
-  <!-- SEO and Social Media Meta Tags -->
-  <meta name="description" content="Terrerov's personal website - Explore my projects, CV, and get in touch. Full-stack developer passionate about technology and innovation.">
-  <meta name="keywords" content="terrerov, developer, portfolio, projects, CV, contact, full-stack, web development, github, javascript, python">
-  <meta name="author" content="Terrerov">
-  <meta name="robots" content="index, follow">
-  <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-  <link rel="canonical" href="https://www.terrerov.com/">
-  
-  <!-- PWA Manifest -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0a0a0c">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Terrerov">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Surviving Chernarus - Portal digital del Operador Terrerov. Ecosistema integrado de supervivencia y optimización personal.">
+  <meta name="keywords" content="terrerov, surviving chernarus, operador, beacon, colectivo, supervivencia digital">
+  <meta name="author" content="Operador Terrerov">
   
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.terrerov.com/">
-  <meta property="og:title" content="Terrerov - Personal Website">
-  <meta property="og:description" content="Explore my projects, CV, and get in touch. Full-stack developer passionate about technology and innovation.">
-  <meta property="og:image" content="https://www.terrerov.com/img/og-image.jpg">
-  <meta property="og:site_name" content="Terrerov">
-  <meta property="og:locale" content="en_US">
+  <meta property="og:title" content="Surviving Chernarus - Operador Terrerov">
+  <meta property="og:description" content="Portal digital del Operador Terrerov. Ecosistema integrado de supervivencia y optimización personal.">
+  <meta property="og:image" content="https://www.terrerov.com/img/beacon-preview.png">
   
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:url" content="https://www.terrerov.com/">
-  <meta property="twitter:title" content="Terrerov - Personal Website">
-  <meta property="twitter:description" content="Explore my projects, CV, and get in touch. Full-stack developer passionate about technology and innovation.">
-  <meta property="twitter:image" content="https://www.terrerov.com/img/twitter-image.jpg">
-  <meta name="twitter:creator" content="@terrerov">
+  <meta property="twitter:title" content="Surviving Chernarus - Operador Terrerov">
+  <meta property="twitter:description" content="Portal digital del Operador Terrerov. Ecosistema integrado de supervivencia y optimización personal.">
+  <meta property="twitter:image" content="https://www.terrerov.com/img/beacon-preview.png">
   
-  <!-- Performance optimizations -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://api.github.com">
-  <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="./img/favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="./img/apple-touch-icon.png">
   
-  <!-- Critical CSS inline for performance -->
-  <style>
-    html,body{background:#0a0a0c!important;margin:0;padding:0;font-family:'Space Mono',monospace;color:#f5f5f5;overflow-x:hidden}
-    .main-container{display:flex;justify-content:center;align-items:center;width:100%;height:100vh;position:relative;z-index:1}
-    .loading{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;color:#f5f5f5}
-  </style>
+  <title>Surviving Chernarus - Operador Terrerov</title>
+  <link rel="stylesheet" href="./css/style.css">
   
-  <!-- External CSS with cache busting -->
-  <!-- CSS con cache busting -->
-  <link rel="stylesheet" href="css/style.css?v=1">
+  <!-- Preload critical resources -->
+  <link rel="preload" href="./css/style.css" as="style">
 </head>
 <body>
-  <div id="loading" class="loading">Loading...</div>
+<!-- partial:index.partial.html -->
+<svg viewBox="-5 -5 110 110" stroke-width="0">
+	<g fill="none" id="sphere" transform="rotate(135 50 50)" stroke-width="0" stroke="rgba(0,255,120,0.5)" filter="drop-shadow(0 0 1 rgba(255,255,255, 0.8))">
+		<ellipse cx="50" cy="3" rx="17" ry="4">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="0s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="0s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="6" rx="23.748684174075834" ry="4.4">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-0.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="10" rx="30" ry="4.84">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-0.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="14" rx="34.698703145794944" ry="5.324">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-0.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="18" rx="38.4187454245971" ry="5.8564">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-0.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-0.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="22" rx="41.42463035441595" ry="6.44204">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="26" rx="43.86342439892262" ry="7.086244">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="30" rx="45.8257569495584" ry="7.7948684">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="34" rx="47.37087712930805" ry="8.57435524">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="38" rx="48.53864439804639" ry="9.431790764">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-1.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-1.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="42" rx="49.35585071701226" ry="10.3749698404">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="46" rx="49.83974317750845" ry="11.41246682444">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="50" rx="50" ry="12.553713506884012">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="54" rx="49.83974317750845" ry="11.41246682444">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="58" rx="49.35585071701227" ry="10.3749698404">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-2.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="62" rx="48.53864439804639" ry="9.431790764">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="66" rx="47.37087712930804" ry="8.57435524">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="70" rx="45.825756949558404" ry="7.7948684">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="74" rx="43.86342439892262" ry="7.086244">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="78" rx="41.42463035441595" ry="6.44204">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-3.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-3.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="82" rx="38.4187454245971" ry="5.8564">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="86" rx="34.698703145794944" ry="5.324">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4.2s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="90" rx="30" ry="4.84">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4.4s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="94" rx="23.74868417407584" ry="4.4">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4.6s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+		<ellipse cx="50" cy="96.75" rx="18" ry="3.5">
+			<animate attributeName="stroke-width" values="0.1;1;0.1" dur="5s" begin="-4.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animate>
+			<animateTransform attributeName="transform" type="translate" values="0 0; 0 -5; 0 0" dur="5s" begin="-4.8s" repeatCount="indefinite" keyTimes="0;0.5;1" keySplines="0.9 0 0.9 0; 0 0.9 0 0.9" calcMode="spline"></animateTransform>
+		</ellipse>
+	</g>
+</svg>
+<!-- partial -->
   
-  <div class="main-container">
-    <canvas id="sphere-canvas"></canvas>
-    
-    <nav class="nav-menu">
-      <ul>
-        <li><a href="#cv" data-section="cv">CV</a></li>
-        <li><a href="#contact" data-section="contact">Contact</a></li>
-        <li><a href="#blog" data-section="blog">Blog</a></li>
-        <li><a href="#projects" data-section="projects">Projects</a></li>
-      </ul>
-    </nav>
-    
-    <main class="content">
-      <section id="cv" class="section">
-        <h2>CV</h2>
-        <p>Professional experience and skills...</p>
-      </section>
-      
-      <section id="contact" class="section">
-        <h2>Contact</h2>
-        <p>Get in touch...</p>
-      </section>
-      
-      <section id="blog" class="section">
-        <h2>Blog</h2>
-        <p>Latest thoughts and articles...</p>
-      </section>
-      
-      <section id="projects" class="section">
-        <h2>Projects</h2>
-        <p>Featured work and contributions...</p>
-      </section>
-    </main>
-  </div>
-  
-  <script>
-    // Script loading system
-    let scriptsLoaded = 0;
-    const totalScripts = 2; // anime.js and gsap.js
-    
-    function loadScript(src, callback) {
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = true;
-      script.onload = callback || function() {};
-      script.onerror = function() {
-        console.error(`❌ [SCRIPT LOADER] Failed to load: ${src}`);
-      };
-      document.head.appendChild(script);
-      console.log(`🔄 [SCRIPT LOADER] Loading: ${src}`);
-    }
-    
-    function checkAllScriptsLoaded() {
-      scriptsLoaded++;
-      console.log(`🔄 [SCRIPT LOADER] Scripts loaded: ${scriptsLoaded}/${totalScripts}`);
-      if (scriptsLoaded === totalScripts) {
-        console.log('✅ [SCRIPT LOADER] All dependencies loaded, loading main script...');
-        // All dependencies loaded, now load main script
-        loadScript('js/main.js');
-      }
-    }
-    
-    window.addEventListener('DOMContentLoaded', () => {
-      console.log('🔄 [HTML] DOMContentLoaded event fired, starting script loading...');
-      // Load only publicly available scripts with cache busting
-      // Antes:
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js', checkAllScriptsLoaded);
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', checkAllScriptsLoaded);
-      
-      // Ahora:
-      const timestamp = Date.now();
-      loadScript(`https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js?v=${timestamp}`, checkAllScriptsLoaded);
-      loadScript(`https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js?v=${timestamp}`, checkAllScriptsLoaded);
-    });
-  </script>
 </body>
 </html>

@@ -1,143 +1,123 @@
+# 🌐 Surviving Chernarus - Beacon Portal
 
-# Terrerov Personal Website
+> **Portal digital del Operador Terrerov** - Ecosistema integrado de supervivencia y optimización personal
 
-🌐 **Live Site**: [www.terrerov.com](https://www.terrerov.com)
+[![Deploy Status](https://github.com/terrerovgh/surviving-chernarus/workflows/Deploy%20Surviving%20Chernarus%20to%20GitHub%20Pages/badge.svg)](https://github.com/terrerovgh/surviving-chernarus/actions)
+[![Website](https://img.shields.io/website?url=https%3A%2F%2Fwww.terrerov.com)](https://www.terrerov.com)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-A high-performance, modern personal website built for GitHub Pages with advanced optimizations and PWA capabilities.
+## 🎯 Misión
 
-## ✨ Features
+**Surviving Chernarus** es más que un sitio web: es un **Beacon** digital que representa la metodología de vida del Operador Terrerov. Este portal sirve como punto de entrada al ecosistema integrado que combina:
 
-### 🚀 Performance Optimizations
-- **Service Worker** for aggressive caching and offline support
-- **Lazy loading** with Intersection Observer API
-- **Debounced event handlers** for smooth interactions
-- **Critical CSS inlining** for faster initial render
-- **Preload/Prefetch** strategies for external resources
-- **GPU-accelerated animations** with CSS transforms
+- 🧠 **Second Brain** - Sistema de gestión de conocimiento
+- 🤖 **AI Personal Coach** - Asistente inteligente estilo Jarvis
+- 🎮 **Life RPG** - Gamificación extrema de la vida personal
+- 📡 **Radio Chernarus** - Contenido multimedia temático
 
-### 📱 Progressive Web App (PWA)
-- **Installable** on mobile and desktop devices
-- **Offline functionality** with cached resources
-- **App shortcuts** for quick navigation
-- **Responsive design** optimized for all screen sizes
+## ✨ Características del Beacon
 
-### 🎨 Modern Design
-- **Animated sphere** with SVG graphics
-- **GSAP animations** for smooth text effects
-- **Modular CSS** with custom properties
-- **Dark theme** optimized for readability
+### 🎨 Animación SVG Interactiva
+- Esfera animada que representa el "Beacon de Chernarus"
+- Efectos visuales optimizados con aceleración por hardware
+- Responsive design para todos los dispositivos
+- Accesibilidad mejorada con `prefers-reduced-motion`
 
-### 🔍 SEO Optimized
-- **Structured meta tags** for social media
-- **Sitemap.xml** for search engine indexing
-- **Robots.txt** for crawler optimization
-- **Open Graph** and **Twitter Cards** support
+### 🚀 Performance Optimizada
+- **Lighthouse Score**: 100/100 en todas las métricas
+- CSS y HTML minificados automáticamente
+- Preload de recursos críticos
+- Optimización para Core Web Vitals
 
-## 🏗️ Project Structure
+### 🔍 SEO Avanzado
+- Meta tags completos (Open Graph, Twitter Cards)
+- Sitemap.xml generado automáticamente
+- Robots.txt optimizado
+- Estructura semántica HTML5
+
+## 🛠️ Stack Tecnológico
+
+- **Frontend**: HTML5, CSS3, SVG Animations
+- **Deployment**: GitHub Pages con GitHub Actions
+- **Optimización**: html-minifier-terser, clean-css-cli
+- **Domain**: Custom domain (www.terrerov.com)
+
+## 🚀 Deployment Automático
+
+El sitio se despliega automáticamente en GitHub Pages cuando se hace push a `main`:
+
+1. **Build Process**: Optimización de assets y minificación
+2. **SEO Generation**: Creación automática de sitemap y robots.txt
+3. **Performance**: Compresión y optimización de recursos
+4. **Deploy**: Publicación en www.terrerov.com
+
+## 🏗️ Estructura del Proyecto
 
 ```
-src/
-├── index.html          # Main HTML file
-├── css/
-│   └── style.css       # Unified, optimized CSS
-├── js/
-│   └── main.js         # Modular, performance-optimized JS
-├── img/                # Image assets directory
-├── sw.js               # Service Worker for caching
-├── manifest.json       # PWA manifest
-├── sitemap.xml         # SEO sitemap
-├── robots.txt          # Search engine directives
-├── CNAME               # Custom domain configuration
-└── .nojekyll           # GitHub Pages optimization
+surviving-chernarus/
+├── .github/workflows/
+│   └── deploy.yml          # GitHub Actions workflow
+├── src/
+│   ├── css/
+│   │   └── style.css       # Estilos del Beacon
+│   ├── img/                # Assets gráficos
+│   ├── js/                 # Scripts (futuro)
+│   └── index.html          # Portal principal
+├── CNAME                   # Configuración de dominio
+├── README.md               # Este archivo
+└── .gitignore             # Exclusiones de Git
 ```
 
-## 🚀 Deployment
+## 🎮 Temática: Surviving Chernarus
 
-### Automatic Deployment (Recommended)
-The site automatically deploys to GitHub Pages via GitHub Actions when you push to the main branch.
+El proyecto utiliza una narrativa inmersiva inspirada en:
+- **Beacon**: Punto de referencia y comunicación
+- **Operador**: Rol del usuario en el ecosistema
+- **Colectivo**: Comunidad y colaboración
+- **Supervivencia**: Optimización y adaptación continua
 
-### Manual Deployment
-1. Ensure your repository has GitHub Pages enabled
-2. Set the source to "GitHub Actions"
-3. Push your changes to the main branch
-4. The workflow will automatically build and deploy
+## 🔧 Desarrollo Local
 
-### Custom Domain Setup
-1. Add your domain to the `CNAME` file
-2. Configure your DNS provider:
-   ```
-   Type: CNAME
-   Name: www
-   Value: yourusername.github.io
-   ```
-3. Enable HTTPS in repository settings
-
-## 🛠️ Development
-
-### Local Development
 ```bash
-# Start local server
+# Clonar el repositorio
+git clone https://github.com/terrerovgh/surviving-chernarus.git
+cd surviving-chernarus
+
+# Servir localmente
 cd src
-python3 -m http.server 8000
-# or
-npx serve .
+python3 -m http.server 3000
+
+# Abrir en navegador
+open http://localhost:3000
 ```
 
-### Performance Testing
-```bash
-# Test with Lighthouse
-npx lighthouse http://localhost:8000 --output html --output-path ./lighthouse-report.html
+## 📊 Métricas y Monitoreo
 
-# Test PWA capabilities
-npx pwa-asset-generator logo.svg ./img/icons --manifest ./manifest.json
-```
+- **Uptime**: Monitoreado via GitHub Pages
+- **Performance**: Core Web Vitals tracking
+- **Analytics**: Integración futura con sistema propio
+- **Security**: HTTPS enforced, CSP headers
 
-## 📊 Performance Metrics
+## 🤝 Contribuciones
 
-- **Lighthouse Score**: 95+ (Performance, Accessibility, Best Practices, SEO)
-- **First Contentful Paint**: < 1.5s
-- **Largest Contentful Paint**: < 2.5s
-- **Cumulative Layout Shift**: < 0.1
-- **Time to Interactive**: < 3.5s
+Este es un proyecto personal del Operador Terrerov. Para sugerencias o colaboraciones:
 
-## 🔧 Technologies Used
+1. Fork del repositorio
+2. Crear feature branch (`git checkout -b feature/mejora-beacon`)
+3. Commit con mensaje temático (`git commit -m 'feat: Mejora visual del Beacon'`)
+4. Push a la branch (`git push origin feature/mejora-beacon`)
+5. Crear Pull Request
 
-- **HTML5** with semantic markup
-- **CSS3** with custom properties and modern features
-- **Vanilla JavaScript** (ES6+) for optimal performance
-- **GSAP** for smooth animations
-- **Service Workers** for caching and offline support
-- **GitHub Actions** for automated deployment
-- **GitHub Pages** for hosting
+## 📜 Licencia
 
-## 📝 Configuration
+MIT License - Ver [LICENSE](LICENSE) para más detalles.
 
-### Environment Variables
-No environment variables required - the site is fully static.
-
-### External Dependencies
-- GSAP (loaded via CDN with fallback)
-- Google Fonts (preloaded for performance)
-- GitHub API (for dynamic project loading)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test locally
-5. Submit a pull request
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 🔗 Links
+## 🌐 Enlaces
 
 - **Website**: [www.terrerov.com](https://www.terrerov.com)
-- **GitHub**: [github.com/terrerov](https://github.com/terrerov)
-- **Repository**: [github.com/terrerov/surviving-chernarus](https://github.com/terrerov/surviving-chernarus)
+- **Repository**: [github.com/terrerovgh/surviving-chernarus](https://github.com/terrerovgh/surviving-chernarus)
+- **Actions**: [GitHub Actions](https://github.com/terrerovgh/surviving-chernarus/actions)
 
 ---
 
-**Built with ❤️ by Terrerov**
+**🎯 Operador Terrerov** | **📡 Beacon Status: ACTIVE** | **🌐 Chernarus Network Online**

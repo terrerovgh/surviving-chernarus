@@ -1,10 +1,11 @@
-name: Deploy to GitHub Pages
+name: Deploy Surviving Chernarus to GitHub Pages
 
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+    paths:
+      - 'src/**'
+      - '.github/workflows/deploy.yml'
   workflow_dispatch:
 
 permissions:
@@ -16,25 +17,81 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  NODE_VERSION: '18'
+
 jobs:
-  # Build job
+  # Build and optimize job
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 📡 Checkout Beacon Repository
         uses: actions/checkout@v4
         
-      - name: Setup Pages
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: 📦 Install dependencies
+        run: |
+          npm init -y
+          npm install --save-dev html-minifier-terser clean-css-cli
+        
+      - name: 🛠️ Setup Pages Configuration
         uses: actions/configure-pages@v4
         
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./src
-          destination: ./_site
+      - name: 🚀 Build and Optimize Beacon
+        run: |
+          # Crear directorio de build
+          mkdir -p _site
           
-      - name: Upload artifact
+          # Copiar archivos estáticos
+          cp -r src/* _site/
+          
+          # Optimizar CSS
+          npx cleancss -o _site/css/style.css _site/css/style.css
+          
+          # Optimizar HTML
+          npx html-minifier-terser \
+            --collapse-whitespace \
+            --remove-comments \
+            --remove-optional-tags \
+            --remove-redundant-attributes \
+            --remove-script-type-attributes \
+            --remove-tag-whitespace \
+            --use-short-doctype \
+            --minify-css true \
+            --minify-js true \
+            -o _site/index.html _site/index.html
+          
+          # Crear robots.txt
+          echo "User-agent: *" > _site/robots.txt
+          echo "Allow: /" >> _site/robots.txt
+          echo "Sitemap: https://www.terrerov.com/sitemap.xml" >> _site/robots.txt
+          
+          # Crear sitemap.xml básico
+          cat > _site/sitemap.xml << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+            <url>
+              <loc>https://www.terrerov.com/</loc>
+              <lastmod>$(date -u +%Y-%m-%d)</lastmod>
+              <changefreq>weekly</changefreq>
+              <priority>1.0</priority>
+            </url>
+          </urlset>
+          EOF
+          
+          # Mostrar estructura final
+          echo "📁 Estructura del sitio construido:"
+          find _site -type f | head -20
+          
+      - name: 📤 Upload Beacon Artifact
         uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
 
   # Deployment job
   deploy:
@@ -45,6 +102,12 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
     steps:
-      - name: Deploy to GitHub Pages
+      - name: 🌐 Deploy Beacon to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        
+      - name: 📡 Beacon Deployment Complete
+        run: |
+          echo "🎯 Surviving Chernarus Beacon deployed successfully!"
+          echo "🌐 URL: ${{ steps.deployment.outputs.page_url }}"
+          echo "📅 Deployed at: $(date -u)"

@@ -1,89 +1,77 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-#  🏴‍☠️ CHERNARUS SURVIVAL PROTOCOL - GIT EXCLUSION MANIFEST 🏴‍☠️
-# ═══════════════════════════════════════════════════════════════════════════════
-#  Mission: Protect classified intel from version control exposure
-#  Status: CLASSIFIED - Operator Terrerov Access Only
-# ═══════════════════════════════════════════════════════════════════════════════
+# Surviving Chernarus - Archivos a ignorar
 
-# Trae AI IDE - Configuraciones locales clasificadas
-.trae/
+# Build outputs
+_site/
+dist/
+build/
 
-# Archivos temporales del sistema
-*.tmp
-*.temp
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE and editor files
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-# Logs de operaciones
+# Logs
+logs
 *.log
-logs/
 
-# Archivos de backup y respaldos
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Temporary folders
+tmp/
+temp/
+
+# GitHub Pages
+.jekyll-cache/
+.jekyll-metadata
+
+# Backup files
 *.bak
 *.backup
 *.orig
 
-# Configuraciones locales sensibles
-.env
-.env.local
-.env.*.local
-config.local.*
+# Compressed files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
 
-# Claves y certificados (NUNCA versionar)
-*.key
-*.pem
-*.crt
-*.p12
-*.pfx
-ssh_keys/
-certs/
-
-# Archivos de contraseñas
-passwords.txt
-secrets.txt
-*.passwd
-
-# Cache y archivos compilados
-*.cache
-*.pyc
-__pycache__/
-*.o
-*.so
-*.dylib
-
-# Directorios de dependencias
-node_modules/
-venv/
-.venv/
-
-# Archivos de configuración de IDE locales
-.vscode/
-.idea/
-*.sublime-*
-
-# Archivos específicos de Arch Linux
-*.pkg.tar.xz
-*.pkg.tar.zst
-
-pkg/
-
-# Archivos de configuración de red sensibles
-wpa_supplicant.conf
-networkmanager.conf
-
-# Scripts con credenciales embebidas
-*_with_secrets.sh
-*_private.sh
-
-# Archivos de estado del sistema
-/var/
-/tmp/
-/proc/
-/sys/
-
-# ═══════════════════════════════════════════════════════════════════════════════
-#  🔒 PROTOCOLO DE SEGURIDAD: Mantener intel clasificado fuera del repositorio
-# ═══════════════════════════════════════════════════════════════════════════════
+# Beacon specific ignores
+*.beacon-cache
+.chernarus-temp/
