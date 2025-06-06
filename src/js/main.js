@@ -152,24 +152,24 @@ function initGlitchEffects() {
 function addGlitchEffect() {
     const glitchOverlay = document.querySelector('.glitch-overlay');
     
-    // Increase the opacity for a brief moment
+    // Increase the opacity for a brief moment, but keep it subtle
     gsap.to(glitchOverlay, {
-        opacity: 0.15,
+        opacity: 0.08, // Reduced from 0.15 for a more subtle effect
         duration: 0.1,
         ease: 'power1.inOut',
         onComplete: () => {
             // Add some random transform distortion
             gsap.to(glitchOverlay, {
-                skewX: `${(Math.random() - 0.5) * 10}deg`,
-                skewY: `${(Math.random() - 0.5) * 5}deg`,
-                x: `${(Math.random() - 0.5) * 10}px`,
-                y: `${(Math.random() - 0.5) * 10}px`,
+                skewX: `${(Math.random() - 0.5) * 5}deg`, // Reduced from 10 for subtlety
+                skewY: `${(Math.random() - 0.5) * 3}deg`, // Reduced from 5 for subtlety
+                x: `${(Math.random() - 0.5) * 5}px`, // Reduced from 10 for subtlety
+                y: `${(Math.random() - 0.5) * 5}px`, // Reduced from 10 for subtlety
                 duration: 0.1
             });
             
             // Return to normal
             gsap.to(glitchOverlay, {
-                opacity: 0.03,
+                opacity: 0.02, // Reduced for a more subtle baseline effect
                 skewX: '0deg',
                 skewY: '0deg',
                 x: 0,
@@ -180,14 +180,14 @@ function addGlitchEffect() {
         }
     });
     
-    // Also add a brief glitch to the terminal text
+    // Also add a brief glitch to the terminal text, but more refined
     const terminalTexts = document.querySelectorAll('.terminal-line, .menu-text, .modal-title');
     terminalTexts.forEach(text => {
-        if (Math.random() > 0.7) { // Only affect some elements
+        if (Math.random() > 0.8) { // Reduced frequency (from 0.7) for more selective effects
             gsap.to(text, {
-                skewX: `${(Math.random() - 0.5) * 20}deg`,
-                color: 'rgba(0, 255, 120, 0.9)',
-                textShadow: '0 0 5px rgba(0, 255, 120, 0.8)',
+                skewX: `${(Math.random() - 0.5) * 10}deg`, // Reduced from 20 for subtlety
+                color: 'rgba(88, 166, 255, 0.9)', // Updated to match new accent color
+                textShadow: '0 0 5px rgba(88, 166, 255, 0.6)', // Updated to match new accent color
                 duration: 0.1,
                 onComplete: () => {
                     gsap.to(text, {
@@ -242,4 +242,116 @@ document.addEventListener('keydown', (e) => {
             }
         }
     }
+});
+
+// Debounce function for performance optimization
+function debounce(func, wait = 20, immediate = false) {
+    let timeout;
+    return function() {
+        const context = this, args = arguments;
+        const later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+}
+
+// Lazy load modals for better performance
+function initLazyLoadModals() {
+    const menuItems = document.querySelectorAll('.menu-item');
+    
+    menuItems.forEach(item => {
+        const target = item.getAttribute('data-target');
+        const modalId = `${target}-modal`;
+        
+        // Only initialize the modal content when it's first opened
+        item.addEventListener('click', function initModal() {
+            const modal = document.getElementById(modalId);
+            
+            if (modal) {
+                // Initialize any heavy content or animations here
+                if (target === 'projects') {
+                    // Add hover effects to project items
+                    const projectItems = modal.querySelectorAll('.project-item');
+                    projectItems.forEach(project => {
+                        project.addEventListener('mouseenter', () => {
+                            gsap.to(project, {
+                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                borderLeftColor: 'var(--accent-color)',
+                                x: 2,
+                                duration: 0.2
+                            });
+                        });
+                        
+                        project.addEventListener('mouseleave', () => {
+                            gsap.to(project, {
+                                backgroundColor: 'transparent',
+                                borderLeftColor: 'transparent',
+                                x: 0,
+                                duration: 0.2
+                            });
+                        });
+                    });
+                }
+                
+                // Remove this initialization listener after first use
+                this.removeEventListener('click', initModal);
+            }
+        });
+    });
+}
+
+// Improve accessibility with keyboard navigation
+function initKeyboardNavigation() {
+    // Handle ESC key to close modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const activeModal = document.querySelector('.modal.active');
+            if (activeModal) {
+                closeModal(activeModal);
+            }
+        }
+    });
+    
+    // Add focus trap inside modals for accessibility
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        const firstFocusable = focusableElements[0];
+        const lastFocusable = focusableElements[focusableElements.length - 1];
+        
+        modal.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab') {
+                // If shift + tab and on first element, go to last
+                if (e.shiftKey && document.activeElement === firstFocusable) {
+                    e.preventDefault();
+                    lastFocusable.focus();
+                }
+                // If tab and on last element, go to first
+                else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                    e.preventDefault();
+                    firstFocusable.focus();
+                }
+            }
+        });
+    });
+}
+
+// Initialize performance optimizations
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize lazy loading for modals
+    initLazyLoadModals();
+    
+    // Initialize keyboard navigation
+    initKeyboardNavigation();
+    
+    // Use debounce for scroll events
+    window.addEventListener('scroll', debounce(() => {
+        // Handle any scroll-based effects here
+        addGlitchEffect();
+    }, 50));
 });
