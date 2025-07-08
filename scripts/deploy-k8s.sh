@@ -49,6 +49,17 @@ check_network() {
     fi
 }
 
+# Función para obtener el hostname actual
+get_hostname() {
+    if check_command hostname; then
+        hostname
+    elif [[ -f /etc/hostname ]]; then
+        cat /etc/hostname
+    else
+        uname -n
+    fi
+}
+
 # Verificar que estamos en el directorio correcto
 if [[ ! -f "kubernetes/core/namespace.yaml" ]]; then
     error "Este script debe ejecutarse desde el directorio raíz del proyecto"
@@ -60,6 +71,16 @@ if ! command -v kubectl &> /dev/null; then
     error "kubectl no está instalado o no está en el PATH"
     echo "💡 Instala kubectl con: sudo pacman -S kubectl (Arch Linux)"
     exit 1
+fi
+
+# Configurar KUBECONFIG si estamos en el master
+CURRENT_HOSTNAME=$(get_hostname)
+if [[ "$CURRENT_HOSTNAME" == "rpi" ]]; then
+    export KUBECONFIG="$HOME/.kube/config"
+    log "🔧 Configurando KUBECONFIG para el nodo master (rpi)"
+elif [[ -f "$HOME/.kube/config" ]]; then
+    export KUBECONFIG="$HOME/.kube/config"
+    log "🔧 Usando kubeconfig local"
 fi
 
 # Verificar herramientas de red
@@ -86,7 +107,7 @@ if [[ "$CLUSTER_ACCESSIBLE" == "false" ]]; then
     warning "Diagnóstico de problemas:"
 
     # Verificar si estamos en el master
-    if [[ "$(hostname)" == "rpi" ]]; then
+    if [[ "$CURRENT_HOSTNAME" == "rpi" ]]; then
         echo "🔧 Estás en el nodo master (rpi). Verificando configuración local..."
 
         # Verificar si existe kubeconfig
