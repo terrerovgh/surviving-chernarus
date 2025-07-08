@@ -104,30 +104,36 @@ graph TB
 
 ### 📋 Prerrequisitos
 
-- **Docker & Docker Compose**: v20.10+
+- **Kubernetes Cluster**: K3s/K8s con kubectl configurado
+- **Docker & Docker Compose**: v20.10+ (para desarrollo local)
 - **Git**: Para clonar el repositorio
 - **Bash**: Scripts de automatización
-- **Opcional**: Kubernetes cluster para deployment avanzado
 
-### ⚡ Despliegue en 5 Minutos
+### ⚡ Despliegue en Kubernetes (Producción)
 
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/terrerovgh/surviving-chernarus.git
 cd surviving-chernarus
 
-# 2. Configurar entorno
+# 2. Configurar secretos de Kubernetes
+./scripts/setup-github-actions.sh
+
+# 3. Desplegar en Kubernetes
+./scripts/deploy-k8s.sh
+
+# 4. Verificar estado
+kubectl get pods -n surviving-chernarus
+```
+
+### 🐳 Desarrollo Local con Docker
+
+```bash
+# Para desarrollo y testing local
 cp .env.example .env
 # Editar .env con tus valores
-
-# 3. Procesar configuraciones
 ./scripts/process-configs.sh
-
-# 4. Levantar la infraestructura
 docker-compose up -d
-
-# 5. Verificar estado
-docker-compose ps
 ```
 
 ### 🎯 Acceder a los Servicios

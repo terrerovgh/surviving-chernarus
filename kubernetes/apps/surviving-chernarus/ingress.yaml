@@ -1,0 +1,100 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chernarus-ingress
+  namespace: surviving-chernarus
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+spec:
+  tls:
+  - hosts:
+    - terrerov.com
+    - www.terrerov.com
+    - hq.terrerov.com
+    - n8n.terrerov.com
+    - traefik.terrerov.com
+    secretName: chernarus-tls-cert
+  rules:
+  # Main domain - Hugo Dashboard
+  - host: terrerov.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hugo-dashboard-service
+            port:
+              number: 80
+  - host: www.terrerov.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hugo-dashboard-service
+            port:
+              number: 80
+  # HQ Dashboard
+  - host: hq.terrerov.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hugo-dashboard-service
+            port:
+              number: 80
+  # n8n Automation Engine
+  - host: n8n.terrerov.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: n8n-service
+            port:
+              number: 5678
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-dashboard-ingress
+  namespace: chernarus-system
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+spec:
+  tls:
+  - hosts:
+    - traefik.terrerov.com
+    secretName: traefik-tls-cert
+  rules:
+  - host: traefik.terrerov.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: traefik-dashboard-service
+            port:
+              number: 8080
+---
+# Middleware para redirigir HTTP a HTTPS
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: default
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

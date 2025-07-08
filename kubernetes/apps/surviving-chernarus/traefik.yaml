@@ -1,0 +1,239 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: traefik-ingress-controller
+  namespace: chernarus-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: traefik-ingress-controller
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - traefik.containo.us
+    resources:
+      - middlewares
+      - middlewaretcps
+      - ingressroutes
+      - traefikservices
+      - ingressroutetcps
+      - ingressrouteudps
+      - tlsoptions
+      - tlsstores
+      - serverstransports
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: traefik-ingress-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: traefik-ingress-controller
+    namespace: chernarus-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-config
+  namespace: chernarus-system
+data:
+  traefik.yml: |
+    api:
+      dashboard: true
+      insecure: true
+
+    entryPoints:
+      web:
+        address: ":80"
+      websecure:
+        address: ":443"
+
+    providers:
+      kubernetes:
+        endpoints:
+        - "https://kubernetes.default.svc:443"
+
+    certificatesResolvers:
+      letsencrypt:
+        acme:
+          email: contacto@terrerov.com
+          storage: /data/acme.json
+          dnsChallenge:
+            provider: cloudflare
+            resolvers:
+              - "1.1.1.1:53"
+              - "8.8.8.8:53"
+          caServer: https://acme-v02.api.letsencrypt.org/directory
+
+    log:
+      level: INFO
+      format: json
+
+    accessLog:
+      format: json
+
+    metrics:
+      prometheus: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: traefik-pvc
+  namespace: chernarus-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: local-path
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik-deployment
+  namespace: chernarus-system
+  labels:
+    app: traefik
+    component: ingress
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+        component: ingress
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      containers:
+      - name: traefik
+        image: traefik:v2.10
+        args:
+        - --configfile=/etc/traefik/traefik.yml
+        ports:
+        - containerPort: 80
+          name: web
+        - containerPort: 443
+          name: websecure
+        - containerPort: 8080
+          name: dashboard
+        env:
+        - name: CLOUDFLARE_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: chernarus-secrets
+              key: CLOUDFLARE_EMAIL
+        - name: CF_DNS_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: chernarus-secrets
+              key: CF_DNS_API_TOKEN
+        volumeMounts:
+        - name: traefik-config
+          mountPath: /etc/traefik
+        - name: traefik-storage
+          mountPath: /data
+        livenessProbe:
+          httpGet:
+            path: /ping
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ping
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+      volumes:
+      - name: traefik-config
+        configMap:
+          name: traefik-config
+      - name: traefik-storage
+        persistentVolumeClaim:
+          claimName: traefik-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-service
+  namespace: chernarus-system
+  labels:
+    app: traefik
+    component: ingress
+spec:
+  type: LoadBalancer
+  selector:
+    app: traefik
+  ports:
+  - port: 80
+    targetPort: 80
+    name: web
+  - port: 443
+    targetPort: 443
+    name: websecure
+  - port: 8080
+    targetPort: 8080
+    name: dashboard
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-dashboard-service
+  namespace: chernarus-system
+  labels:
+    app: traefik
+    component: dashboard
+spec:
+  selector:
+    app: traefik
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  type: ClusterIP

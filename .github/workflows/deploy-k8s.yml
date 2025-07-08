@@ -1,0 +1,245 @@
+name: 🚀 Deploy Surviving Chernarus to Kubernetes
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - "kubernetes/**"
+      - "scripts/**"
+      - ".github/workflows/**"
+  pull_request:
+    branches: [main, master]
+    paths:
+      - "kubernetes/**"
+      - "scripts/**"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+      force_deploy:
+        description: "Force deployment even if no changes detected"
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CLUSTER_NAME: chernarus-cluster
+  CLUSTER_ZONE: europe-west1-a
+
+jobs:
+  # ============================================================================
+  # JOB 1: Validation and Security Checks
+  # ============================================================================
+  validate:
+    name: 🔍 Validate Manifests
+    runs-on: ubuntu-latest
+    outputs:
+      should_deploy: ${{ steps.changes.outputs.kubernetes }}
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔍 Check for Kubernetes Changes
+        uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            kubernetes:
+              - 'kubernetes/**'
+              - 'scripts/deploy-k8s.sh'
+
+      - name: ⚙️ Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.28.0"
+
+      - name: 🧪 Validate Kubernetes Manifests
+        run: |
+          echo "🔍 Validating Kubernetes manifests..."
+          find kubernetes/ -name "*.yaml" -o -name "*.yml" | while read -r file; do
+            echo "Validating: $file"
+            kubectl --dry-run=client apply -f "$file" || exit 1
+          done
+          echo "✅ All manifests are valid!"
+
+      - name: 🔐 Security Scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "config"
+          scan-ref: "kubernetes/"
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: 📊 Upload Trivy Results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+  # ============================================================================
+  # JOB 2: Deploy to Kubernetes Cluster
+  # ============================================================================
+  deploy:
+    name: 🚀 Deploy to Kubernetes
+    runs-on: ubuntu-latest
+    needs: validate
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch') ||
+      (needs.validate.outputs.should_deploy == 'true')
+
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+      url: https://terrerov.com
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "v1.28.0"
+
+      - name: 🔑 Configure Kubernetes Access
+        run: |
+          # Crear directorio para kubeconfig
+          mkdir -p ~/.kube
+
+          # Configurar kubeconfig desde secretos de GitHub
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+
+          # Verificar conectividad
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: 🔐 Create Kubernetes Secrets
+        run: |
+          # Actualizar secretos con valores reales desde GitHub Secrets
+          kubectl create secret generic chernarus-secrets \
+            --from-literal=POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
+            --from-literal=N8N_DB_POSTGRESDB_PASSWORD="${{ secrets.N8N_DB_PASSWORD }}" \
+            --from-literal=N8N_ENCRYPTION_KEY="${{ secrets.N8N_ENCRYPTION_KEY }}" \
+            --from-literal=CLOUDFLARE_EMAIL="${{ secrets.CLOUDFLARE_EMAIL }}" \
+            --from-literal=CF_DNS_API_TOKEN="${{ secrets.CF_DNS_API_TOKEN }}" \
+            --from-literal=TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}" \
+            --from-literal=OPENAI_API_KEY="${{ secrets.OPENAI_API_KEY }}" \
+            --namespace=surviving-chernarus \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: 🚀 Deploy to Kubernetes
+        run: |
+          echo "🚀 Deploying Surviving Chernarus to Kubernetes..."
+          chmod +x scripts/deploy-k8s.sh
+          ./scripts/deploy-k8s.sh
+
+      - name: ⏳ Wait for Deployment
+        run: |
+          echo "⏳ Waiting for all deployments to be ready..."
+
+          # Esperar por cada deployment
+          kubectl wait --for=condition=available --timeout=600s \
+            deployment/postgresql-deployment -n surviving-chernarus
+
+          kubectl wait --for=condition=available --timeout=600s \
+            deployment/n8n-deployment -n surviving-chernarus
+
+          kubectl wait --for=condition=available --timeout=600s \
+            deployment/traefik-deployment -n chernarus-system
+
+          kubectl wait --for=condition=available --timeout=600s \
+            deployment/hugo-dashboard-deployment -n surviving-chernarus
+
+      - name: 🔍 Health Check
+        run: |
+          echo "🔍 Performing health checks..."
+
+          # Verificar que todos los pods estén corriendo
+          kubectl get pods -n surviving-chernarus
+          kubectl get pods -n chernarus-system
+
+          # Verificar servicios
+          kubectl get services -n surviving-chernarus
+          kubectl get services -n chernarus-system
+
+          # Verificar ingress
+          kubectl get ingress -n surviving-chernarus
+
+      - name: 📊 Deployment Summary
+        run: |
+          echo "📊 Deployment Summary:"
+          echo "====================="
+
+          # Estado de los pods
+          echo "🔹 Pods Status:"
+          kubectl get pods -n surviving-chernarus -o wide
+          kubectl get pods -n chernarus-system -o wide
+
+          # Estado de los servicios
+          echo ""
+          echo "🔹 Services:"
+          kubectl get services -n surviving-chernarus
+          kubectl get services -n chernarus-system
+
+          # Información del ingress
+          echo ""
+          echo "🔹 Ingress:"
+          kubectl get ingress -n surviving-chernarus -o wide
+
+          # IP del Load Balancer
+          TRAEFIK_IP=$(kubectl get service traefik-service -n chernarus-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "Pending")
+          echo ""
+          echo "🔹 Load Balancer IP: $TRAEFIK_IP"
+
+      - name: 🎯 Deployment Complete
+        run: |
+          echo "🎯 Surviving Chernarus deployment completed successfully!"
+          echo ""
+          echo "🔗 Access URLs:"
+          echo "   🏢 HQ Dashboard: https://terrerov.com"
+          echo "   🤖 n8n Automation: https://n8n.terrerov.com"
+          echo "   🌐 Traefik Dashboard: https://traefik.terrerov.com"
+          echo ""
+          echo "📡 The infrastructure is now running on Kubernetes!"
+
+  # ============================================================================
+  # JOB 3: Notification
+  # ============================================================================
+  notify:
+    name: 📢 Send Notifications
+    runs-on: ubuntu-latest
+    needs: [validate, deploy]
+    if: always()
+
+    steps:
+      - name: 📢 Notify Deployment Status
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          channel: "#chernarus-ops"
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "${{ job.status }}" === "success" ? "good" : "${{ job.status }}" === "failure" ? "danger" : "warning",
+                "blocks": [{
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": `🚀 Surviving Chernarus Deployment ${${{ job.status }} === 'success' ? '✅ Success' : '❌ Failed'}\n*Environment:* ${{ github.event.inputs.environment || 'production' }}\n*Commit:* \`${process.env.AS_COMMIT.slice(0, 8)}\`\n*Author:* ${process.env.AS_AUTHOR}`
+                  }
+                }]
+              }]
+            }

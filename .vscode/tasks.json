@@ -395,6 +395,50 @@
       },
       "problemMatcher": [],
       "detail": "Clean up backup files older than 30 days"
+    },
+
+    // === Kubernetes Deployment Tasks ===
+    {
+      "label": "🚀 Deploy to Kubernetes",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/deploy-temp.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "detail": "Deploy Surviving Chernarus to Kubernetes cluster (shows setup instructions)"
+    },
+    {
+      "label": "🔑 Setup kubectl Access",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/get-kubeconfig.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "detail": "Configure kubectl to access the Kubernetes cluster from master"
+    },
+    {
+      "label": "📊 K8s Cluster Status",
+      "type": "shell",
+      "command": "kubectl",
+      "args": ["get", "all", "-A"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "detail": "Show status of all Kubernetes resources across namespaces"
     }
   ],
 

@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chernarus-env-config
+  namespace: surviving-chernarus
+data:
+  # Database configuration
+  POSTGRES_HOST: "postgresql-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "chernarus_db"
+  POSTGRES_USER: "chernarus_user"
+
+  # N8N configuration
+  N8N_HOST: "n8n-service"
+  N8N_PORT: "5678"
+  N8N_DB_TYPE: "postgresdb"
+  N8N_DB_POSTGRESDB_HOST: "postgresql-service"
+  N8N_DB_POSTGRESDB_PORT: "5432"
+  N8N_DB_POSTGRESDB_DATABASE: "n8n_db"
+  N8N_DB_POSTGRESDB_USER: "n8n_user"
+  N8N_PROTOCOL: "http"
+
+  # Traefik configuration
+  TRAEFIK_API_DASHBOARD: "true"
+  TRAEFIK_API_INSECURE: "true"
+  TRAEFIK_LOG_LEVEL: "INFO"
+
+  # Domain configuration
+  YOUR_DOMAIN_NAME: "terrerov.com"
+
+  # Hugo configuration
+  HUGO_BASEURL: "https://terrerov.com"
+  HUGO_BUILD_DIR: "public"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: chernarus-secrets
+  namespace: surviving-chernarus
+type: Opaque
+data:
+  # Base64 encoded secrets (these should be updated with real values)
+  POSTGRES_PASSWORD: Y2hlcm5hcnVzX3Bhc3N3b3Jk  # chernarus_password
+  N8N_DB_POSTGRESDB_PASSWORD: bjhuX3Bhc3N3b3Jk  # n8n_password
+  N8N_ENCRYPTION_KEY: Y2hlcm5hcnVzX2VuY3J5cHRpb25fa2V5  # chernarus_encryption_key
+  CLOUDFLARE_EMAIL: Y29udGFjdG9AdGVycmVyb3YuY29t  # contacto@terrerov.com
+  CF_DNS_API_TOKEN: eW91cl9jbG91ZGZsYXJlX3Rva2Vu  # your_cloudflare_token
+  TELEGRAM_BOT_TOKEN: eW91cl90ZWxlZ3JhbV90b2tlbg==  # your_telegram_token
+  OPENAI_API_KEY: eW91cl9vcGVuYWlfa2V5  # your_openai_key
