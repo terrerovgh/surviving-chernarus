@@ -297,7 +297,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "echo '🛡️ Checking Pi-hole DNS...' && dig @localhost example.com +short || echo 'Pi-hole DNS not responding'"
+        "echo '🛡️ Checking Pi-hole DNS...' && dig @localhost terrerov.com +short || echo 'Pi-hole DNS not responding'"
       ],
       "group": "test",
       "presentation": {
@@ -366,7 +366,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "echo '🔍 Network Diagnostics...' && echo 'rpi connectivity:' && ping -c 3 192.168.0.2 && echo 'lenlab connectivity:' && ping -c 3 192.168.0.3 && echo 'Internet connectivity:' && ping -c 3 8.8.8.8 && echo 'DNS resolution:' && nslookup example.com"
+        "echo '🔍 Network Diagnostics...' && echo 'rpi connectivity:' && ping -c 3 192.168.0.2 && echo 'lenlab connectivity:' && ping -c 3 192.168.0.3 && echo 'Internet connectivity:' && ping -c 3 8.8.8.8 && echo 'DNS resolution:' && nslookup terrerov.com"
       ],
       "group": "test",
       "presentation": {

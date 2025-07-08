@@ -32,7 +32,7 @@ main() {
         log_warning "Found existing .env file in project directory"
 
         # Check if it contains sensitive data
-        if grep -qE "(real_password|actual_token|github_pat_|@.*\.com)" "$PROJECT_ENV_FILE" 2>/dev/null; then
+        if grep -qE "(terrerov\.com|100Asoledad|github_pat_|real_password|actual_token)" "$PROJECT_ENV_FILE" 2>/dev/null; then
             log_error "⚠️  SECURITY ALERT: .env file contains sensitive information!"
             echo
             echo "This file contains:"

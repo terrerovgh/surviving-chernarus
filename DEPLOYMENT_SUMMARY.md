@@ -2,12 +2,12 @@
 
 ## Estado General
 
-- **Dominio principal:** example.com
+- **Dominio principal:** terrerov.com
 - **Subdominios activos:**
-  - HQ Dashboard: hq.example.com
-  - CubaTattooStudio: cts.example.com
-  - n8n Automation: n8n.example.com
-  - Otros proyectos: \*.example.com
+  - HQ Dashboard: hq.terrerov.com
+  - CubaTattooStudio: cts.terrerov.com
+  - n8n Automation: n8n.terrerov.com
+  - Otros proyectos: \*.terrerov.com
 
 ## Infraestructura y Servicios
 
