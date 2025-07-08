@@ -1,0 +1,107 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cloudflare-ddns-updater
+  namespace: surviving-chernarus
+  labels:
+    app: cloudflare-ddns
+    component: automation
+spec:
+  schedule: "*/15 * * * *"  # Cada 15 minutos
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          nodeSelector:
+            kubernetes.io/arch: amd64  # Ejecutar en lenlab
+          containers:
+          - name: ddns-updater
+            image: alpine:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache curl jq
+
+              # Variables de configuración
+              ZONE_NAME="terrerov.com"
+              SUBDOMINIOS="terrerov.com www hq n8n traefik pihole api"
+
+              # Obtener IP pública actual
+              echo "🌐 Obteniendo IP pública actual..."
+              CURRENT_IP=$(curl -s https://ipv4.icanhazip.com/ || curl -s https://api.ipify.org/)
+
+              if [ -z "$CURRENT_IP" ]; then
+                echo "❌ Error: No se pudo obtener la IP pública"
+                exit 1
+              fi
+
+              echo "📍 IP pública actual: $CURRENT_IP"
+
+              # Obtener Zone ID
+              ZONE_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones?name=$ZONE_NAME" \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                -H "Content-Type: application/json" | \
+                jq -r '.result[0].id')
+
+              if [ "$ZONE_ID" = "null" ]; then
+                echo "❌ Error: No se pudo obtener el Zone ID"
+                exit 1
+              fi
+
+              echo "✅ Zone ID: $ZONE_ID"
+
+              # Actualizar cada subdominio
+              for subdomain in $SUBDOMINIOS; do
+                if [ "$subdomain" = "$ZONE_NAME" ]; then
+                  record_name="$ZONE_NAME"
+                else
+                  record_name="$subdomain.$ZONE_NAME"
+                fi
+
+                echo "🔄 Actualizando $record_name..."
+
+                # Obtener record ID
+                RECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records?name=$record_name&type=A" \
+                  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                  -H "Content-Type: application/json" | \
+                  jq -r '.result[0].id')
+
+                if [ "$RECORD_ID" = "null" ]; then
+                  # Crear nuevo registro
+                  RESPONSE=$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
+                    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    --data "{\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$CURRENT_IP\",\"ttl\":300}")
+                else
+                  # Actualizar registro existente
+                  RESPONSE=$(curl -s -X PUT "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records/$RECORD_ID" \
+                    -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                    -H "Content-Type: application/json" \
+                    --data "{\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$CURRENT_IP\",\"ttl\":300}")
+                fi
+
+                if echo "$RESPONSE" | jq -r '.success' | grep -q true; then
+                  echo "✅ $record_name actualizado"
+                else
+                  echo "❌ Error en $record_name"
+                fi
+
+                sleep 1
+              done
+
+              echo "🎉 Actualización completada!"
+            env:
+            - name: CLOUDFLARE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chernarus-secrets
+                  key: CF_DNS_API_TOKEN
+            - name: CLOUDFLARE_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: chernarus-secrets
+                  key: CLOUDFLARE_EMAIL
+          restartPolicy: OnFailure
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3

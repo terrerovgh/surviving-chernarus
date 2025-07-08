@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-initdb
+  namespace: surviving-chernarus
+data:
+  01-init-n8n-db.sql: |
+    -- Create n8n user and database
+    CREATE USER n8n_user WITH PASSWORD 'n8n_password';
+    CREATE DATABASE n8n_db OWNER n8n_user;
+    GRANT ALL PRIVILEGES ON DATABASE n8n_db TO n8n_user;

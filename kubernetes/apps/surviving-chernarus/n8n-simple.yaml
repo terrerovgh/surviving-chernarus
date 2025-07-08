@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n-deployment
+  namespace: surviving-chernarus
+  labels:
+    app: n8n
+    component: automation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+        component: automation
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      initContainers:
+      - name: fix-permissions
+        image: busybox
+        command: ['sh', '-c', 'chown -R 1000:1000 /home/node/.n8n']
+        volumeMounts:
+        - name: n8n-storage
+          mountPath: /home/node/.n8n
+      - name: wait-for-postgres
+        image: postgres:15-alpine
+        command: ['sh', '-c']
+        args:
+        - |
+          until pg_isready -h postgresql-service -p 5432 -U chernarus_user; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+      containers:
+      - name: n8n
+        image: n8nio/n8n:1.19.4
+        ports:
+        - containerPort: 5678
+        env:
+        - name: DB_TYPE
+          value: "postgresdb"
+        - name: DB_POSTGRESDB_HOST
+          value: "postgresql-service"
+        - name: DB_POSTGRESDB_PORT
+          value: "5432"
+        - name: DB_POSTGRESDB_DATABASE
+          value: "chernarus_db"
+        - name: DB_POSTGRESDB_USER
+          value: "chernarus_user"
+        - name: DB_POSTGRESDB_PASSWORD
+          value: "chernarus_password"
+        - name: N8N_ENCRYPTION_KEY
+          value: "test_encryption_key_32_characters"
+        - name: N8N_USER_MANAGEMENT_DISABLED
+          value: "true"
+        - name: N8N_BASIC_AUTH_ACTIVE
+          value: "false"
+        - name: GENERIC_TIMEZONE
+          value: "Europe/Madrid"
+        - name: WEBHOOK_URL
+          value: "https://n8n.terrerov.com"
+        - name: N8N_EDITOR_BASE_URL
+          value: "https://n8n.terrerov.com"
+        - name: N8N_HOST
+          value: "0.0.0.0"
+        - name: N8N_PORT
+          value: "5678"
+        - name: N8N_PROTOCOL
+          value: "http"
+        volumeMounts:
+        - name: n8n-storage
+          mountPath: /home/node/.n8n
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: n8n-storage
+        persistentVolumeClaim:
+          claimName: n8n-pvc

@@ -1,0 +1,7 @@
+# Comando para unir el worker lenlab al cluster
+# Ejecutar este comando en lenlab como root/sudo:
+
+kubeadm join 192.168.0.2:6443 --token hi4ogq.gbcahta4szvxfgzk --discovery-token-ca-cert-hash sha256:05faa0c5a10540cd5a5f6099b8d0d54cc1536a2c9f1877dd922eb30f10a7eb05
+
+# Si el token expira, generar un nuevo token con:
+# sudo kubeadm token create --print-join-command

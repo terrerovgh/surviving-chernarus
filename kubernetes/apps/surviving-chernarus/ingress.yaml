@@ -7,7 +7,7 @@ metadata:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
     traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
-    traefik.ingress.kubernetes.io/router.middlewares: default-redirect-https@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: surviving-chernarus-redirect-https@kubernetescrd
 spec:
   tls:
   - hosts:
@@ -16,6 +16,7 @@ spec:
     - hq.terrerov.com
     - n8n.terrerov.com
     - traefik.terrerov.com
+    - pihole.terrerov.com
     secretName: chernarus-tls-cert
   rules:
   # Main domain - Hugo Dashboard
@@ -61,6 +62,17 @@ spec:
             name: n8n-service
             port:
               number: 5678
+  # Pi-hole DNS Admin
+  - host: pihole.terrerov.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: pihole-web-service
+            port:
+              number: 80
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -89,7 +101,7 @@ spec:
               number: 8080
 ---
 # Middleware para redirigir HTTP a HTTPS
-apiVersion: traefik.containo.us/v1alpha1
+apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
   name: redirect-https

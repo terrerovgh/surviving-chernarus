@@ -1,0 +1,189 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pihole-secret
+  namespace: surviving-chernarus
+type: Opaque
+data:
+  webpassword: Y2hlcm5hcnVzX3BpaG9sZV9hZG1pbg==  # chernarus_pihole_admin (base64)
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-custom-dns
+  namespace: surviving-chernarus
+data:
+  custom.list: |
+    # DNS personalizado para dominios de Chernarus - Formato hosts
+    192.168.0.2 terrerov.com
+    192.168.0.2 www.terrerov.com
+    192.168.0.2 hq.terrerov.com
+    192.168.0.2 n8n.terrerov.com
+    192.168.0.2 traefik.terrerov.com
+    192.168.0.2 pihole.terrerov.com
+    192.168.0.2 api.terrerov.com
+    192.168.0.2 admin.terrerov.com
+    192.168.0.2 dashboard.terrerov.com
+    192.168.0.2 monitoring.terrerov.com
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-dnsmasq-config
+  namespace: surviving-chernarus
+data:
+  02-custom.conf: |
+    # Permitir consultas desde la red del cluster de Kubernetes
+    listen-address=0.0.0.0
+    interface=eth0
+    bind-interfaces
+    # Permitir consultas desde cualquier origen
+    local-service=false
+    # Configuración para dominios locales
+    domain=terrerov.com
+    expand-hosts
+    # Cache DNS
+    cache-size=1000
+    # Log queries
+    log-queries
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-dnsmasq-config
+  namespace: surviving-chernarus
+data:
+  02-custom.conf: |
+    # Permitir consultas desde la red del cluster de Kubernetes
+    listen-address=0.0.0.0
+    interface=eth0
+    bind-interfaces
+    # Permitir consultas desde cualquier origen
+    local-service=false
+    # Configuración para dominios locales
+    domain=terrerov.com
+      labels:
+        app: pihole
+        component: dns
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: arm64  # Ejecutar en Raspberry Pi
+      initContainers:
+      - name: setup-custom-dns
+        image: busybox
+        command: ['sh', '-c']
+        args:
+        - |
+          cp /tmp/custom.list /etc/pihole/custom.list
+          chmod 644 /etc/pihole/custom.list
+          echo "Custom DNS list copied successfully"
+        volumeMounts:
+        - name: custom-dns-source
+          mountPath: /tmp/custom.list
+          subPath: custom.list
+        - name: pihole-config
+          mountPath: /etc/pihole
+      containers:
+      - name: pihole
+        image: pihole/pihole:latest
+        ports:
+        - containerPort: 53
+          name: dns-tcp
+          protocol: TCP
+        - containerPort: 53
+          name: dns-udp
+          protocol: UDP
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        env:
+        - name: TZ
+          value: "Europe/Madrid"
+        - name: WEBPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: pihole-secret
+              key: webpassword
+        - name: PIHOLE_DNS_
+          value: "1.1.1.1;8.8.8.8"  # Cloudflare y Google DNS como upstream
+        - name: DNSMASQ_LISTENING
+          value: "all"
+        - name: INTERFACE
+          value: "eth0"
+        - name: DNSMASQ_USER
+          value: "root"
+        - name: QUERY_LOGGING
+          value: "true"
+        - name: VIRTUAL_HOST
+          value: "pihole.terrerov.com"
+        - name: PIHOLE_DOMAIN
+          value: "terrerov.com"
+        - name: DNSMASQ_OPTS
+          value: "--local-service=false --listen-address=0.0.0.0 --address=/terrerov.com/192.168.0.2 --address=/www.terrerov.com/192.168.0.2 --address=/hq.terrerov.com/192.168.0.2 --address=/n8n.terrerov.com/192.168.0.2 --address=/traefik.terrerov.com/192.168.0.2 --address=/pihole.terrerov.com/192.168.0.2 --address=/api.terrerov.com/192.168.0.2"
+        volumeMounts:
+        - name: pihole-config
+          mountPath: /etc/pihole
+        - name: pihole-dnsmasq
+          mountPath: /etc/dnsmasq.d
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: pihole-config
+        hostPath:
+          path: /data/pihole/config
+          type: DirectoryOrCreate
+      - name: pihole-dnsmasq
+        hostPath:
+          path: /data/pihole/dnsmasq
+          type: DirectoryOrCreate
+      - name: custom-dns-source
+        configMap:
+          name: pihole-custom-dns
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-service
+  namespace: surviving-chernarus
+  labels:
+    app: pihole
+    component: dns
+spec:
+  type: LoadBalancer
+  selector:
+    app: pihole
+  ports:
+  - port: 53
+    targetPort: 53
+    protocol: TCP
+    name: dns-tcp
+  - port: 53
+    targetPort: 53
+    protocol: UDP
+    name: dns-udp
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-web-service
+  namespace: surviving-chernarus
+  labels:
+    app: pihole
+    component: web
+spec:
+  selector:
+    app: pihole
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  type: ClusterIP

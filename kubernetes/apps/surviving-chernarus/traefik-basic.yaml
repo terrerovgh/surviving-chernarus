@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: traefik
+  namespace: chernarus-system
+  labels:
+    app: traefik
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      containers:
+        - name: traefik
+          image: traefik:v2.10
+          args:
+            - --api.insecure=true
+            - --providers.kubernetesingress
+            - --entrypoints.web.address=:80
+            - --entrypoints.websecure.address=:443
+            - --certificatesresolvers.letsencrypt.acme.email=contacto@terrerov.com
+            - --certificatesresolvers.letsencrypt.acme.storage=/data/acme.json
+            - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare
+            - --log.level=INFO
+          ports:
+            - name: web
+              containerPort: 80
+            - name: websecure
+              containerPort: 443
+            - name: admin
+              containerPort: 8080
+          env:
+            - name: CLOUDFLARE_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: chernarus-secrets
+                  key: CLOUDFLARE_EMAIL
+            - name: CF_DNS_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chernarus-secrets
+                  key: CF_DNS_API_TOKEN
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+      volumes:
+        - name: data
+          hostPath:
+            path: /data/traefik
+            type: DirectoryOrCreate

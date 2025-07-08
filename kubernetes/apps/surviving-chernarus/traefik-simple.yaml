@@ -66,48 +66,6 @@ subjects:
     name: traefik-ingress-controller
     namespace: chernarus-system
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: traefik-config
-  namespace: chernarus-system
-data:
-  traefik.yml: |
-    api:
-      dashboard: true
-      insecure: true
-
-    entryPoints:
-      web:
-        address: ":80"
-      websecure:
-        address: ":443"
-
-    providers:
-      kubernetes: {}
-
-    certificatesResolvers:
-      letsencrypt:
-        acme:
-          email: contacto@terrerov.com
-          storage: /data/acme.json
-          dnsChallenge:
-            provider: cloudflare
-            resolvers:
-              - "1.1.1.1:53"
-              - "8.8.8.8:53"
-          caServer: https://acme-v02.api.letsencrypt.org/directory
-
-    log:
-      level: INFO
-      format: json
-
-    accessLog:
-      format: json
-
-    metrics:
-      prometheus: {}
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -132,7 +90,12 @@ spec:
       - name: traefik
         image: traefik:v2.10
         args:
-        - --configfile=/etc/traefik/traefik.yml
+        - --api.dashboard=true
+        - --api.insecure=true
+        - --entrypoints.web.address=:80
+        - --entrypoints.websecure.address=:443
+        - --providers.kubernetes
+        - --log.level=INFO
         ports:
         - containerPort: 80
           name: web
@@ -152,8 +115,6 @@ spec:
               name: chernarus-secrets
               key: CF_DNS_API_TOKEN
         volumeMounts:
-        - name: traefik-config
-          mountPath: /etc/traefik
         - name: traefik-storage
           mountPath: /data
         livenessProbe:
@@ -176,12 +137,9 @@ spec:
             memory: "256Mi"
             cpu: "500m"
       volumes:
-      - name: traefik-config
-        configMap:
-          name: traefik-config
       - name: traefik-storage
         hostPath:
-          path: /opt/traefik-data
+          path: /data/traefik
           type: DirectoryOrCreate
 ---
 apiVersion: v1
