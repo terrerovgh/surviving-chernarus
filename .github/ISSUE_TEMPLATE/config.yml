@@ -3,17 +3,17 @@
 blank_issues_enabled: true
 contact_links:
   - name: 🤝 Community Discussions
-    url: https://github.com/terrerov/surviving-chernarus/discussions
+    url: https://github.com/terrerovgh/surviving-chernarus/discussions
     about: Ask questions, share ideas, and get help from the community
   - name: 📚 Project Documentation
-    url: https://github.com/terrerov/surviving-chernarus/blob/main/README.md
+    url: https://github.com/terrerovgh/surviving-chernarus/blob/main/README.md
     about: Check the complete project documentation and setup guides
   - name: 🛠️ Workspace Configuration
-    url: https://github.com/terrerov/surviving-chernarus/blob/main/docs/workspace-configuration.md
+    url: https://github.com/terrerovgh/surviving-chernarus/blob/main/docs/workspace-configuration.md
     about: VS Code, GitHub Copilot, and development environment setup
   - name: ☸️ Kubernetes Setup Guide
-    url: https://github.com/terrerov/surviving-chernarus/blob/main/docs/kubernetes-cluster-setup.md
+    url: https://github.com/terrerovgh/surviving-chernarus/blob/main/docs/kubernetes-cluster-setup.md
     about: Complete guide for setting up the Kubernetes cluster
   - name: 🔒 Security Issues
-    url: https://github.com/terrerov/surviving-chernarus/security/advisories/new
+    url: https://github.com/terrerovgh/surviving-chernarus/security/advisories/new
     about: Report security vulnerabilities privately

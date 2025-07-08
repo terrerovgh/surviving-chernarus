@@ -2,12 +2,12 @@
 
 ## Estado General
 
-- **Dominio principal:** terrerov.com
+- **Dominio principal:** example.com
 - **Subdominios activos:**
-  - HQ Dashboard: hq.terrerov.com
-  - CubaTattooStudio: cts.terrerov.com
-  - n8n Automation: n8n.terrerov.com
-  - Otros proyectos: \*.terrerov.com
+  - HQ Dashboard: hq.example.com
+  - CubaTattooStudio: cts.example.com
+  - n8n Automation: n8n.example.com
+  - Otros proyectos: \*.example.com
 
 ## Infraestructura y Servicios
 
@@ -26,7 +26,7 @@
 - RPI Master: 192.168.0.2
 - Worker: 192.168.0.3
 - Cloudflare API Token: (ver .env)
-- Traefik SSL Email: terrerov@gmail.com
+- Traefik SSL Email: admin@yourdomain.com
 - PostgreSQL: chernarus_op / chernarus_db
 - n8n Encryption Key: Sddfe43f3fscver3
 

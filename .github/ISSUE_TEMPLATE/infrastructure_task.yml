@@ -3,7 +3,7 @@ description: Infrastructure maintenance, upgrades, or operational tasks
 title: "[INFRA] "
 labels: ["infrastructure", "ops"]
 assignees:
-  - terrerov
+  - terrerovgh
 body:
   - type: markdown
     attributes:

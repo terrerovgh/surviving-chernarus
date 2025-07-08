@@ -322,7 +322,7 @@ Los contributors son reconocidos en:
 
 - 🐛 **Issues**: Para bugs y features
 - 💬 **Discussions**: Para preguntas generales
-- 📧 **Email**: victor@terrerov.com para contacto directo
+- 📧 **Email**: admin@example.com para contacto directo
 
 ## 📋 Checklist para Contributors
 

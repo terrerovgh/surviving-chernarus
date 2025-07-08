@@ -3,7 +3,7 @@ description: Report a bug in the Surviving Chernarus project
 title: "[BUG] "
 labels: ["bug", "needs-triage"]
 assignees:
-  - terrerov
+  - terrerovgh
 body:
   - type: markdown
     attributes:

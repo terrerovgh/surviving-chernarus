@@ -18,7 +18,7 @@ We take the security of Surviving Chernarus seriously. If you discover a securit
 
 Instead, please report security issues privately by:
 
-1. **Email**: Send details to security@terrerov.com
+1. **Email**: Send details to security@example.com
 2. **GitHub Security**: Use [GitHub Security Advisories](https://github.com/terrerovgh/surviving-chernarus/security/advisories/new)
 
 ### 📝 What to Include
@@ -182,7 +182,7 @@ When deploying Surviving Chernarus:
 
 For security-related concerns:
 
-- **Email**: security@terrerov.com
+- **Email**: security@example.com
 - **PGP Key**: Available upon request
 - **Response Time**: 24 hours for acknowledgment
 

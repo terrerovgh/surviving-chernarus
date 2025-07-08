@@ -51,7 +51,7 @@ graph TB
     subgraph "🎯 Application Layer"
         HUGO[HQ Dashboard<br/>Hugo Static Site]
         N8N[Automation Engine<br/>n8n Workflows]
-        WEB[Web Projects<br/>*.terrerov.com]
+        WEB[Web Projects<br/>*.example.com]
         PH[DNS Security<br/>Pi-hole]
     end
 
@@ -113,7 +113,7 @@ graph TB
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/terrerov/surviving-chernarus.git
+git clone https://github.com/terrerovgh/surviving-chernarus.git
 cd surviving-chernarus
 
 # 2. Configurar entorno
@@ -475,10 +475,10 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 
 ## 📊 Estadísticas del Proyecto
 
-![GitHub stars](https://img.shields.io/github/stars/terrerov/surviving-chernarus?style=social)
-![GitHub forks](https://img.shields.io/github/forks/terrerov/surviving-chernarus?style=social)
-![GitHub issues](https://img.shields.io/github/issues/terrerov/surviving-chernarus)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/terrerov/surviving-chernarus)
+![GitHub stars](https://img.shields.io/github/stars/terrerovgh/surviving-chernarus?style=social)
+![GitHub forks](https://img.shields.io/github/forks/terrerovgh/surviving-chernarus?style=social)
+![GitHub issues](https://img.shields.io/github/issues/terrerovgh/surviving-chernarus)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/terrerovgh/surviving-chernarus)
 
 ---
 
@@ -486,8 +486,8 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 
 **⭐ Si este proyecto te ha sido útil, considera darle una estrella ⭐**
 
-**Desarrollado con ❤️ por [Víctor Terrero](https://github.com/terrerov)**
+**Desarrollado con ❤️ por [Víctor Terrero](https://github.com/terrerovgh)**
 
-**🏠 [terrerov.com](https://terrerov.com) • 📧 [victor@terrerov.com](mailto:victor@terrerov.com)**
+**🏠 [example.com](https://example.com) • 📧 [admin@example.com](mailto:admin@example.com)**
 
 </div>

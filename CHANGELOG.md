@@ -139,7 +139,7 @@ surviving-chernarus/
 ## 🚀 Getting Started
 
 ```bash
-git clone https://github.com/terrerov/surviving-chernarus.git
+git clone https://github.com/terrerovgh/surviving-chernarus.git
 cd surviving-chernarus
 cp .env.example .env
 # Edit .env with your values

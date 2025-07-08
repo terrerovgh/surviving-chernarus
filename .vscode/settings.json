@@ -226,7 +226,7 @@
       "prometheus",
       "grafana"
     ],
-    "domain": "terrerov.com",
+    "domain": "example.com",
     "architecture": "hybrid-cluster",
     "monitoring": "prometheus-grafana",
     "automation": "n8n-github-actions"
