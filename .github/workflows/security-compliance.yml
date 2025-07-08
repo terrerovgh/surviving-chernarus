@@ -1,0 +1,127 @@
+name: Security and Compliance Check
+
+on:
+  schedule:
+    # Run security checks daily
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "json"
+          output: "trivy-fs-results.json"
+
+      - name: Run Trivy config scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "config"
+          scan-ref: "."
+          format: "json"
+          output: "trivy-config-results.json"
+
+      - name: Check for secrets in code
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Scan for hardcoded credentials
+        run: |
+          # Check for potential hardcoded credentials
+          if grep -r -E "(password|secret|token|key|api)" --include="*.yml" --include="*.yaml" --include="*.sh" --exclude-dir=".git" . | grep -v "example\|template\|placeholder"; then
+            echo "⚠️ Potential hardcoded credentials found"
+            exit 1
+          fi
+
+      - name: Check .env.example safety
+        run: |
+          if grep -E "(real|actual|production)" .env.example; then
+            echo "❌ .env.example contains real data"
+            exit 1
+          fi
+          echo "✅ .env.example is safe for public release"
+
+      - name: Verify gitignore coverage
+        run: |
+          # Check if .env is properly ignored
+          if git check-ignore .env >/dev/null 2>&1; then
+            echo "✅ .env is properly ignored"
+          else
+            echo "❌ .env is not ignored by git"
+            exit 1
+          fi
+
+      - name: Check for TODO/FIXME in production files
+        run: |
+          if find . -name "*.yml" -o -name "*.yaml" -o -name "*.sh" | xargs grep -l "TODO\|FIXME" | grep -v test; then
+            echo "⚠️ Production files contain TODO/FIXME comments"
+            # Don't fail, just warn
+          fi
+
+      - name: Upload security results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-scan-results
+          path: |
+            trivy-fs-results.json
+            trivy-config-results.json
+          retention-days: 30
+
+  compliance-check:
+    name: Compliance Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check documentation completeness
+        run: |
+          # Verify required documentation exists
+          required_docs=("README.md" "SECURITY.md" "CONTRIBUTING.md" "CHANGELOG.md")
+          for doc in "${required_docs[@]}"; do
+            if [[ ! -f "$doc" ]]; then
+              echo "❌ Missing required documentation: $doc"
+              exit 1
+            fi
+          done
+          echo "✅ All required documentation present"
+
+      - name: Verify license compliance
+        run: |
+          if [[ ! -f "LICENSE" ]]; then
+            echo "⚠️ No LICENSE file found"
+          else
+            echo "✅ LICENSE file present"
+          fi
+
+      - name: Check for sensitive data in git history
+        run: |
+          # Basic check for sensitive patterns in git history
+          if git log --all --grep="password\|secret\|token" --oneline | head -5; then
+            echo "⚠️ Potentially sensitive commits found in history"
+          fi
+
+      - name: Validate project structure
+        run: |
+          # Check if required directories exist
+          required_dirs=("scripts" "services" "kubernetes" "docs" ".github" ".vscode")
+          for dir in "${required_dirs[@]}"; do
+            if [[ ! -d "$dir" ]]; then
+              echo "❌ Missing required directory: $dir"
+              exit 1
+            fi
+          done
+          echo "✅ Project structure is complete"
