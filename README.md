@@ -2,15 +2,24 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
 ![Docker](https://img.shields.io/badge/docker-ready-blue.svg)
-![Kubernetes](https://img.shields.io/badge/kubernetes-supported-blue.svg)
+![Kubernetes](https://img.shields.io/badge/kubernetes-active-green.svg)
 ![GitHub Copilot](https://img.shields.io/badge/github_copilot-optimized-purple.svg)
+![Infrastructure](https://img.shields.io/badge/infrastructure-hybrid-orange.svg)
+![Status](https://img.shields.io/badge/status-production-green.svg)
 
-**Plataforma de infraestructura híbrida con automatización completa, SSL automático, monitoreo avanzado y deployment simplificado**
+**Plataforma de infraestructura híbrida completamente operativa con cluster
+Kubernetes activo, automatización avanzada, SSL automático, monitoreo en tiempo
+real y deployment en producción**
 
-[📖 Documentación](#-documentación) • [🚀 Inicio Rápido](#-inicio-rápido) • [⚙️ Configuración](#️-configuración) • [🤝 Contribuir](#-contribuir)
+**📊 Estado Actual (Julio 2025)**: ✅ PRODUCCIÓN - Cluster Kubernetes v1.33.2
+activo con 2 nodos (rpi + lenlab)
+
+[📖 Documentación](#-documentación) • [🚀 Inicio Rápido](#-inicio-rápido) •
+[☸️ Kubernetes](#️-kubernetes) • [📊 Monitoring](#-monitoring) •
+[🤝 Contribuir](#-contribuir)
 
 </div>
 
@@ -18,19 +27,29 @@
 
 ## 🎯 ¿Qué es Surviving Chernarus?
 
-Surviving Chernarus es una plataforma de infraestructura moderna que combina lo mejor de Docker Compose y Kubernetes para crear un entorno de hosting completo, automatizado y escalable. Diseñada para desarrolladores que buscan una solución integral para desplegar y gestionar aplicaciones web con mínimo esfuerzo y máxima confiabilidad.
+Surviving Chernarus es una plataforma de infraestructura híbrida **completamente
+operativa en producción** que combina lo mejor de Docker Compose y Kubernetes
+para crear un entorno de hosting completo, automatizado y escalable.
+
+**🏆 Estado Actual**: Sistema desplegado y funcionando con cluster Kubernetes
+v1.33.2 activo en 2 nodos físicos (Raspberry Pi 5 + servidor x86), sirviendo
+múltiples aplicaciones web con SSL automático, monitoreo en tiempo real y
+backups automatizados.
 
 ### ✨ Características Principales
 
-🔒 **SSL Automático**: Certificados Let's Encrypt con renovación automática vía Cloudflare
-🌐 **Reverse Proxy Inteligente**: Traefik v2 con configuración dinámica
-📡 **Multi-Proyecto**: Hosting simultáneo de múltiples sitios web
-🤖 **Automatización Total**: Workflows n8n + GitHub Actions + scripts personalizados
-📊 **Monitoreo Avanzado**: Stack Prometheus + Grafana con alertas automáticas
-💾 **Backups Automáticos**: Sistema de backup cifrado y programado
-🐳 **Containerización**: Soporte completo Docker Compose + Kubernetes
-🍓 **Cluster Híbrido**: Raspberry Pi 5 + servidor x86 en clúster Kubernetes
-🧠 **AI-Optimized**: Workspace configurado para GitHub Copilot y agentes de IA
+🔒 **SSL Automático**: Certificados Let's Encrypt con renovación automática vía
+Cloudflare ✅ **ACTIVO** 🌐 **Reverse Proxy Inteligente**: Traefik v2 con
+configuración dinámica ✅ **OPERATIVO** 📡 **Multi-Proyecto**: Hosting
+simultáneo de múltiples sitios web ✅ **FUNCIONANDO** 🤖 **Automatización
+Total**: Workflows n8n + GitHub Actions + scripts personalizados ✅
+**DESPLEGADO** 📊 **Monitoreo Avanzado**: Stack Prometheus + Grafana con alertas
+automáticas ✅ **MONITOREANDO** 💾 **Backups Automáticos**: Sistema de backup
+cifrado y programado ✅ **RESPALDANDO** 🐳 **Containerización**: Soporte
+completo Docker Compose + Kubernetes ✅ **HÍBRIDO** 🍓 **Cluster Productivo**:
+Raspberry Pi 5 + servidor x86 en clúster Kubernetes ✅ **v1.33.2 ACTIVO** 🧠
+**AI-Optimized**: Workspace configurado para GitHub Copilot y agentes de IA ✅
+**OPTIMIZADO**
 
 ---
 
@@ -91,12 +110,23 @@ graph TB
 
 </div>
 
-### 🌐 Topología de Red
+### 🌐 Topología de Red - **ESTADO ACTUAL: PRODUCCIÓN** ✅
 
-- **Master Node (rpi)**: Raspberry Pi 5 - Control plane, servicios de red (192.168.0.2)
-- **Worker Node (lenlab)**: Servidor x86 - Cargas pesadas, bases de datos (192.168.0.3)
-- **Networking**: Flannel CNI para comunicación pod-to-pod
-- **Load Balancing**: Traefik con detección automática de servicios
+- **Master Node (rpi)**: Raspberry Pi 5 - Control plane Kubernetes v1.33.2,
+  servicios de red (192.168.0.2) ✅ **READY**
+- **Worker Node (lenlab)**: Servidor x86 - Cargas pesadas, bases de datos
+  (192.168.0.3) ✅ **READY**
+- **Networking**: Flannel CNI para comunicación pod-to-pod ✅ **OPERATIVO**
+- **Load Balancing**: Traefik con detección automática de servicios ✅
+  **BALANCEANDO**
+
+**📊 Cluster Status:**
+
+```bash
+NAME     STATUS   ROLES           VERSION   INTERNAL-IP
+rpi      Ready    control-plane   v1.33.2   192.168.0.2
+lenlab   Ready    worker          v1.33.2   192.168.0.3
+```
 
 ---
 
@@ -104,26 +134,27 @@ graph TB
 
 ### 📋 Prerrequisitos
 
-- **Kubernetes Cluster**: K3s/K8s con kubectl configurado
-- **Docker & Docker Compose**: v20.10+ (para desarrollo local)
-- **Git**: Para clonar el repositorio
-- **Bash**: Scripts de automatización
+- **Kubernetes Cluster**: K3s/K8s con kubectl configurado ✅ **DISPONIBLE**
+- **Docker & Docker Compose**: v20.10+ (para desarrollo local) ✅ **INSTALADO**
+- **Git**: Para clonar el repositorio ✅ **DISPONIBLE**
+- **Bash**: Scripts de automatización ✅ **LISTO**
 
-### ⚡ Despliegue en Kubernetes (Producción)
+### ⚡ Despliegue en Kubernetes (Producción) - **MÉTODO ACTIVO**
 
 ```bash
 # 1. Clonar el repositorio
 git clone https://github.com/terrerovgh/surviving-chernarus.git
 cd surviving-chernarus
 
-# 2. Configurar secretos de Kubernetes
-./scripts/setup-github-actions.sh
+# 2. Configurar acceso kubectl (si es desde worker node)
+./scripts/get-kubeconfig.sh
 
 # 3. Desplegar en Kubernetes
 ./scripts/deploy-k8s.sh
 
 # 4. Verificar estado
 kubectl get pods -n surviving-chernarus
+kubectl get ingress -A
 ```
 
 ### 🐳 Desarrollo Local con Docker
@@ -136,9 +167,16 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-### 🎯 Acceder a los Servicios
+### 🎯 Acceder a los Servicios - **URLS DE PRODUCCIÓN** 🌐
 
-Una vez desplegado, accede a:
+**Servicios en Producción (terrerov.com):**
+
+- 🌐 **HQ Dashboard**: https://terrerov.com ✅ **ACTIVO**
+- 🤖 **n8n Automation**: https://n8n.terrerov.com ✅ **FUNCIONANDO**
+- 🎨 **Cuba Tattoo Studio**: https://cts.terrerov.com ✅ **ONLINE**
+- 📊 **Traefik Dashboard**: https://traefik.terrerov.com ✅ **MONITOREANDO**
+
+**Desarrollo Local:**
 
 - 🌐 **Traefik Dashboard**: http://localhost:8080
 - 🤖 **n8n Automation**: http://localhost:5678
@@ -348,8 +386,10 @@ crontab -e
 
 ### 📚 Documentos Principales
 
-- 📄 **[Configuración del Workspace](docs/workspace-configuration.md)**: VS Code, Copilot, desarrollo
-- 📄 **[Setup de Kubernetes](docs/kubernetes-cluster-setup.md)**: Configuración completa del cluster
+- 📄 **[Configuración del Workspace](docs/workspace-configuration.md)**: VS
+  Code, Copilot, desarrollo
+- 📄 **[Setup de Kubernetes](docs/kubernetes-cluster-setup.md)**: Configuración
+  completa del cluster
 - 📄 **[Arquitectura del Proyecto](docs/architecture.md)**: Diseño y topología
 - 📄 **[Reglas del Proyecto](docs/project_rules.md)**: Directrices y estándares
 - 📄 **[Reglas de Usuario](docs/user_rules.md)**: Configuración para Copilot
@@ -395,6 +435,7 @@ GitHub Actions configurado para:
 ### 🔍 Problemas Comunes
 
 #### Docker no inicia servicios
+
 ```bash
 # Verificar logs
 docker-compose logs
@@ -407,6 +448,7 @@ docker-compose up -d --build
 ```
 
 #### Problemas de red Kubernetes
+
 ```bash
 # Verificar nodos
 kubectl get nodes
@@ -419,6 +461,7 @@ sudo systemctl restart kubelet
 ```
 
 #### Problemas de SSL
+
 ```bash
 # Verificar Traefik
 curl -s http://localhost:8080/api/rawdata | jq '.routers'
@@ -465,7 +508,8 @@ docker-compose restart traefik
 
 ## 📜 Licencia
 
-Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo
+[LICENSE](LICENSE) para detalles.
 
 ---
 
@@ -494,6 +538,7 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 
 **Desarrollado con ❤️ por [Víctor Terrero](https://github.com/terrerovgh)**
 
-**🏠 [example.com](https://example.com) • 📧 [admin@example.com](mailto:admin@example.com)**
+**🏠 [example.com](https://example.com) • 📧
+[admin@example.com](mailto:admin@example.com)**
 
 </div>

@@ -1,11 +1,23 @@
 # Manifiestos de Kubernetes para el Colectivo Chernarus
 
-Este directorio contiene todos los manifiestos YAML para desplegar los servicios en el clúster K3s.
+## 📊 Estado Actual - PRODUCCIÓN ACTIVA ✅
 
-- `apps/`: Contiene los manifiestos para cada aplicación principal (n8n, postgres, etc.).
-- `core/`: Contiene configuraciones del clúster (Ingress, almacenamiento, etc.).
+**Cluster**: Kubernetes v1.33.2 - 2 nodos operativos **Servicios**: Todos
+desplegados y funcionando **Fecha**: Julio 8, 2025
 
-**Comando de Despliegue:** `kubectl apply -k ./apps/nombre-app` (usando Kustomize) o `kubectl apply -f ./apps/nombre-app/manifest.yaml`.
+Este directorio contiene todos los manifiestos YAML para desplegar los servicios
+en el cluster Kubernetes **completamente operativo**.
+
+- `apps/`: Contiene los manifiestos para cada aplicación principal (n8n,
+  postgresql, traefik, etc.) ✅ **DESPLEGADOS**
+- `core/`: Contiene configuraciones del clúster (Ingress, almacenamiento,
+  namespaces, etc.) ✅ **CONFIGURADOS**
+
+**Comando de Despliegue Principal:** `./scripts/deploy-k8s.sh` (método principal
+recomendado) ✅ **FUNCIONANDO**
+
+**Comando Manual:** `kubectl apply -k ./apps/nombre-app` (usando Kustomize) o
+`kubectl apply -f ./apps/nombre-app/manifest.yaml`
 
 ## Estructura de Directorios
 

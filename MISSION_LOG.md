@@ -48,4 +48,5 @@
 
 ---
 
-_🧟‍♂️ "En Chernarus, cada línea de código puede significar la diferencia entre la vida y la muerte..."_
+_🧟‍♂️ "En Chernarus, cada línea de código puede significar la diferencia entre la
+vida y la muerte..."_

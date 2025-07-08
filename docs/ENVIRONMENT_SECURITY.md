@@ -2,7 +2,8 @@
 
 ## 📋 Overview
 
-This guide provides security best practices for managing environment variables in Surviving Chernarus.
+This guide provides security best practices for managing environment variables
+in Surviving Chernarus.
 
 ## 🚨 Critical Security Rules
 

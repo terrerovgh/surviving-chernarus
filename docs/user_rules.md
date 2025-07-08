@@ -23,7 +23,8 @@
 
 - **Principal:** Surviving Chernarus (productividad y automatización personal)
 - **Infraestructura:** Raspberry Pi 5 + Lenovo en clúster híbrido
-- **Servicios:** PostgreSQL, n8n, Traefik, Pi-hole, Squid, Hugo, Prometheus, Grafana
+- **Servicios:** PostgreSQL, n8n, Traefik, Pi-hole, Squid, Hugo, Prometheus,
+  Grafana
 - **Dominio:** terrerov.com y subdominios
 
 ## Instrucciones para la Colaboración

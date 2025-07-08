@@ -68,15 +68,15 @@ A    *.terrerov.com    192.168.0.2  (wildcard para subdominios)
 
 ## ⚠️ Notas importantes:
 
-1. **Let's Encrypt tiene límites de rate**: No pruebes demasiadas veces en poco tiempo
+1. **Let's Encrypt tiene límites de rate**: No pruebes demasiadas veces en poco
+   tiempo
 2. **DNS Challenge**: Cloudflare debe ser tu proveedor DNS para el dominio
-3. **Conectividad**: El cluster debe poder acceder a internet para validar los certificados
+3. **Conectividad**: El cluster debe poder acceder a internet para validar los
+   certificados
 4. **Dominios válidos**: Los dominios deben apuntar a tu infraestructura
 
 ## 🚀 Estado actual del despliegue:
 
-✅ Traefik configurado con soporte SSL
-✅ PostgreSQL funcionando
-✅ Hugo Dashboard funcionando
-🟡 N8N necesita corrección
-⏳ SSL automático - esperando credenciales de Cloudflare
+✅ Traefik configurado con soporte SSL ✅ PostgreSQL funcionando ✅ Hugo
+Dashboard funcionando 🟡 N8N necesita corrección ⏳ SSL automático - esperando
+credenciales de Cloudflare

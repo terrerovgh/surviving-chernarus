@@ -5,7 +5,8 @@
 Se ha configurado exitosamente un cluster de Kubernetes con:
 
 - **Master Node**: Raspberry Pi 5 (rpi) con Arch Linux ARM - IP: 192.168.0.2
-- **Worker Node**: lenlab con Arch Linux - IP: 192.168.0.3 ✅ **AGREGADO EXITOSAMENTE**
+- **Worker Node**: lenlab con Arch Linux - IP: 192.168.0.3 ✅ **AGREGADO
+  EXITOSAMENTE**
 - **Versión**: Kubernetes v1.33.2
 - **CNI Plugin**: Flannel
 - **Container Runtime**: containerd
@@ -31,14 +32,14 @@ lenlab   NotReady   <none>          5m27s   v1.33.2   192.168.0.3   <none>      
 rpi      Ready      control-plane   21m     v1.33.2   192.168.0.2   <none>        Arch Linux ARM   6.12.25-1-rpi    containerd://2.1.3
 ```
 
-**📝 Nota**: lenlab aparece como "NotReady" mientras Flannel CNI termina de inicializarse (proceso normal que puede tomar 5-10 minutos).
+**📝 Nota**: lenlab aparece como "NotReady" mientras Flannel CNI termina de
+inicializarse (proceso normal que puede tomar 5-10 minutos).
 
 ## 🌐 Arquitectura Final del Cluster
 
 ### Nodos del Cluster
 
 1. **rpi (Master)**:
-
    - Roles: control-plane
    - IP: 192.168.0.2
    - Estado: Ready ✅
@@ -54,8 +55,8 @@ rpi      Ready      control-plane   21m     v1.33.2   192.168.0.2   <none>      
 
 ### 1. Conflictos de Paquetes (Arch Linux)
 
-**Problema**: Conflicto entre `iptables` e `iproute2`
-**Solución**: Instalar `iptables-nft` en lugar de `iptables` estándar
+**Problema**: Conflicto entre `iptables` e `iproute2` **Solución**: Instalar
+`iptables-nft` en lugar de `iptables` estándar
 
 ```bash
 yes | sudo pacman -S iptables-nft
@@ -63,8 +64,8 @@ yes | sudo pacman -S iptables-nft
 
 ### 2. Configuración de cgroups
 
-**Problema**: cgroups de memoria no habilitados en Raspberry Pi
-**Solución**: Modificar `/boot/cmdline.txt` y reiniciar
+**Problema**: cgroups de memoria no habilitados en Raspberry Pi **Solución**:
+Modificar `/boot/cmdline.txt` y reiniciar
 
 ```bash
 sudo sed -i 's/$/ cgroup_enable=memory cgroup_memory=1/' /boot/cmdline.txt
@@ -237,9 +238,8 @@ sudo journalctl -u kubelet -n 50
 
 ### 📋 Resumen Final del Deployment
 
-**Fecha de Completación**: 8 de julio de 2025
-**Duración Total**: ~3 horas (incluyendo troubleshooting)
-**Estado**: ✅ **CLUSTER OPERATIVO CON 2 NODOS**
+**Fecha de Completación**: 8 de julio de 2025 **Duración Total**: ~3 horas
+(incluyendo troubleshooting) **Estado**: ✅ **CLUSTER OPERATIVO CON 2 NODOS**
 
 ### 🏗️ Arquitectura Implementada
 
@@ -347,11 +347,13 @@ sudo journalctl -u kubelet -f
 
 ---
 
-**🎊 El cluster de Kubernetes está completamente operativo y listo para workloads de producción!**
+**🎊 El cluster de Kubernetes está completamente operativo y listo para
+workloads de producción!**
 
 ## 15. Configuración del Workspace para Desarrollo
 
-Para optimizar la experiencia de desarrollo con GitHub Copilot, agentes de IA y herramientas modernas, se han configurado archivos específicos del workspace:
+Para optimizar la experiencia de desarrollo con GitHub Copilot, agentes de IA y
+herramientas modernas, se han configurado archivos específicos del workspace:
 
 ### 15.1 VS Code Configuration (`.vscode/`)
 
@@ -426,7 +428,6 @@ Snippets personalizados para:
 #### Workflows
 
 - **`ci-cd.yml`**: Pipeline completo de CI/CD con:
-
   - Linting y testing
   - Build y deployment
   - Security scanning

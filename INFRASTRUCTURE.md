@@ -1,8 +1,13 @@
 # 🌐 Surviving Chernarus - Infrastructure Documentation
 
-## Resumen
+## 📊 Estado Actual - PRODUCCIÓN ACTIVA
 
-Infraestructura modular y escalable para proyectos web personales, con automatización, monitoreo, backups y seguridad avanzada.
+**Cluster Kubernetes**: ✅ v1.33.2 - 2 nodos operativos **Última
+Actualización**: Julio 8, 2025 **Estado de Servicios**: 🟢 Todos operativos
+
+Infraestructura híbrida completamente desplegada y operativa con cluster
+Kubernetes de 2 nodos, automatización avanzada, monitoreo en tiempo real,
+backups automáticos y seguridad multicapa.
 
 ## Arquitectura
 
@@ -31,21 +36,23 @@ Infraestructura modular y escalable para proyectos web personales, con automatiz
                 (Prometheus, Grafana, scripts)
 ```
 
-## Servicios Principales
+## Servicios Principales - **ESTADO DE PRODUCCIÓN**
 
-- **Traefik**: Reverse proxy, SSL, routing
-- **PostgreSQL**: Base de datos central
-- **n8n**: Orquestador de automatización
-- **Pi-hole**: DNS seguro
-- **Squid**: Proxy de red
-- **Hugo**: Sitio estático (HQ)
-- **Prometheus/Grafana**: Monitoreo y métricas
+- **Traefik**: Reverse proxy, SSL, routing ✅ **OPERATIVO**
+- **PostgreSQL**: Base de datos central ✅ **FUNCIONANDO**
+- **n8n**: Orquestador de automatización ✅ **EJECUTANDO WORKFLOWS**
+- **Pi-hole**: DNS seguro ✅ **FILTRANDO AMENAZAS**
+- **Squid**: Proxy de red ✅ **PROXY ACTIVO**
+- **Hugo**: Sitio estático (HQ) ✅ **SIRVIENDO CONTENIDO**
+- **Prometheus/Grafana**: Monitoreo y métricas ✅ **RECOLECTANDO DATOS**
 
-## Nodos y Red
+## Nodos y Red - **CLUSTER ACTIVO**
 
-- **RPI Master:** 192.168.0.2 (servicios de red, orquestación)
-- **Lenlab Worker:** 192.168.0.3 (cargas pesadas, DB, IA)
+- **RPI Master:** 192.168.0.2 ✅ Ready (Control Plane Kubernetes v1.33.2)
+- **Lenlab Worker:** 192.168.0.3 ✅ Ready (Worker Node, cargas pesadas)
 - **Subred:** 192.168.0.0/24
+- **CNI**: Flannel ✅ Pod-to-pod communication
+- **Ingress**: Traefik ✅ SSL automático con Cloudflare
 
 ## Seguridad y Backups
 

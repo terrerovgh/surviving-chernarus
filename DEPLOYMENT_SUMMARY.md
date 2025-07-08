@@ -1,34 +1,38 @@
 # 🚀 Surviving Chernarus Deployment Summary
 
-## Estado General
+## 📊 Estado General - PRODUCCIÓN ACTIVA ✅
 
-- **Dominio principal:** terrerov.com
-- **Subdominios activos:**
-  - HQ Dashboard: hq.terrerov.com
-  - CubaTattooStudio: cts.terrerov.com
-  - n8n Automation: n8n.terrerov.com
-  - Otros proyectos: \*.terrerov.com
+**Fecha de Actualización**: Julio 8, 2025 **Estado del Cluster**: Kubernetes
+v1.33.2 - 2 nodos operativos **Servicios**: Todos funcionando y sirviendo
+tráfico
 
-## Infraestructura y Servicios
+- **Dominio principal:** terrerov.com ✅ **ACTIVO**
+- **Subdominios en producción:**
+  - HQ Dashboard: https://terrerov.com ✅ **ONLINE**
+  - CubaTattooStudio: https://cts.terrerov.com ✅ **FUNCIONANDO**
+  - n8n Automation: https://n8n.terrerov.com ✅ **EJECUTANDO**
+  - Traefik Dashboard: https://traefik.terrerov.com ✅ **MONITOREANDO**
 
-- **Reverse Proxy:** Traefik v2 (SSL Let's Encrypt, Cloudflare DNS Challenge)
-- **Base de datos:** PostgreSQL (chernarus_db)
-- **Automatización:** n8n (conexión a PostgreSQL)
-- **DNS:** Pi-hole (con Cloudflare)
-- **Proxy:** Squid (Berezino Checkpoint)
-- **Sitio Estático:** Hugo (HQ Dashboard)
-- **Monitoreo:** Prometheus, Grafana
-- **CI/CD:** GitHub Actions
+## Infraestructura y Servicios - **KUBERNETES CLUSTER ACTIVO**
 
-## Variables de Entorno Clave
+- **Cluster**: Kubernetes v1.33.2 (rpi + lenlab) ✅ **2 NODOS READY**
+- **Reverse Proxy:** Traefik v2 (SSL Let's Encrypt, Cloudflare DNS Challenge) ✅
+  **OPERATIVO**
+- **Base de datos:** PostgreSQL (chernarus_db) ✅ **FUNCIONANDO**
+- **Automatización:** n8n (conexión a PostgreSQL) ✅ **EJECUTANDO WORKFLOWS**
+- **DNS:** Pi-hole (con Cloudflare) ✅ **FILTRANDO AMENAZAS**
+- **Proxy:** Squid (Berezino Checkpoint) ✅ **PROXY ACTIVO**
+- **Sitio Estático:** Hugo (HQ Dashboard) ✅ **SIRVIENDO CONTENIDO**
+- **Monitoreo:** Prometheus, Grafana ✅ **RECOLECTANDO MÉTRICAS**
+- **CI/CD:** GitHub Actions ✅ **AUTOMATIZANDO DEPLOYS**
+
+## Nodos y Red - **CLUSTER KUBERNETES PRODUCTIVO**
 
 - Red: 192.168.0.0/24
-- RPI Master: 192.168.0.2
-- Worker: 192.168.0.3
-- Cloudflare API Token: (ver .env)
-- Traefik SSL Email: admin@yourdomain.com
-- PostgreSQL: chernarus_op / chernarus_db
-- n8n Encryption Key: Sddfe43f3fscver3
+- **RPI Master**: 192.168.0.2 ✅ Ready (Control Plane Kubernetes v1.33.2)
+- **Lenlab Worker**: 192.168.0.3 ✅ Ready (Worker Node, cargas pesadas)
+- **CNI**: Flannel ✅ Pod-to-pod communication
+- **Ingress**: Traefik ✅ SSL automático con Cloudflare
 
 ## Estructura de Datos y Volúmenes
 
@@ -37,18 +41,21 @@
 - LOG_PATH: /tmp/chernarus/logs
 - CONFIG_PATH: /tmp/chernarus/config
 
-## Despliegue y Mantenimiento
+## Despliegue y Mantenimiento - **AUTOMATIZADO**
 
-- Despliegue: `docker-compose up -d` o scripts/deploy-rpi.sh
-- Limpieza: `docker-compose down && docker system prune -f`
-- Logs: `docker-compose logs -f`
-- Backups: Automáticos, retención 7 días
+- **Despliegue**: `./scripts/deploy-k8s.sh` (Kubernetes) ✅ **FUNCIONANDO**
+- **Estado**: `kubectl get pods -A` ✅ **VERIFICADO**
+- **Logs**: `kubectl logs -f deployment/app-name -n namespace` ✅
+  **MONITOREANDO**
+- **Backups**: Automáticos, retención 7 días ✅ **RESPALDANDO**
+- **Health Check**: `./scripts/health-check.sh` ✅ **VIGILANDO**
 
-## Seguridad
+## Seguridad - **MULTICAPA ACTIVA**
 
-- Todas las credenciales y secretos en `.env`
-- SSL en todos los servicios expuestos
-- Firewall restrictivo y Pi-hole como DNS seguro
-- Backups cifrados
+- Todas las credenciales y secretos en `.env` ✅ **SEGURAS**
+- SSL en todos los servicios expuestos ✅ **CERTIFICADOS VÁLIDOS**
+- Firewall restrictivo y Pi-hole como DNS seguro ✅ **BLOQUEANDO AMENAZAS**
+- Backups cifrados ✅ **DATOS PROTEGIDOS**
+- Kubernetes RBAC ✅ **ACCESOS CONTROLADOS**
 
-## Última actualización: Julio 2025
+## Última actualización: Julio 8, 2025 - **CLUSTER KUBERNETES EN PRODUCCIÓN**

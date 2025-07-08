@@ -1,6 +1,8 @@
 # 🛠️ Configuración del Workspace - Surviving Chernarus
 
-Este documento describe la configuración optimizada del workspace para mejorar la productividad con GitHub Copilot, agentes de IA y herramientas de desarrollo modernas.
+Este documento describe la configuración optimizada del workspace para mejorar
+la productividad con GitHub Copilot, agentes de IA y herramientas de desarrollo
+modernas.
 
 ## 📋 Índice
 
@@ -81,18 +83,15 @@ Extensiones recomendadas automáticamente:
 Configuraciones de debugging preconfiguradas:
 
 1. **Shell Script Debugger**
-
    - Debug de scripts bash
    - Breakpoints y step-through
    - Variables inspection
 
 2. **Python Debugger**
-
    - Debug de scripts Python
    - Configuración para diferentes entornos
 
 3. **Docker Container Attach**
-
    - Debug dentro de containers
    - Configuración para servicios específicos
 
@@ -148,14 +147,16 @@ Snippets personalizados optimizados para la infraestructura Chernarus:
 #### Docker Compose & Chernarus Services
 
 - `dc-service`: Template básico de servicio Docker
-- `chernarus-service`: Template completo para servicios Chernarus (con Traefik labels, PostgreSQL, etc.)
+- `chernarus-service`: Template completo para servicios Chernarus (con Traefik
+  labels, PostgreSQL, etc.)
 - `docker-network`: Configuración de red
 - `docker-volume`: Configuración de volumen
 
 #### Kubernetes & Cluster Management
 
 - `k8s-deployment`: Template básico de Deployment
-- `k8s-chernarus-app`: Template completo para aplicaciones Chernarus con nodeSelector, recursos, health checks
+- `k8s-chernarus-app`: Template completo para aplicaciones Chernarus con
+  nodeSelector, recursos, health checks
 - `k8s-service`: Template de Service
 - `k8s-ingress`: Template de Ingress
 - `k8s-namespace`: Template de Namespace
@@ -169,7 +170,8 @@ Snippets personalizados optimizados para la infraestructura Chernarus:
 
 #### n8n Workflows & Automation
 
-- `n8n-workflow`: Template completo de workflow n8n con triggers, HTTP requests y notificaciones Telegram
+- `n8n-workflow`: Template completo de workflow n8n con triggers, HTTP requests
+  y notificaciones Telegram
 
 #### Monitoring & Observability
 
@@ -276,7 +278,6 @@ body:
    ```
 
 2. **Instalar Extensiones**
-
    - VS Code mostrará notificación automática
    - Clic en "Install All" para extensiones recomendadas
 
@@ -301,12 +302,10 @@ body:
 ### 🔧 Usando Snippets
 
 1. **En archivos YAML**
-
    - Escribir `k8s-deployment` + Tab
    - Escribir `docker-service` + Tab
 
 2. **En scripts de shell**
-
    - Escribir `bash-header` + Tab
    - Escribir `error-handling` + Tab
 
@@ -317,13 +316,11 @@ body:
 ### 🐛 Debugging
 
 1. **Scripts de Shell**
-
    - Abrir script `.sh`
    - Colocar breakpoints (F9)
    - F5 → Seleccionar "Shell Script Debugger"
 
 2. **Python Scripts**
-
    - Abrir script `.py`
    - F5 → Seleccionar "Python Debugger"
 
@@ -474,7 +471,6 @@ body:
 **Soluciones:**
 
 1. Verificar secrets de GitHub:
-
    - `DOCKER_USERNAME`
    - `DOCKER_PASSWORD`
    - Otros secrets necesarios
@@ -513,19 +509,16 @@ VS Code con las extensiones configuradas proporciona:
 ### 🔮 Mejoras Planificadas
 
 1. **Extensión de Snippets**
-
    - Más templates para Prometheus/Grafana
    - Snippets para n8n workflows
    - Templates de backup scripts
 
 2. **Debugging Avanzado**
-
    - Remote debugging para containers
    - Debugging de aplicaciones distribuidas
    - Integration con Kubernetes port-forward
 
 3. **CI/CD Enhancements**
-
    - Deploy automático por ambiente
    - Testing de performance automático
    - Security scanning más detallado
@@ -546,4 +539,5 @@ Para mejorar la configuración del workspace:
 
 ---
 
-**🎉 Con esta configuración, tienes un workspace completamente optimizado para desarrollo moderno con IA, automatización y mejores prácticas de DevOps.**
+**🎉 Con esta configuración, tienes un workspace completamente optimizado para
+desarrollo moderno con IA, automatización y mejores prácticas de DevOps.**

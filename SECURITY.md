@@ -2,7 +2,8 @@
 
 ## Supported Versions
 
-We currently support the following versions of Surviving Chernarus with security updates:
+We currently support the following versions of Surviving Chernarus with security
+updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -10,7 +11,8 @@ We currently support the following versions of Surviving Chernarus with security
 
 ## Reporting a Vulnerability
 
-We take the security of Surviving Chernarus seriously. If you discover a security vulnerability, please follow these steps:
+We take the security of Surviving Chernarus seriously. If you discover a
+security vulnerability, please follow these steps:
 
 ### 🔒 Private Reporting
 
@@ -19,7 +21,8 @@ We take the security of Surviving Chernarus seriously. If you discover a securit
 Instead, please report security issues privately by:
 
 1. **Email**: Send details to security@example.com
-2. **GitHub Security**: Use [GitHub Security Advisories](https://github.com/terrerovgh/surviving-chernarus/security/advisories/new)
+2. **GitHub Security**: Use
+   [GitHub Security Advisories](https://github.com/terrerovgh/surviving-chernarus/security/advisories/new)
 
 ### 📝 What to Include
 
@@ -54,24 +57,28 @@ We assess vulnerabilities based on:
 Surviving Chernarus implements several security measures:
 
 #### Infrastructure Security
+
 - **SSL/TLS**: All public services use HTTPS
 - **Container Isolation**: Docker networks and namespaces
 - **Secrets Management**: Environment variables, no hardcoded secrets
 - **Regular Updates**: Automated security updates where possible
 
 #### Network Security
+
 - **Pi-hole DNS**: Malicious domain blocking
 - **Reverse Proxy**: Traefik SSL termination
 - **Firewall**: Restrictive firewall rules
 - **VPN Ready**: Support for VPN integration
 
 #### Application Security
+
 - **Database Security**: PostgreSQL with authentication
 - **Access Control**: Service-level authentication
 - **Audit Logging**: Comprehensive logging for monitoring
 - **Backup Encryption**: Encrypted automated backups
 
 #### Kubernetes Security
+
 - **RBAC**: Role-based access control
 - **Network Policies**: Pod-to-pod communication controls
 - **Security Contexts**: Container security constraints
@@ -83,7 +90,8 @@ Surviving Chernarus implements several security measures:
 
 When deploying Surviving Chernarus:
 
-1. **Configure Environment Variables Securely**: Follow the [Environment Security Guide](docs/ENVIRONMENT_SECURITY.md)
+1. **Configure Environment Variables Securely**: Follow the
+   [Environment Security Guide](docs/ENVIRONMENT_SECURITY.md)
 2. **Change Default Passwords**: All default passwords must be changed
 3. **Enable SSL**: Configure SSL certificates for all public services
 4. **Restrict Network Access**: Configure firewall rules appropriately
@@ -190,8 +198,10 @@ For security-related concerns:
 
 We recognize security researchers who responsibly disclose vulnerabilities:
 
-*No security researchers have been listed yet. Be the first to help improve Surviving Chernarus security!*
+_No security researchers have been listed yet. Be the first to help improve
+Surviving Chernarus security!_
 
 ---
 
-**Security is a shared responsibility. Thank you for helping keep Surviving Chernarus secure!**
+**Security is a shared responsibility. Thank you for helping keep Surviving
+Chernarus secure!**

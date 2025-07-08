@@ -1,15 +1,20 @@
 # GitHub Repository Configuration
+
 # This file documents the recommended GitHub repository settings for Surviving Chernarus
 
 ## Repository Settings
 
 ### General Settings
+
 - **Repository name**: `surviving-chernarus`
-- **Description**: `🏠 Surviving Chernarus - Hybrid Cloud Infrastructure (Docker + Kubernetes) with automated deployment, monitoring, and security for home lab and small business environments`
+- **Description**:
+  `🏠 Surviving Chernarus - Hybrid Cloud Infrastructure (Docker + Kubernetes) with automated deployment, monitoring, and security for home lab and small business environments`
 - **Visibility**: Public
-- **Topics**: `infrastructure`, `kubernetes`, `docker`, `raspberry-pi`, `traefik`, `home-lab`, `automation`, `monitoring`, `devops`, `gitops`
+- **Topics**: `infrastructure`, `kubernetes`, `docker`, `raspberry-pi`,
+  `traefik`, `home-lab`, `automation`, `monitoring`, `devops`, `gitops`
 
 ### Features
+
 - [x] Issues
 - [x] Discussions
 - [x] Wiki
@@ -17,6 +22,7 @@
 - [x] Security and analysis
 
 ### Pull Requests
+
 - [x] Allow merge commits
 - [x] Allow squash merging
 - [x] Allow rebase merging
@@ -25,6 +31,7 @@
 ### Branch Protection Rules
 
 #### Main Branch (`main`)
+
 - [x] Require pull request reviews before merging
 - [x] Require review from CODEOWNERS
 - [x] Dismiss stale PR approvals when new commits are pushed
@@ -39,6 +46,7 @@
 - [x] Include administrators in restrictions
 
 #### Develop Branch (`develop`)
+
 - [x] Require pull request reviews before merging
 - [x] Require status checks to pass before merging
   - Required status checks:
@@ -48,6 +56,7 @@
 ### Environments
 
 #### Production Environment
+
 - **Environment name**: `production`
 - **Protection rules**:
   - Required reviewers: terrerovgh
@@ -62,16 +71,19 @@
   - `KUBECONFIG`: Base64-encoded kubeconfig for cluster access
 
 #### Staging Environment
+
 - **Environment name**: `staging`
 - **Protection rules**:
   - Deployment branches: `develop` and `main`
 - **Environment secrets**: (same as production but for staging infrastructure)
 
 ### Repository Secrets
+
 - `GITHUB_TOKEN`: Automatically provided
 - `CODECOV_TOKEN`: (optional) For code coverage reporting
 
 ### Security Settings
+
 - [x] Dependency graph
 - [x] Dependabot alerts
 - [x] Dependabot security updates
@@ -80,14 +92,17 @@
 - [x] Private vulnerability reporting
 
 ### Collaborators and Teams
+
 - **Owner**: terrerovgh (Admin)
 - **Contributors**: (Add as needed)
 
 ### GitHub Pages (Optional)
+
 - **Source**: Deploy from branch `gh-pages` or GitHub Actions
 - **Custom domain**: (optional) docs.yourdomain.com
 
 ### Social Preview
+
 - Upload a custom social preview image showcasing the infrastructure diagram
 
 ## Initial Setup Commands
@@ -109,7 +124,9 @@ git checkout main
 ## Webhook Configuration (Optional)
 
 For advanced integrations:
-- **Discord/Slack notifications**: Configure webhooks for deployment notifications
+
+- **Discord/Slack notifications**: Configure webhooks for deployment
+  notifications
 - **Monitoring integration**: Webhook for external monitoring systems
 - **CI/CD triggers**: Integration with external deployment systems
 

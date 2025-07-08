@@ -2,7 +2,8 @@
 
 ## 📋 Resumen de la Migración
 
-Has migrado exitosamente **Surviving Chernarus** de Docker Compose a Kubernetes. Este documento detalla todos los cambios realizados y los pasos siguientes.
+Has migrado exitosamente **Surviving Chernarus** de Docker Compose a Kubernetes.
+Este documento detalla todos los cambios realizados y los pasos siguientes.
 
 ## ✅ Cambios Realizados
 
@@ -38,17 +39,18 @@ kubernetes/
 
 ## 🎯 Servicios Migrados
 
-| Servicio | Docker Compose | Kubernetes | Estado |
-|----------|----------------|------------|--------|
-| PostgreSQL | ✅ | ✅ | Migrado |
-| n8n Automation | ✅ | ✅ | Migrado |
-| Traefik Proxy | ✅ | ✅ | Migrado |
-| Hugo Dashboard | ✅ | ✅ | Migrado |
-| Ingress/SSL | ✅ | ✅ | Migrado |
+| Servicio       | Docker Compose | Kubernetes | Estado  |
+| -------------- | -------------- | ---------- | ------- |
+| PostgreSQL     | ✅             | ✅         | Migrado |
+| n8n Automation | ✅             | ✅         | Migrado |
+| Traefik Proxy  | ✅             | ✅         | Migrado |
+| Hugo Dashboard | ✅             | ✅         | Migrado |
+| Ingress/SSL    | ✅             | ✅         | Migrado |
 
 ## 🔑 Configuración de Secrets
 
-Para que GitHub Actions pueda desplegar en tu cluster, necesitas configurar estos secrets:
+Para que GitHub Actions pueda desplegar en tu cluster, necesitas configurar
+estos secrets:
 
 ### Secrets Requeridos en GitHub
 
@@ -174,6 +176,7 @@ curl -k https://traefik.terrerov.com/ping
 ### Problemas Comunes
 
 1. **Pods en estado Pending**:
+
    ```bash
    kubectl describe pod <pod-name> -n surviving-chernarus
    # Verificar recursos disponibles en nodos
@@ -181,6 +184,7 @@ curl -k https://traefik.terrerov.com/ping
    ```
 
 2. **Servicios no accesibles**:
+
    ```bash
    # Verificar ingress
    kubectl get ingress -n surviving-chernarus -o wide
@@ -199,13 +203,12 @@ curl -k https://traefik.terrerov.com/ping
 
 Has logrado:
 
-✅ **Migración completa** de Docker Compose a Kubernetes
-✅ **Pipeline de CI/CD** automatizado con GitHub Actions
-✅ **Configuración de secretos** y ConfigMaps
-✅ **SSL automático** con Let's Encrypt vía Traefik
-✅ **Alta disponibilidad** con réplicas y health checks
-✅ **Monitoreo** integrado con observabilidad nativa de K8s
-✅ **Escalabilidad** automática y gestión de recursos
+✅ **Migración completa** de Docker Compose a Kubernetes ✅ **Pipeline de
+CI/CD** automatizado con GitHub Actions ✅ **Configuración de secretos** y
+ConfigMaps ✅ **SSL automático** con Let's Encrypt vía Traefik ✅ **Alta
+disponibilidad** con réplicas y health checks ✅ **Monitoreo** integrado con
+observabilidad nativa de K8s ✅ **Escalabilidad** automática y gestión de
+recursos
 
 ## 🚀 Siguientes Pasos Opcionales
 
@@ -215,4 +218,5 @@ Has logrado:
 4. **Implementar backup automático de PVCs**
 5. **Configurar alertas con AlertManager**
 
-¡Tu infraestructura **Surviving Chernarus** está ahora corriendo en Kubernetes con automatización completa! 🎯
+¡Tu infraestructura **Surviving Chernarus** está ahora corriendo en Kubernetes
+con automatización completa! 🎯

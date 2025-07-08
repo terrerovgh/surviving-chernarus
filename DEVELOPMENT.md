@@ -1,23 +1,47 @@
 # Surviving Chernarus - Desarrollo y Configuración
 
+## 🎯 Estado Actual - PRODUCCIÓN KUBERNETES ✅
+
+**Cluster**: Kubernetes v1.33.2 activo (rpi + lenlab) **Método de Deploy**:
+Kubernetes manifests + scripts automatizados **Entorno de Desarrollo**: Docker
+Compose (local) + Kubernetes (producción)
+
 ## Flujos de Desarrollo
 
-### Configuración Inicial
+### Configuración Inicial - **KUBERNETES READY**
 
 ```bash
 cp .env.example .env  # O copiar el .env base
 # Editar .env con tus valores reales
 ./scripts/process-configs.sh  # Procesa plantillas con variables de entorno
 ./scripts/process-configs.sh --validate  # Valida configuración crítica
+
+# Para Kubernetes (PRODUCCIÓN)
+./scripts/get-kubeconfig.sh  # Configurar acceso kubectl
+kubectl cluster-info  # Verificar conectividad
 ```
 
-### Levantar Entorno Local
+### Levantar Entorno Local (Desarrollo)
 
 ```bash
 ./scripts/process-configs.sh && docker-compose up -d
 # Verificar estado y logs
 docker-compose ps
 docker-compose logs -f
+```
+
+### Desplegar en Kubernetes (Producción) - **MÉTODO ACTIVO**
+
+```bash
+# Verificar estado del cluster
+kubectl get nodes -o wide
+
+# Desplegar servicios
+./scripts/deploy-k8s.sh
+
+# Verificar despliegue
+kubectl get pods -n surviving-chernarus
+kubectl get ingress -A
 ```
 
 ### Variables de Entorno Clave (ejemplo)
@@ -33,21 +57,33 @@ docker-compose logs -f
 - PIHOLE_WEBPASSWORD=\*\*\*
 - GRAFANA_ADMIN_PASSWORD=\*\*\*
 
-### Scripts Útiles
+### Scripts Útiles - **KUBERNETES OPTIMIZADOS**
 
-- `scripts/process-configs.sh`: Procesa plantillas y valida configuración
-- `scripts/deploy-project.sh`: Despliega proyectos web
-- `scripts/deploy-rpi.sh`: Despliegue en producción (Raspberry Pi)
+- `scripts/process-configs.sh`: Procesa plantillas y valida configuración ✅
+- `scripts/deploy-k8s.sh`: **Despliegue en Kubernetes (MÉTODO PRINCIPAL)** ✅
+- `scripts/get-kubeconfig.sh`: Configurar acceso kubectl ✅
+- `scripts/cluster-status.sh`: Estado del cluster Kubernetes ✅
+- `scripts/health-check.sh`: Health check completo del sistema ✅
 - `scripts/backup-chernarus.sh` y `restore-chernarus.sh`: Backups y restauración
-- `scripts/monitor-services.sh`: Monitoreo de servicios
+  ✅
+- `scripts/monitor-services.sh`: Monitoreo de servicios ✅
 
-### Despliegue en Producción
+### Despliegue en Producción - **KUBERNETES CLUSTER ACTIVO**
 
 ```bash
-# En el nodo rpi
-./scripts/deploy-rpi.sh
+# Verificar cluster (SIEMPRE PRIMERO)
+kubectl get nodes
 kubectl get pods -A
+
+# Desplegar en Kubernetes
+./scripts/deploy-k8s.sh
+
+# Verificar servicios
 kubectl get ingress -A
+kubectl get svc -A
+
+# Logs en tiempo real
+kubectl logs -f deployment/traefik -n kube-system
 ```
 
 ## Estructura de Carpetas

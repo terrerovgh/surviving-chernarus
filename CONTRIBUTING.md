@@ -1,6 +1,7 @@
 # 🤝 Contribuir a Surviving Chernarus
 
-¡Gracias por tu interés en contribuir a Surviving Chernarus! Este documento te guiará a través del proceso de contribución.
+¡Gracias por tu interés en contribuir a Surviving Chernarus! Este documento te
+guiará a través del proceso de contribución.
 
 ## 📋 Tabla de Contenidos
 
@@ -14,17 +15,23 @@
 
 ## 📜 Código de Conducta
 
-Este proyecto se adhiere al [Contributor Covenant](https://www.contributor-covenant.org/). Al participar, se espera que mantengas este código. Por favor reporta cualquier comportamiento inaceptable.
+Este proyecto se adhiere al
+[Contributor Covenant](https://www.contributor-covenant.org/). Al participar, se
+espera que mantengas este código. Por favor reporta cualquier comportamiento
+inaceptable.
 
 ## 🎯 ¿Cómo Puedo Contribuir?
 
 ### 🐛 Reportar Bugs
 
 Antes de crear un bug report:
+
 - Verifica que el bug no haya sido reportado previamente
 - Asegúrate de tener la información más reciente del proyecto
 
-Usa nuestro [template de bug report](.github/ISSUE_TEMPLATE/bug_report.yml) que incluye:
+Usa nuestro [template de bug report](.github/ISSUE_TEMPLATE/bug_report.yml) que
+incluye:
+
 - Información del entorno (rpi, lenlab, versiones)
 - Componente afectado (Traefik, PostgreSQL, n8n, etc.)
 - Pasos para reproducir
@@ -33,7 +40,9 @@ Usa nuestro [template de bug report](.github/ISSUE_TEMPLATE/bug_report.yml) que 
 
 ### ✨ Sugerir Features
 
-Usa nuestro [template de feature request](.github/ISSUE_TEMPLATE/feature_request.yml) para:
+Usa nuestro
+[template de feature request](.github/ISSUE_TEMPLATE/feature_request.yml) para:
+
 - Explicar el problema que resuelve la feature
 - Describir la solución propuesta
 - Considerar alternativas
@@ -41,7 +50,9 @@ Usa nuestro [template de feature request](.github/ISSUE_TEMPLATE/feature_request
 
 ### 🏗️ Tareas de Infraestructura
 
-Para tareas de infraestructura, usa el [template de infrastructure task](.github/ISSUE_TEMPLATE/infrastructure_task.yml):
+Para tareas de infraestructura, usa el
+[template de infrastructure task](.github/ISSUE_TEMPLATE/infrastructure_task.yml):
+
 - Tipo de tarea (upgrade, mantenimiento, deployment)
 - Nodos afectados (rpi, lenlab, ambos)
 - Plan de implementación
@@ -51,7 +62,8 @@ Para tareas de infraestructura, usa el [template de infrastructure task](.github
 ### 💻 Contribuciones de Código
 
 1. **Fork** el repositorio
-2. **Crea** una branch para tu feature (`git checkout -b feature/amazing-feature`)
+2. **Crea** una branch para tu feature
+   (`git checkout -b feature/amazing-feature`)
 3. **Commit** tus cambios (`git commit -m 'Add amazing feature'`)
 4. **Push** a la branch (`git push origin feature/amazing-feature`)
 5. **Abre** un Pull Request
@@ -116,7 +128,8 @@ git checkout -b infra/upgrade-postgres-version
 
 ### 3. Commits
 
-Usa commits descriptivos siguiendo [Conventional Commits](https://www.conventionalcommits.org/):
+Usa commits descriptivos siguiendo
+[Conventional Commits](https://www.conventionalcommits.org/):
 
 ```bash
 git commit -m "feat: add Prometheus alerting rules for n8n"
@@ -126,6 +139,7 @@ git commit -m "infra: upgrade PostgreSQL to version 15"
 ```
 
 **Tipos de commit:**
+
 - `feat`: Nueva funcionalidad
 - `fix`: Corrección de bug
 - `docs`: Documentación
@@ -339,7 +353,8 @@ Antes de enviar tu PR, verifica:
 
 ¡Gracias por contribuir a Surviving Chernarus! 🎉
 
-Cada contribución, sin importar su tamaño, hace que este proyecto sea mejor para toda la comunidad.
+Cada contribución, sin importar su tamaño, hace que este proyecto sea mejor para
+toda la comunidad.
 
 ---
 

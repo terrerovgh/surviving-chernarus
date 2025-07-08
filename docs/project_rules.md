@@ -4,7 +4,8 @@
 
 - Ecosistema digital personal, automatizado y seguro
 - Clúster híbrido: Raspberry Pi 5 (rpi) + Lenovo (lenlab)
-- Servicios core: PostgreSQL, n8n, Traefik, Pi-hole, Squid, Hugo, Prometheus, Grafana
+- Servicios core: PostgreSQL, n8n, Traefik, Pi-hole, Squid, Hugo, Prometheus,
+  Grafana
 - Automatización: n8n, scripts, GitHub Actions
 - Dominio: terrerov.com y subdominios temáticos
 
