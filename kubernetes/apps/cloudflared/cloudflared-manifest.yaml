@@ -1,0 +1,47 @@
+# kubernetes/apps/cloudflared/cloudflared-manifest.yaml
+# Manifiesto para el proxy DNS-over-HTTPS (DoH) de Cloudflare.
+# Asegura todas las consultas DNS que salen del Colectivo.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared-doh
+  namespace: networking
+spec:
+  replicas: 2 # Alta disponibilidad para un servicio crítico
+  selector:
+    matchLabels:
+      app: cloudflared-doh
+  template:
+    metadata:
+      labels:
+        app: cloudflared-doh
+    spec:
+      containers:
+        - name: cloudflared
+          image: cloudflare/cloudflared:latest
+          args:
+            - "proxy-dns"
+            - "--address"
+            - "0.0.0.0"
+            - "--port"
+            - "5053"
+            # TODO: (Operador) Puedes cambiar los upstreams si lo deseas
+            - "--upstream"
+            - "https://1.1.1.1/dns-query"
+            - "--upstream"
+            - "https://1.0.0.1/dns-query"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cloudflared-svc
+  namespace: networking
+spec:
+  selector:
+    app: cloudflared-doh
+  ports:
+    - name: dns-proxy
+      port: 5053
+      targetPort: 5053
+      protocol: UDP
+  # La IP de este ClusterIP es la que debe ir en la configuración de Pi-hole

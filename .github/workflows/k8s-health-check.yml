@@ -1,0 +1,69 @@
+name: Kubernetes Cluster Health Check
+
+on:
+  schedule:
+    # Run every 6 hours
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    name: Check Kubernetes Cluster Health
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: 'latest'
+
+    - name: Configure kubectl (if secrets are available)
+      if: ${{ secrets.KUBECONFIG }}
+      run: |
+        mkdir -p $HOME/.kube
+        echo "${{ secrets.KUBECONFIG }}" | base64 -d > $HOME/.kube/config
+        chmod 600 $HOME/.kube/config
+
+    - name: Check cluster status
+      if: ${{ secrets.KUBECONFIG }}
+      run: |
+        kubectl cluster-info
+        kubectl get nodes -o wide
+        kubectl get pods -A --field-selector=status.phase!=Running
+
+    - name: Check resource usage
+      if: ${{ secrets.KUBECONFIG }}
+      run: |
+        kubectl top nodes || echo "Metrics server not available"
+        kubectl top pods -A || echo "Metrics server not available"
+
+    - name: Check persistent volumes
+      if: ${{ secrets.KUBECONFIG }}
+      run: |
+        kubectl get pv,pvc -A
+
+    - name: Generate health report
+      if: ${{ secrets.KUBECONFIG }}
+      run: |
+        echo "# Kubernetes Cluster Health Report" > health-report.md
+        echo "Generated on: $(date)" >> health-report.md
+        echo "" >> health-report.md
+        echo "## Cluster Info" >> health-report.md
+        kubectl cluster-info >> health-report.md
+        echo "" >> health-report.md
+        echo "## Node Status" >> health-report.md
+        kubectl get nodes -o wide >> health-report.md
+        echo "" >> health-report.md
+        echo "## System Pods" >> health-report.md
+        kubectl get pods -n kube-system >> health-report.md
+
+    - name: Upload health report
+      if: ${{ secrets.KUBECONFIG }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: cluster-health-report
+        path: health-report.md
+        retention-days: 30

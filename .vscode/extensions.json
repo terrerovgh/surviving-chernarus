@@ -1,0 +1,57 @@
+{
+  "recommendations": [
+    // GitHub Copilot y herramientas de IA
+    "github.copilot",
+    "github.copilot-chat",
+    "github.vscode-github-actions",
+
+    // Docker y Kubernetes
+    "ms-vscode-remote.remote-containers",
+    "ms-azuretools.vscode-docker",
+    "ms-kubernetes-tools.vscode-kubernetes-tools",
+    "redhat.vscode-yaml",
+
+    // Shell scripting y desarrollo
+    "timonwong.shellcheck",
+    "foxundermoon.shell-format",
+    "mads-hartmann.bash-ide-vscode",
+
+    // Markdown y documentación
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    "bierner.markdown-mermaid",
+    "streetsidesoftware.code-spell-checker",
+
+    // Git y control de versiones
+    "eamodio.gitlens",
+    "github.vscode-pull-request-github",
+    "donjayamanne.githistory",
+
+    // Python (para scripts de automatización)
+    "ms-python.python",
+    "ms-python.pylint",
+    "ms-python.black-formatter",
+
+    // JavaScript/TypeScript (para posibles herramientas web)
+    "ms-vscode.vscode-typescript-next",
+    "esbenp.prettier-vscode",
+    "ms-vscode.vscode-json",
+
+    // Utilidades generales
+    "ms-vscode.hexeditor",
+    "rogalmic.bash-debug",
+    "ms-vscode-remote.remote-ssh",
+    "ms-vscode-remote.remote-ssh-edit",
+
+    // Infraestructura como código
+    "hashicorp.terraform",
+    "redhat.ansible",
+
+    // Monitoring y logs
+    "ms-vscode.vscode-log-viewer",
+
+    // Nginx configuration
+    "raynigon.nginx-formatter",
+    "ahmadalli.vscode-nginx-conf"
+  ]
+}

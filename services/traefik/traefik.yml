@@ -1,0 +1,101 @@
+# ============================================================================
+# TRAEFIK CONFIGURATION - CHERNARUS COLLECTIVE GATEWAY
+# ============================================================================
+# TODAS las configuraciones se manejan a través de variables de entorno
+# definidas en el archivo .env del proyecto.
+
+# Configuración estática
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# Configuración de la API - Controlado por variables de entorno
+api:
+  dashboard: true
+  insecure: true
+
+# Puntos de entrada
+entryPoints:
+  web:
+    address: ":80"
+    # Redirección automática a HTTPS habilitada para producción
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+
+  websecure:
+    address: ":443"
+
+# Proveedores de configuración
+providers:
+  # Proveedor Docker para desarrollo local
+  docker:
+    exposedByDefault: false
+    # network se controla via CLI args
+
+  # Archivos de configuración adicionales
+  file:
+    filename: "/etc/traefik/dynamic.yml"
+    watch: true
+
+# Certificados SSL automáticos con Let's Encrypt
+# Para desarrollo local, usamos DNS challenge con Cloudflare
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: ${TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL}
+      storage: ${TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE}
+      dnsChallenge:
+        provider: cloudflare
+        delayBeforeCheck: "60"
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+      # HTTP Challenge para desarrollo local (comentado)
+      # httpChallenge:
+      #   entryPoint: web
+
+# Logging - nivel controlado por ${TRAEFIK_LOG_LEVEL}
+log:
+  # level: controlado via CLI args
+  filePath: "/var/log/traefik/traefik.log"
+
+accessLog:
+  filePath: "/var/log/traefik/access.log"
+  format: json
+
+# Métricas para Prometheus - habilitado via CLI args
+metrics:
+  prometheus:
+    addEntryPointsLabels: true
+    addServicesLabels: true
+    buckets:
+      - 0.1
+      - 0.3
+      - 1.2
+      - 5.0
+
+# Configuración experimental
+# experimental:
+#   plugins:
+#     # TODO: Añadir plugins específicos si es necesario
+
+# ============================================================================
+# CONFIGURACIONES ESPECÍFICAS DEL COLECTIVO CHERNARUS
+# ============================================================================
+
+# TODO: Configurar middlewares personalizados para:
+# - Rate limiting por IP
+# - Autenticación OAuth2
+# - Headers de seguridad
+# - Compresión de respuestas
+# - Logging detallado de accesos
+
+# TODO: Configurar servicios específicos:
+# - hq.terrerov.com -> HQ Dashboard
+# - n8n.terrerov.com -> n8n Engine
+# - radio.terrerov.com -> Radio Chernarus
+# - monitor.terrerov.com -> Grafana

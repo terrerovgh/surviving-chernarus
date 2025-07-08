@@ -1,0 +1,138 @@
+{
+  "folders": [
+    {
+      "name": "� Surviving Chernarus",
+      "path": "."
+    },
+    {
+      "name": "📚 Documentation",
+      "path": "./docs"
+    },
+    {
+      "name": "🐳 Services",
+      "path": "./services"
+    },
+    {
+      "name": "☸️ Kubernetes",
+      "path": "./kubernetes"
+    },
+    {
+      "name": "🛠️ Scripts",
+      "path": "./scripts"
+    }
+  ],
+  "settings": {
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    },
+    "python.defaultInterpreterPath": "/usr/bin/python3",
+    "python.formatting.provider": "black",
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true,
+    "terminal.integrated.defaultProfile.linux": "fish",
+    "terminal.integrated.profiles.linux": {
+      "fish": {
+        "path": "/usr/bin/fish"
+      },
+      "bash": {
+        "path": "/bin/bash"
+      }
+    },
+    "workbench.iconTheme": "material-icon-theme",
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false,
+    "docker.dockerPath": "/usr/bin/docker",
+    "yaml.schemas": {
+      "/home/terrerov/.vscode/extensions/continue.continue-1.0.15-linux-x64/config-yaml-schema.json": [
+        ".continue/**/*.yaml"
+      ],
+      "https://json.schemastore.org/kustomization": "kustomization.yaml",
+      "https://json.schemastore.org/github-workflow": ".github/workflows/*.yml",
+      "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": "docker-compose*.yml",
+      "kubernetes://schema/v1%40service": "file:///home/terrerov/surviving-chernarus/kubernetes/apps/cloudflared/cloudflared-manifest.yaml"
+    },
+    "files.associations": {
+      "*.yml": "yaml",
+      "*.yaml": "yaml",
+      "Dockerfile*": "dockerfile",
+      "*.conf": "properties",
+      "*.template": "properties"
+    },
+    "terminal.integrated.env.linux": {
+      "COMPOSE_PROJECT_NAME": "chernarus"
+    },
+    "containers.containerCommand": "/usr/bin/docker"
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "ms-azuretools.vscode-docker",
+      "ms-kubernetes-tools.vscode-kubernetes-tools",
+      "redhat.vscode-yaml",
+      "bmalehorn.vscode-fish",
+      "eamodio.gitlens",
+      "github.copilot",
+      "timonwong.shellcheck"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "🚀 Deploy Chernarus Services",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": ["up", "-d"],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "detail": "Despliega todos los servicios de Surviving Chernarus"
+      },
+      {
+        "label": "🛑 Stop Chernarus Services",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": ["down"],
+        "group": "build",
+        "detail": "Detiene todos los servicios"
+      },
+      {
+        "label": "📊 Check Services Status",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": ["ps"],
+        "group": "test",
+        "detail": "Verifica el estado de los servicios"
+      },
+      {
+        "label": "🔄 Restart Services",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": ["restart"],
+        "group": "build",
+        "detail": "Reinicia todos los servicios"
+      },
+      {
+        "label": "📝 View Logs",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": ["logs", "-f"],
+        "group": "test",
+        "detail": "Muestra logs en tiempo real"
+      },
+      {
+        "label": "🧹 Clean Environment",
+        "type": "shell",
+        "command": "bash",
+        "args": ["-c", "docker-compose down && docker system prune -f"],
+        "group": "build",
+        "detail": "Limpia el entorno Docker"
+      }
+    ]
+  }
+}

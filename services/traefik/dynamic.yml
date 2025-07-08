@@ -1,0 +1,146 @@
+# ============================================================================
+# TRAEFIK DYNAMIC CONFIGURATION - CHERNARUS COLLECTIVE
+# ============================================================================
+# Configuración dinámica para middlewares, servicios y rutas específicas
+# Este archivo se puede recargar en caliente sin reiniciar Traefik
+
+# Middlewares de seguridad y funcionalidad
+http:
+  middlewares:
+    # Middleware de headers de seguridad
+    chernarus-security-headers:
+      headers:
+        customRequestHeaders:
+          X-Chernarus-Request: "Colectivo-Auth"
+        customResponseHeaders:
+          X-Chernarus-Response: "Beacon-Proxy"
+          X-Frame-Options: "DENY"
+          X-Content-Type-Options: "nosniff"
+          Referrer-Policy: "strict-origin-when-cross-origin"
+          Permissions-Policy: "camera=(), microphone=(), geolocation=()"
+        sslRedirect: true
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+
+    # Middleware de compresión
+    chernarus-compress:
+      compress:
+        excludedContentTypes:
+          - "text/event-stream"
+
+    # Middleware de rate limiting
+    chernarus-rate-limit:
+      rateLimit:
+        average: 100
+        period: "1m"
+        burst: 200
+
+    # Middleware de autenticación básica (para servicios administrativos)
+    chernarus-auth:
+      basicAuth:
+        users:
+          # TODO: Generar hash de password usando htpasswd
+          # htpasswd -nb admin password
+          - "admin:$2y$10$example_hash_here"
+
+    # Middleware de IP whitelist para servicios críticos
+    chernarus-internal-only:
+      ipWhiteList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "192.168.0.0/24"  # Red del Colectivo
+          - "172.16.0.0/12"   # Redes Docker
+          - "10.0.0.0/8"      # Redes Kubernetes
+
+  # Servicios externos que no están en Docker/K8s
+  services:
+    # Pi-hole en el nodo rpi
+    pihole-admin:
+      loadBalancer:
+        servers:
+          # TODO: Usar variable de entorno ${RPI_MASTER_IP}
+          - url: "http://192.168.0.2:80"
+
+    # Squid admin en el nodo rpi
+    squid-admin:
+      loadBalancer:
+        servers:
+          # TODO: Usar variable de entorno ${RPI_MASTER_IP}:${SQUID_ADMIN_PORT}
+          - url: "http://192.168.0.2:3128"
+
+  # Rutas adicionales
+  routers:
+    # Pi-hole Admin Interface
+    pihole:
+      rule: "Host(`pihole.terrerov.com`)"
+      service: pihole-admin
+      middlewares:
+        - chernarus-security-headers
+        - chernarus-internal-only
+      tls:
+        certResolver: letsencrypt
+
+    # Squid Admin Interface
+    squid:
+      rule: "Host(`squid.{{ env \"YOUR_DOMAIN_NAME\" }}`)"
+      service: squid-admin
+      middlewares:
+        - chernarus-security-headers
+        - chernarus-internal-only
+        - chernarus-auth
+      tls:
+        certResolver: letsencrypt
+
+    # Traefik Dashboard (solo acceso interno)
+    api:
+      rule: "Host(`traefik.{{ env \"YOUR_DOMAIN_NAME\" }}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
+      service: api@internal
+      middlewares:
+        - chernarus-security-headers
+        - chernarus-internal-only
+      tls:
+        certResolver: letsencrypt
+
+# ============================================================================
+# CONFIGURACIONES TCP (para servicios que no son HTTP)
+# ============================================================================
+tcp:
+  # TODO: Configurar servicios TCP si es necesario (SSH, bases de datos, etc.)
+  services: {}
+  routers: {}
+
+# ============================================================================
+# CONFIGURACIONES TLS
+# ============================================================================
+tls:
+  options:
+    # Configuración TLS segura por defecto
+    default:
+      sslStrategies:
+        - "tls.SniStrict"
+      minVersion: "VersionTLS12"
+      cipherSuites:
+        - "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305"
+        - "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+        - "TLS_RSA_WITH_AES_256_GCM_SHA384"
+        - "TLS_RSA_WITH_AES_128_GCM_SHA256"
+
+    # Configuración TLS moderna para servicios críticos
+    modern:
+      minVersion: "VersionTLS13"
+
+# ============================================================================
+# NOTAS DE CONFIGURACIÓN
+# ============================================================================
+# TODO: Integrar este archivo con variables de entorno para:
+# - IPs de servicios (${RPI_MASTER_IP}, ${LENLAB_WORKER_IP})
+# - Puertos de servicios (${SQUID_ADMIN_PORT}, etc.)
+# - Credenciales de autenticación básica
+# - Configuraciones de rate limiting personalizadas
+#
+# Las variables de entorno se pueden usar con la sintaxis:
+# {{ env "VARIABLE_NAME" }}
+#
+# Ejemplo: url: "http://{{ env \"RPI_MASTER_IP\" }}:{{ env \"SQUID_ADMIN_PORT\" }}"

@@ -1,0 +1,51 @@
+# Pi-hole Configuration for Chernarus Collective DNS
+# This file contains custom DNS configurations for the Chernarus network
+
+# ============================================================================
+# CUSTOM DNS ENTRIES FOR CHERNARUS SERVICES
+# ============================================================================
+
+# Main domain
+192.168.0.2 terrerov.com
+
+# Chernarus services (pointing to Traefik on rpi)
+192.168.0.2 hq.terrerov.com
+192.168.0.2 n8n.terrerov.com
+192.168.0.2 radio.terrerov.com
+192.168.0.2 monitor.terrerov.com
+192.168.0.2 files.terrerov.com
+192.168.0.2 vault.terrerov.com
+
+# Administrative interfaces
+192.168.0.2 pihole.terrerov.com
+192.168.0.2 traefik.terrerov.com
+192.168.0.2 squid.terrerov.com
+
+# Direct service access (for troubleshooting)
+192.168.0.2 rpi.local
+192.168.0.3 lenlab.local
+
+# ============================================================================
+# INTERNAL SERVICE DISCOVERY
+# ============================================================================
+
+# Kubernetes internal services
+192.168.0.3 postgres.chernarus.local
+192.168.0.3 n8n.chernarus.local
+192.168.0.3 redis.chernarus.local
+
+# Docker Compose services (development)
+127.0.0.1 postgres_db.docker.local
+127.0.0.1 n8n_engine.docker.local
+
+# ============================================================================
+# SECURITY AND FILTERING
+# ============================================================================
+
+# Block malicious domains (examples - Pi-hole will handle most of this automatically)
+0.0.0.0 malware.example.com
+0.0.0.0 phishing.example.com
+
+# TODO: Add custom blocklists specific to our use case
+# TODO: Configure upstream DNS servers (Cloudflare, Quad9)
+# TODO: Set up conditional forwarding for local domains

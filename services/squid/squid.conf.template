@@ -1,0 +1,166 @@
+# ============================================================================
+# PLANTILLA DE CONFIGURACIÓN SQUID PROXY (BEREZINO_CHECKPOINT)
+# ============================================================================
+# TODAS las configuraciones se parametrizan con variables de entorno
+# Este archivo debe ser procesado antes de montar en el contenedor
+
+# =============================================================================
+# CONFIGURACIÓN BÁSICA DEL CHECKPOINT BEREZINO
+# =============================================================================
+
+# Puerto de escucha para tráfico HTTP transparente
+http_port ${SQUID_TRANSPARENT_PORT} transparent
+
+# Puerto de escucha para administración
+http_port ${SQUID_ADMIN_PORT}
+
+# Puerto de escucha para tráfico HTTPS con SSL Bumping
+# TODO: Generar certificados y descomentar.
+# https_port 3130 cert=/etc/squid/certs/myCA.pem key=/etc/squid/certs/myCA.key ssl-bump transparent
+
+# =============================================================================
+# CONTROL DE ACCESO Y ACLS
+# =============================================================================
+
+# Permitir acceso desde la red del Colectivo Chernarus
+acl localnet src ${NETWORK_SUBNET}           # Red principal del hotspot
+acl localnet src 172.16.0.0/12         # Redes Docker
+acl localnet src 10.0.0.0/8            # Redes Kubernetes
+
+# ACLs para puertos seguros
+acl SSL_ports port 443
+acl Safe_ports port 80          # http
+acl Safe_ports port 21          # ftp
+acl Safe_ports port 443         # https
+acl Safe_ports port 70          # gopher
+acl Safe_ports port 210         # wais
+acl Safe_ports port 1025-65535  # unregistered ports
+acl Safe_ports port 280         # http-mgmt
+acl Safe_ports port 488         # gss-http
+acl Safe_ports port 591         # filemaker
+acl Safe_ports port 777         # multiling http
+
+# Método CONNECT solo para puertos SSL
+acl CONNECT method CONNECT
+
+# =============================================================================
+# REGLAS DE ACCESO
+# =============================================================================
+
+# Denegar requests a puertos no seguros
+http_access deny !Safe_ports
+
+# Denegar CONNECT a puertos no SSL
+http_access deny CONNECT !SSL_ports
+
+# Permitir acceso desde localhost para management
+http_access allow localhost manager
+http_access deny manager
+
+# Permitir acceso desde la red local del Colectivo
+http_access allow localnet
+http_access allow localhost
+
+# Denegar todo lo demás
+http_access deny all
+
+# =============================================================================
+# CONFIGURACIÓN DE CACHE
+# =============================================================================
+
+# Directorio de cache (100MB, 16 subdirectorios de primer nivel, 256 de segundo nivel)
+cache_dir ufs /var/spool/squid 100 16 256
+
+# Configuraciones de memoria
+cache_mem 64 MB
+maximum_object_size_in_memory 512 KB
+maximum_object_size 4 MB
+
+# Configuraciones de refresco
+refresh_pattern ^ftp:           1440    20%     10080
+refresh_pattern ^gopher:        1440    0%      1440
+refresh_pattern -i (/cgi-bin/|\?) 0     0%      0
+refresh_pattern .               0       20%     4320
+
+# =============================================================================
+# SSL BUMPING CONFIGURATION (EXPERIMENTAL)
+# TODO: Implementar cuando se generen los certificados
+# =============================================================================
+
+# Programa para generar certificados SSL dinámicos
+# sslcrtd_program /usr/lib/squid/security_file_certgen -s /var/lib/squid/ssl_db -M 4MB
+
+# Configuración de SSL Bumping
+# ssl_bump peek step1
+# ssl_bump bump step2
+# ssl_bump splice step3
+
+# ACL para sitios que requieren splice (no bumping)
+# acl splice_sites ssl::server_name .terrerov.com
+# acl splice_sites ssl::server_name .github.com
+# ssl_bump splice splice_sites
+
+# =============================================================================
+# LOGGING Y MONITOREO
+# =============================================================================
+
+# Log de acceso en formato estándar
+access_log daemon:/var/log/squid/access.log squid
+
+# Log de cache en formato personalizado
+cache_log /var/log/squid/cache.log
+
+# Nivel de debug (0=mínimo, 9=máximo)
+debug_options ALL,1
+
+# Estadísticas para monitoreo
+cachemgr_passwd <CACHEMGR_PASSWORD_PLACEHOLDER> all
+
+# =============================================================================
+# CONFIGURACIONES DE SEGURIDAD
+# =============================================================================
+
+# Ocultar información del servidor
+httpd_suppress_version_string on
+forwarded_for delete
+via off
+
+# Prevenir ataques de cache poisoning
+ignore_expect_100 on
+
+# Timeouts de seguridad
+connect_timeout 60 seconds
+request_timeout 60 seconds
+
+# =============================================================================
+# CONFIGURACIONES ESPECÍFICAS DEL COLECTIVO
+# =============================================================================
+
+# TODO: Configurar routing específico para servicios del Colectivo
+# TODO: Implementar cache específico para contenido estático de Hugo
+# TODO: Añadir reglas para VPN traffic routing
+# TODO: Configurar integración con Pi-hole para DNS filtering
+
+# Configuración para el dashboard de administración
+http_access allow localhost manager
+http_port 3128
+
+# Headers personalizados para identificar tráfico del Colectivo
+request_header_add X-Chernarus-Proxy "Berezino-Checkpoint" all
+request_header_add X-Forwarded-Proto https
+
+# =============================================================================
+# NOTAS DE CONFIGURACIÓN
+# =============================================================================
+
+# Este archivo debe ser montado en el contenedor de Squid como:
+# /etc/squid/squid.conf
+#
+# Comandos útiles:
+# - Recarga de configuración: squid -k reconfigure
+# - Test de configuración: squid -k parse
+# - Ver estadísticas: squidclient -h localhost cache_object://localhost/info
+#
+# TODO: Crear script de inicialización para generar certificados SSL
+# TODO: Integrar con sistema de monitoreo para alertas de tráfico inusual
+# TODO: Implementar rotación automática de logs

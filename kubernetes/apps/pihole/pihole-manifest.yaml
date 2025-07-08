@@ -1,0 +1,120 @@
+# kubernetes/apps/pihole/pihole-manifest.yaml
+# Manifiesto de despliegue para Pi-hole, el corazón del "DNS Shield".
+# Se despliega como un StatefulSet para tener un nombre de red predecible.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pihole
+  namespace: networking # Asumimos un namespace 'networking' para servicios de red
+spec:
+  serviceName: "pihole-svc"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pihole
+  template:
+    metadata:
+      labels:
+        app: pihole
+    spec:
+      # TODO: (Operador) Considerar usar un nodeSelector para fijar este pod a 'rpi-master'
+      # por su rol crítico en la red de baja latencia.
+      # nodeSelector:
+      #   kubernetes.io/hostname: rpi-master
+      containers:
+        - name: pihole
+          image: pihole/pihole:latest
+          ports:
+            - containerPort: 53
+              name: dns-tcp
+              protocol: TCP
+            - containerPort: 53
+              name: dns-udp
+              protocol: UDP
+            - containerPort: 80
+              name: http
+              protocol: TCP
+          env:
+            - name: TZ
+              value: "America/New_York" # <..._PLACEHOLDER_..._> Reemplaza con tu zona horaria
+            - name: WEBPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pihole-secret
+                  key: webpassword
+            # Apuntamos a nuestro servicio cloudflared para DoH
+            - name: PIHOLE_DNS_
+              value: "10.43.0.10#5053" # <..._PLACEHOLDER_..._> TODO: Reemplazar con la IP del ClusterIP del servicio 'cloudflared-svc'
+            - name: DNSMASQ_LISTENING
+              value: "all"
+          volumeMounts:
+            - name: pihole-config
+              mountPath: /etc/pihole
+            - name: pihole-custom-dns
+              mountPath: /etc/dnsmasq.d
+      volumes:
+        - name: pihole-config
+          persistentVolumeClaim:
+            claimName: pihole-config-pvc
+        - name: pihole-custom-dns
+          configMap:
+            name: pihole-custom-dns-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-svc
+  namespace: networking
+spec:
+  # TODO: (Operador) Para una IP predecible, considera usar un servicio de tipo LoadBalancer
+  # y configurar MetalLB en el clúster para asignar una IP fija de tu LAN.
+  # Por ahora, usaremos ClusterIP y accederemos a la UI vía port-forward o Traefik.
+  type: ClusterIP
+  selector:
+    app: pihole
+  ports:
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      protocol: TCP
+    - name: dns-udp
+      port: 53
+      targetPort: 53
+      protocol: UDP
+    - name: http-admin
+      port: 80
+      targetPort: 80
+      protocol: TCP
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pihole-config-pvc
+  namespace: networking
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi # Espacio para la configuración y logs de Pi-hole
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pihole-custom-dns-config
+  namespace: networking
+data:
+  "02-local-dns.conf": |
+    # Split-Horizon DNS para 'Surviving Chernarus'
+    # TODO: (Operador) Reemplaza 10.43.0.X con la IP del ClusterIP del servicio de Traefik
+    address=/.terrerov.com/10.43.0.X
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pihole-secret
+  namespace: networking
+type: Opaque
+stringData:
+  # TODO: (Operador) Reemplaza esta contraseña con el valor de .env
+  webpassword: "${PIHOLE_WEBPASSWORD}"

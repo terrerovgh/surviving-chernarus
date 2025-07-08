@@ -1,0 +1,106 @@
+# ============================================================================
+# HUGO CONFIGURATION FOR CHERNARUS HQ DASHBOARD
+# ============================================================================
+# TODAS las configuraciones usan variables de entorno cuando es posible
+# Las variables se interpolan durante el build del sitio
+
+# Configuración básica del sitio
+baseURL = "{{ getenv "HUGO_BASEURL" "https://hq.terrerov.com" }}"
+languageCode = "en-us"
+title = "{{ getenv "HUGO_TITLE" "Chernarus HQ - Collective Operations Center" }}"
+theme = "{{ getenv "HUGO_THEME" "chernarus-theme" }}"
+
+# Build settings
+publishDir = "{{ getenv "HUGO_BUILD_DIR" "public" }}"
+canonifyURLs = true
+relativeURLs = false
+
+# Markup settings
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true  # Allow HTML in markdown
+
+# Taxonomies
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+  series = "series"
+
+# Menu configuration
+[menu]
+  [[menu.main]]
+    name = "Dashboard"
+    url = "/"
+    weight = 10
+
+  [[menu.main]]
+    name = "Services"
+    url = "/services/"
+    weight = 20
+
+  [[menu.main]]
+    name = "Monitoring"
+    url = "/monitoring/"
+    weight = 30
+
+  [[menu.main]]
+    name = "Documentation"
+    url = "/docs/"
+    weight = 40
+
+# Site parameters
+[params]
+  description = "Chernarus Collective Operations Center - Your personal command center"
+  author = "{{ getenv "ADMIN_EMAIL" "victor@terrerov.com" }}"
+
+  # Chernarus theme settings
+  theme_color = "#1a472a"  # Dark green
+  accent_color = "#ff6b35"  # Orange for alerts/warnings
+
+  # Service URLs - usando variables de entorno
+  domain_name = "{{ getenv "YOUR_DOMAIN_NAME" "terrerov.com" }}"
+  n8n_url = "https://n8n.{{ getenv "YOUR_DOMAIN_NAME" "terrerov.com" }}"
+  grafana_url = "https://monitor.{{ getenv "YOUR_DOMAIN_NAME" "terrerov.com" }}"
+  pihole_url = "https://pihole.{{ getenv "YOUR_DOMAIN_NAME" "terrerov.com" }}/admin"
+  traefik_url = "https://traefik.{{ getenv "YOUR_DOMAIN_NAME" "terrerov.com" }}"
+
+  # API endpoints para contenido dinámico
+  api_base_dev = "{{ getenv "HUGO_API_BASE_DEV" "http://localhost:8000" }}"
+  api_base_prod = "{{ getenv "HUGO_API_BASE_PROD" "https://api.terrerov.com" }}"
+
+  # Configuración de entorno
+  environment = "{{ getenv "ENVIRONMENT" "development" }}"
+  debug = "{{ getenv "DEBUG" "true" }}"
+
+  # Social and contact
+  email = "{{ getenv "ADMIN_EMAIL" "victor@terrerov.com" }}"
+  github = "{{ getenv "GITHUB_REPO" "terrerov" }}"
+
+  # Features
+  enable_search = true
+  enable_dark_mode = true
+  enable_analytics = false  # Privacy-focused
+
+# Privacy settings
+[privacy]
+  [privacy.googleAnalytics]
+    disable = true
+  [privacy.youtube]
+    privacyEnhanced = true
+
+# Output formats
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+  page = ["HTML"]
+  section = ["HTML", "RSS"]
+
+# Custom content types
+[mediaTypes]
+  [mediaTypes."application/manifest+json"]
+    suffixes = ["webmanifest"]
+
+[outputFormats]
+  [outputFormats.WebAppManifest]
+    mediaType = "application/manifest+json"
+    rel = "manifest"

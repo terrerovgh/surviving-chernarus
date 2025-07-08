@@ -1,0 +1,68 @@
+# ============================================================================
+# DOCKER COMPOSE - MODO DESARROLLO SIN SSL
+# ============================================================================
+# Configuración para debugging sin certificados SSL
+
+version: "3.8"
+
+networks:
+  chernarus-frontend:
+    driver: bridge
+
+volumes:
+  traefik_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOG_PATH}/traefik
+
+services:
+  # TRAEFIK EN MODO DEBUG SIN SSL
+  reverse_proxy_debug:
+    image: traefik:v2.10
+    container_name: traefik_debug
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=chernarus-frontend"
+      - "--entrypoints.web.address=:80"
+      - "--log.level=DEBUG"
+      - "--log.filePath=/var/log/traefik/traefik.log"
+      - "--log.format=json"
+      - "--accesslog=true"
+      - "--accesslog.filePath=/var/log/traefik/access.log"
+      - "--accesslog.format=json"
+      - "--metrics.prometheus=true"
+      - "--api.debug=true"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "${LOG_PATH}/traefik:/var/log/traefik"
+    networks:
+      - chernarus-frontend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-debug.rule=Host(`traefik.${YOUR_DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik-debug.entrypoints=web"
+
+  # HQ DASHBOARD SIN SSL
+  chernarus-hq-debug:
+    image: nginx:alpine
+    container_name: hq_debug
+    volumes:
+      - "./services/hugo_site/public:/usr/share/nginx/html:ro"
+      - "./services/hugo_site/nginx.conf:/etc/nginx/conf.d/default.conf:ro"
+    networks:
+      - chernarus-frontend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hq-debug.rule=Host(`${YOUR_DOMAIN_NAME}`) || Host(`hq.${YOUR_DOMAIN_NAME}`)"
+      - "traefik.http.routers.hq-debug.entrypoints=web"
+      - "traefik.http.services.hq-debug.loadbalancer.server.port=80"

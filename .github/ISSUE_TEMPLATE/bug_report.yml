@@ -1,0 +1,145 @@
+name: 🐛 Bug Report
+description: Report a bug in the Surviving Chernarus project
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees:
+  - terrerov
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: What environment are you using?
+      placeholder: "e.g., Raspberry Pi 5 (rpi), Lenovo Worker (lenlab), Arch Linux ARM, Kubernetes v1.33.2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component is affected?
+      options:
+        - Kubernetes Cluster (rpi + lenlab)
+        - Docker Services (Compose Stack)
+        - Traefik (Reverse Proxy & SSL)
+        - PostgreSQL (Database)
+        - n8n (Automation Engine)
+        - Pi-hole (DNS Security)
+        - Squid (Berezino Checkpoint Proxy)
+        - Hugo (HQ Dashboard)
+        - Prometheus/Grafana (Monitoring)
+        - Cloudflare Integration
+        - Scripts & Automation
+        - Documentation
+        - Network Configuration
+        - Backup System
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How critical is this issue?
+      options:
+        - 🔴 Critical (Production Down)
+        - 🟠 High (Major Feature Broken)
+        - 🟡 Medium (Minor Feature Issue)
+        - 🟢 Low (Enhancement/Documentation)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: node
+    attributes:
+      label: Affected Node
+      description: Which node is experiencing the issue?
+      options:
+        - rpi (Raspberry Pi 5 - Master/Control Plane)
+        - lenlab (Lenovo Worker - Heavy Workloads)
+        - Both nodes
+        - Network between nodes
+        - External (Cloudflare/Internet)
+        - Unknown/Not applicable
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: Describe the issue you're experiencing
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and Error Messages
+      description: |
+        If applicable, add logs or error messages. Common log locations:
+        - Kubernetes: `kubectl logs <pod-name> -n <namespace>`
+        - Docker: `docker-compose logs <service>`
+        - System: `journalctl -u <service> -f`
+        - Traefik: Check traefik dashboard or logs
+        - Scripts: Output from script execution
+      render: shell
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: |
+        Add any other context about the problem here.
+
+        **Useful information to include:**
+        - Network connectivity between rpi ↔ lenlab
+        - Resource usage (CPU, Memory, Disk)
+        - Recent changes or deployments
+        - Related services that might be affected
+        - Screenshots or configuration files
+
+        **Quick diagnostic commands:**
+        ```bash
+        # Cluster status
+        kubectl get nodes -o wide
+
+        # Service status
+        docker-compose ps
+
+        # Resource usage
+        df -h && free -h
+
+        # Network connectivity
+        ping 192.168.0.2  # rpi
+        ping 192.168.0.3  # lenlab
+        ```

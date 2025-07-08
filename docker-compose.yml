@@ -1,0 +1,261 @@
+# Docker Compose para el entorno de desarrollo local en 'lenlab'.
+# Simula la arquitectura de servicios que se desplegará en K3s.
+# TODAS las configuraciones se manejan a través de variables de entorno.
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # BASE DE DATOS POSTGRESQL
+  # ============================================================================
+  database_server:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    hostname: ${POSTGRES_HOST}
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: ${POSTGRES_INITDB_ARGS}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ${LOG_PATH}/postgres:/var/log/postgresql
+    ports:
+      - "${DEV_POSTGRES_PORT}:${POSTGRES_PORT}"
+    networks:
+      - chernarus-backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ============================================================================
+  # N8N AUTOMATION ENGINE
+  # ============================================================================
+  automation_engine:
+    image: n8nio/n8n:latest
+    container_name: n8n_engine
+    hostname: ${N8N_HOST}
+    environment:
+      # Database configuration
+      - DB_TYPE=${N8N_DB_TYPE}
+      - DB_POSTGRESDB_HOST=${N8N_DB_POSTGRESDB_HOST}
+      - DB_POSTGRESDB_PORT=${N8N_DB_POSTGRESDB_PORT}
+      - DB_POSTGRESDB_DATABASE=${N8N_DB_POSTGRESDB_DATABASE}
+      - DB_POSTGRESDB_USER=${N8N_DB_POSTGRESDB_USER}
+      - DB_POSTGRESDB_PASSWORD=${N8N_DB_POSTGRESDB_PASSWORD}
+
+      # n8n specific configuration
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=${N8N_PORT}
+      - N8N_PROTOCOL=http
+
+      # External integrations
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    ports:
+      - "${DEV_N8N_PORT}:${N8N_PORT}"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ${LOG_PATH}/n8n:/var/log/n8n
+    networks:
+      - chernarus-backend
+      - chernarus-frontend
+    depends_on:
+      database_server:
+        condition: service_healthy
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`n8n.${YOUR_DOMAIN_NAME}`)"
+      - "traefik.http.routers.n8n.tls.certresolver=letsencrypt"
+      - "traefik.http.services.n8n.loadbalancer.server.port=${N8N_PORT}"
+      - "traefik.docker.network=chernarus_chernarus-frontend"
+
+  # ============================================================================
+  # TRAEFIK REVERSE PROXY
+  # ============================================================================
+  reverse_proxy:
+    image: traefik:v2.10
+    container_name: traefik_proxy
+    command:
+      - "--api.dashboard=${TRAEFIK_API_DASHBOARD}"
+      - "--api.insecure=${TRAEFIK_API_INSECURE}"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=chernarus-frontend"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=${TRAEFIK_CERTIFICATESRESOLVERS_LETSENCRYPT_ACME_STORAGE}"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--log.level=${TRAEFIK_LOG_LEVEL}"
+      - "--log.filePath=/var/log/traefik/traefik.log"
+      - "--log.format=json"
+      - "--accesslog=true"
+      - "--accesslog.filePath=/var/log/traefik/access.log"
+      - "--accesslog.format=json"
+      - "--metrics.prometheus=true"
+      - "--api.debug=true"
+      - "--serversTransport.insecureSkipVerify=true"
+    environment:
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "${DEV_TRAEFIK_PORT}:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./services/traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./services/traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro"
+      - "traefik_acme:/etc/traefik/acme"
+      - "${LOG_PATH}/traefik:/var/log/traefik"
+    networks:
+      - chernarus-frontend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${YOUR_DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik.tls.certresolver=letsencrypt"
+
+  # ============================================================================
+  # HQ DASHBOARD (HUGO STATIC SITE)
+  # ============================================================================
+  chernarus-hq-dashboard:
+    image: nginx:alpine
+    container_name: hq_dashboard
+    environment:
+      - HUGO_BASEURL=${HUGO_BASEURL}
+      - API_BASE_URL=${HUGO_API_BASE_DEV}
+    volumes:
+      - ./services/hugo_site/${HUGO_BUILD_DIR}:/usr/share/nginx/html:ro
+      - ./services/hugo_site/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${LOG_PATH}/nginx:/var/log/nginx
+    networks:
+      - chernarus-frontend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hq.rule=Host(`hq.${YOUR_DOMAIN_NAME}`) || Host(`${YOUR_DOMAIN_NAME}`)"
+      - "traefik.http.routers.hq.tls.certresolver=letsencrypt"
+
+  # ============================================================================
+  # SQUID PROXY (BEREZINO CHECKPOINT) - OPCIONAL PARA DESARROLLO
+  # ============================================================================
+  berezino_checkpoint:
+    image: ubuntu/squid:latest
+    container_name: squid_proxy
+    environment:
+      - SQUID_CACHE_SIZE_MB=${SQUID_CACHE_SIZE_MB}
+      - SQUID_CACHE_MEM_MB=${SQUID_CACHE_MEM_MB}
+      - SQUID_CACHEMGR_PASSWORD=${SQUID_CACHEMGR_PASSWORD}
+    volumes:
+      - ./services/squid/squid.conf:/etc/squid/squid.conf:ro
+      - squid_cache:/var/spool/squid
+      - ${LOG_PATH}/squid:/var/log/squid
+    ports:
+      - "${SQUID_TRANSPARENT_PORT}:3129"
+      - "${SQUID_ADMIN_PORT}:3128"
+    networks:
+      - chernarus-frontend
+    restart: unless-stopped
+    profiles:
+      - proxy  # Solo se levanta si se especifica el profile 'proxy'
+
+  # ============================================================================
+  # CUBA TATTOO STUDIO (CTS) - PROYECTO ASTRO REAL
+  # ============================================================================
+  cubatattoostudio-website:
+    image: nginx:alpine
+    container_name: cubatattoostudio_website
+    volumes:
+      - ${DATA_PATH}/projects/cubatattoostudio:/usr/share/nginx/html:ro
+      - ./services/projects/nginx-cubatattoostudio.conf:/etc/nginx/conf.d/default.conf:ro
+      - ${LOG_PATH}/nginx:/var/log/nginx
+    networks:
+      - chernarus-frontend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cubatattoostudio.rule=Host(`cts.${YOUR_DOMAIN_NAME}`)"
+      - "traefik.http.routers.cubatattoostudio.entrypoints=websecure"
+      - "traefik.http.routers.cubatattoostudio.tls=true"
+      - "traefik.http.routers.cubatattoostudio.tls.certresolver=letsencrypt"
+      - "traefik.http.services.cubatattoostudio.loadbalancer.server.port=80"
+
+  # ============================================================================
+  # HOSTING MANAGER - PANEL DE CONTROL PARA PROYECTOS
+  # ============================================================================
+  hosting-manager:
+    image: nginx:alpine
+    container_name: hosting_manager
+    volumes:
+      - ${DATA_PATH}/projects/hosting-manager:/usr/share/nginx/html:ro
+      - ./services/projects/nginx-hosting.conf:/etc/nginx/nginx.conf:ro
+      - ${LOG_PATH}/projects/hosting:/var/log/nginx
+    networks:
+      - chernarus-frontend
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hosting.rule=Host(`hosting.${YOUR_DOMAIN_NAME}`) || Host(`projects.${YOUR_DOMAIN_NAME}`)"
+      - "traefik.http.routers.hosting.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hosting.loadbalancer.server.port=80"
+
+# ============================================================================
+# VOLÚMENES PERSISTENTES
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/postgres
+
+  n8n_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/n8n
+
+  traefik_acme:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/traefik
+
+  squid_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/squid
+
+  projects_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH}/projects
+
+# ============================================================================
+# REDES
+# ============================================================================
+networks:
+  chernarus-backend:
+    driver: bridge
+    internal: true
+
+  chernarus-frontend:
+    driver: bridge

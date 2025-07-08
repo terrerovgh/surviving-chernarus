@@ -1,0 +1,214 @@
+name: 📋 Infrastructure Task
+description: Infrastructure maintenance, upgrades, or operational tasks
+title: "[INFRA] "
+labels: ["infrastructure", "ops"]
+assignees:
+  - terrerov
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for infrastructure-related tasks, maintenance, and operational work.
+
+  - type: dropdown
+    id: task_type
+    attributes:
+      label: Task Type
+      description: What type of infrastructure task is this?
+      options:
+        - 🔄 Upgrade (Software, OS, Dependencies)
+        - 🔧 Maintenance (Routine, Cleanup, Optimization)
+        - 🚀 Deployment (New Service, Configuration)
+        - 🔒 Security (Patches, Hardening, Certificates)
+        - 📊 Monitoring (Metrics, Alerts, Dashboards)
+        - 🗄️ Backup & Recovery (Strategy, Testing, Restoration)
+        - 🌐 Network (Configuration, Firewall, DNS)
+        - ⚡ Performance (Optimization, Scaling, Resources)
+        - 🧹 Cleanup (Deprecated Services, Old Data)
+        - 📚 Documentation (Runbooks, Procedures)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: affected_nodes
+    attributes:
+      label: Affected Nodes
+      description: Which nodes will be impacted?
+      options:
+        - rpi only (Raspberry Pi 5 - Control Plane)
+        - lenlab only (Lenovo Worker)
+        - Both nodes (rpi + lenlab)
+        - Network infrastructure
+        - External services (Cloudflare, etc.)
+        - All systems
+    validations:
+      required: true
+
+  - type: dropdown
+    id: services_affected
+    attributes:
+      label: Services Affected
+      description: Which services will be impacted?
+      multiple: true
+      options:
+        - Kubernetes Control Plane
+        - Docker Services Stack
+        - Traefik (Reverse Proxy)
+        - PostgreSQL Database
+        - n8n Automation Engine
+        - Pi-hole DNS
+        - Squid Proxy
+        - Hugo Dashboard
+        - Prometheus Monitoring
+        - Grafana Dashboards
+        - Backup System
+        - Network Services
+        - All Services
+        - No Service Downtime Expected
+
+  - type: dropdown
+    id: urgency
+    attributes:
+      label: Urgency
+      description: How urgent is this task?
+      options:
+        - 🔴 Critical (Security patch, system down)
+        - 🟠 High (Performance issue, scheduled maintenance)
+        - 🟡 Medium (Routine maintenance, improvements)
+        - 🟢 Low (Nice to have, future planning)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Task Description
+      description: Detailed description of what needs to be done
+      placeholder: |
+        Provide a clear description of the infrastructure task:
+
+        - What exactly needs to be done?
+        - Why is this task necessary?
+        - What are the expected outcomes?
+        - Any specific requirements or constraints?
+    validations:
+      required: true
+
+  - type: textarea
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: What needs to be done before starting this task?
+      placeholder: |
+        List any prerequisites or preparation needed:
+
+        - Backup requirements
+        - Dependency updates
+        - Resource availability
+        - Maintenance windows
+        - Communication requirements
+
+  - type: textarea
+    id: impact_assessment
+    attributes:
+      label: Impact Assessment
+      description: |
+        What is the expected impact of this task?
+
+        **Consider:**
+        - Service downtime (if any)
+        - Performance impact
+        - User experience changes
+        - Resource usage changes
+        - Security implications
+        - Rollback procedures
+      placeholder: |
+        Expected downtime: None / Brief / Extended
+        Performance impact: None / Minimal / Significant
+        User impact: None / Minor / Major
+        Risk level: Low / Medium / High
+
+  - type: textarea
+    id: implementation_plan
+    attributes:
+      label: Implementation Plan
+      description: Step-by-step plan for executing this task
+      placeholder: |
+        Provide a detailed implementation plan:
+
+        1. Pre-task preparations
+        2. Execution steps
+        3. Validation steps
+        4. Post-task cleanup
+        5. Rollback plan (if needed)
+
+        Include specific commands, scripts, or procedures where applicable.
+
+  - type: dropdown
+    id: maintenance_window
+    attributes:
+      label: Maintenance Window Required
+      description: Does this task require a maintenance window?
+      options:
+        - "No - Can be done during normal operations"
+        - "Yes - Brief window (< 30 minutes)"
+        - "Yes - Extended window (30 minutes - 2 hours)"
+        - "Yes - Major window (> 2 hours)"
+        - "Yes - Scheduled during low usage"
+
+  - type: textarea
+    id: testing_plan
+    attributes:
+      label: Testing & Validation
+      description: How will you verify the task was completed successfully?
+      placeholder: |
+        Describe the testing and validation steps:
+
+        - Health checks to perform
+        - Monitoring to review
+        - Functionality to test
+        - Performance benchmarks
+        - User acceptance criteria
+
+  - type: textarea
+    id: rollback_plan
+    attributes:
+      label: Rollback Plan
+      description: What's the plan if something goes wrong?
+      placeholder: |
+        Document the rollback strategy:
+
+        - Rollback triggers (what indicates failure?)
+        - Rollback steps
+        - Data recovery procedures
+        - Communication plan
+        - Lessons learned process
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-task Checklist
+      description: Complete before starting the task
+      options:
+        - label: Backup critical data/configurations
+        - label: Review documentation and procedures
+        - label: Verify resource availability
+        - label: Schedule maintenance window (if required)
+        - label: Prepare rollback plan
+        - label: Notify stakeholders (if required)
+        - label: Test in development environment (if applicable)
+
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Additional Notes
+      description: Any other relevant information
+      placeholder: |
+        Include any additional context:
+
+        - Links to documentation
+        - Related tickets or tasks
+        - Vendor recommendations
+        - Lessons from previous similar tasks
+        - Special considerations

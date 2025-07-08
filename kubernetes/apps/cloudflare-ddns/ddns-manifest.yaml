@@ -1,0 +1,37 @@
+# kubernetes/apps/cloudflare-ddns/ddns-manifest.yaml
+# Manifiesto para el cliente de DNS Dinámico.
+# Mantiene la presencia global del Colectivo actualizada.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflare-ddns
+  namespace: networking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloudflare-ddns
+  template:
+    metadata:
+      labels:
+        app: cloudflare-ddns
+    spec:
+      containers:
+        - name: cloudflare-ddns
+          image: oznu/cloudflare-ddns:latest
+          environment:
+            # TODO: (Operador) Crear un K8s Secret 'cloudflare-api-secret' con tu API Key.
+            # No usar variables de entorno directamente para la API Key aquí.
+            - name: CF_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-api-secret
+                  key: apiKey
+            - name: CF_API_EMAIL
+              value: "${CLOUDFLARE_EMAIL}" # <..._PLACEHOLDER_..._> De .env
+            - name: DOMAINS
+              value: "terrerov.com,n8n.terrerov.com,radio.terrerov.com,hq.terrerov.com" # <..._PLACEHOLDER_..._> Añade todos los subdominios a actualizar
+            - name: PROXIED
+              value: "true" # Usar el proxy de Cloudflare (CDN/WAF)
+            - name: RRTYPE
+              value: "A" # Para IPv4

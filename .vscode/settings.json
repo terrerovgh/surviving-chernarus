@@ -1,0 +1,234 @@
+{
+  // === Surviving Chernarus Project Configuration ===
+  // Optimized for GitHub Copilot, Infrastructure as Code, and DevOps workflows
+
+  // File associations for Chernarus infrastructure
+  "files.associations": {
+    "*.yml": "yaml",
+    "*.yaml": "yaml",
+    "Dockerfile*": "dockerfile",
+    "*.sh": "shellscript",
+    "docker-compose*.yml": "yaml",
+    "docker-compose*.yaml": "yaml",
+    "*.env*": "properties",
+    "*.conf": "nginx",
+    "*.toml": "toml",
+    "kubeconfig*": "yaml",
+    "*.service": "systemd",
+    "*traefik*": "yaml",
+    "*prometheus*": "yaml",
+    "*grafana*": "json",
+    "*.n8n": "json"
+  },
+
+  // YAML schemas for better IntelliSense
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": [
+      "docker-compose*.yml",
+      "docker-compose*.yaml"
+    ],
+    "https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json": [
+      "kubernetes/**/*.yml",
+      "kubernetes/**/*.yaml",
+      "k8s/**/*.yml",
+      "k8s/**/*.yaml"
+    ],
+    "https://json.schemastore.org/github-workflow.json": [
+      ".github/workflows/*.yml",
+      ".github/workflows/*.yaml"
+    ],
+    "https://json.schemastore.org/prometheus.json": [
+      "**/prometheus*.yml",
+      "**/alert*.yml"
+    ]
+  },
+
+  // Project-specific file exclusions
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.env.local": true,
+    "**/logs": true,
+    "**/*.log": true,
+    "**/backups": true,
+    "**/.pytest_cache": true,
+    "**/__pycache__": true,
+    "**/.*backup*": true
+  },
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "**/*.code-search": true,
+    "**/logs": true,
+    "**/*.log": true,
+    "**/backups": true,
+    "**/.pytest_cache": true,
+    "**/__pycache__": true
+  },
+
+  // === Editor Configuration ===
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.rulers": [80, 120],
+  "editor.wordWrap": "bounded",
+  "editor.wordWrapColumn": 120,
+
+  // === Language-specific settings ===
+  // Shell scripts (for Chernarus automation scripts)
+  "shellcheck.enable": true,
+  "shellcheck.run": "onSave",
+  "shellcheck.enableQuickFix": true,
+
+  // YAML (for Kubernetes, Docker Compose, CI/CD)
+  "yaml.format.enable": true,
+  "yaml.validate": true,
+  "yaml.completion": true,
+  "yaml.hover": true,
+  "yaml.format.singleQuote": false,
+  "yaml.format.bracketSpacing": true,
+
+  // Markdown (for project documentation)
+  "markdown.preview.breaks": true,
+  "markdown.preview.linkify": true,
+  "markdown.extension.toc.levels": "2..6",
+
+  // === Git Configuration ===
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  "git.suggestSmartCommit": true,
+  "git.autoStash": true,
+
+  // === Terminal Configuration ===
+  "terminal.integrated.defaultProfile.linux": "bash",
+  "terminal.integrated.cwd": "${workspaceFolder}",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.scrollback": 10000,
+  "terminal.integrated.copyOnSelection": true,
+
+  // === GitHub Copilot Configuration (Optimized for Infrastructure) ===
+  "github.copilot.enable": {
+    "*": true,
+    "yaml": true,
+    "yml": true,
+    "dockerfile": true,
+    "shellscript": true,
+    "markdown": true,
+    "javascript": true,
+    "typescript": true,
+    "python": true,
+    "json": true,
+    "toml": true,
+    "nginx": true,
+    "systemd": true
+  },
+  "github.copilot.inlineSuggest.enable": true,
+  "github.copilot.autocomplete.enable": true,
+  "github.copilot.chat.enable": true,
+  "github.copilot.advanced": {
+    "secret_key": "infrastructure",
+    "length": 500,
+    "temperature": 0.1,
+    "top_p": 1,
+    "debug.overrideEngine": "",
+    "debug.testOverrideProxyUrl": "",
+    "debug.filterLogCategories": []
+  },
+
+  // === UI/UX Configuration ===
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "vs-seti",
+  "workbench.startupEditor": "readme",
+  "workbench.editor.enablePreview": false,
+  "workbench.editor.enablePreviewFromQuickOpen": false,
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  "breadcrumbs.enabled": true,
+
+  // === Language Server Configuration ===
+  // Python (for automation scripts)
+  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.formatting.provider": "black",
+  "python.analysis.autoImportCompletions": true,
+
+  // JavaScript/TypeScript (for n8n workflows and web projects)
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+
+  // === Container and Kubernetes Configuration ===
+  "docker.enableDockerComposeLanguageService": true,
+  "docker.promptOnSystemPrune": false,
+  "docker.dockerodeOptions": {},
+  "kubernetes.outputFormat": "yaml",
+  "kubernetes.useKubeconfig": true,
+  "kubernetes.kubectlVersioning": "user-provided",
+  "kubernetes.checkForMinikubeUpgrade": false,
+  "kubernetes.autoCleanupOnDebugTerminate": true,
+
+  // === Extension-specific Settings ===
+  "redhat.telemetry.enabled": false,
+  "telemetry.telemetryLevel": "off",
+  "extensions.autoUpdate": false,
+  "extensions.ignoreRecommendations": false,
+
+  // === Project-specific Workspace Settings ===
+  "files.defaultLanguage": "yaml",
+  "files.eol": "\n",
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+
+  // === Custom User Snippets Path ===
+  "editor.snippetSuggestions": "top",
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+
+  // === Formatter Configuration ===
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "mads-hartmann.bash-ide-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "vscode.markdown-language-features"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.python"
+  },
+
+  // === Chernarus-specific Context ===
+  "chernarus.project.context": {
+    "infrastructure": "Raspberry Pi 5 (rpi) + Lenovo (lenlab)",
+    "services": [
+      "traefik",
+      "postgresql",
+      "n8n",
+      "pihole",
+      "squid",
+      "hugo",
+      "prometheus",
+      "grafana"
+    ],
+    "domain": "terrerov.com",
+    "architecture": "hybrid-cluster",
+    "monitoring": "prometheus-grafana",
+    "automation": "n8n-github-actions"
+  }
+}

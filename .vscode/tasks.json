@@ -1,0 +1,414 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    // === Chernarus Infrastructure Deployment ===
+    {
+      "label": "🚀 Deploy Chernarus Services",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["up", "-d"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": [],
+      "detail": "Deploy complete Surviving Chernarus infrastructure stack (Traefik, PostgreSQL, n8n, Pi-hole, etc.)"
+    },
+    {
+      "label": "🛑 Stop Chernarus Services",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["down"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Stop all Surviving Chernarus services and cleanup containers"
+    },
+    {
+      "label": "🔄 Restart Chernarus Services",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["restart"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Restart all running Chernarus services"
+    },
+    {
+      "label": "📝 View Service Logs",
+      "type": "shell",
+      "command": "docker-compose",
+      "args": ["logs", "-f"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "isBackground": true,
+      "problemMatcher": [],
+      "detail": "View real-time logs from all services"
+    },
+    {
+      "label": "Check Kubernetes Cluster Status",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/cluster-status.sh",
+      "args": [],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check the status of the Kubernetes cluster"
+    },
+    {
+      "label": "Deploy to Kubernetes",
+      "type": "shell",
+      "command": "kubectl",
+      "args": ["apply", "-f", "kubernetes/"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Deploy all Kubernetes manifests",
+      "dependsOn": "Check Kubernetes Cluster Status"
+    },
+    {
+      "label": "Lint Shell Scripts",
+      "type": "shell",
+      "command": "find",
+      "args": ["scripts/", "-name", "*.sh", "-exec", "shellcheck", "{}", "+"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": {
+        "owner": "shellcheck",
+        "fileLocation": "absolute",
+        "pattern": [
+          {
+            "regexp": "^(.+):(\\d+):(\\d+):\\s+(\\w+):\\s+(.+)$",
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "severity": 4,
+            "message": 5
+          }
+        ]
+      },
+      "detail": "Run ShellCheck on all shell scripts"
+    },
+    {
+      "label": "Format Markdown Files",
+      "type": "shell",
+      "command": "prettier",
+      "args": ["--write", "docs/**/*.md", "*.md"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Format all Markdown files using Prettier"
+    },
+    {
+      "label": "Backup Kubernetes Cluster",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/backup-chernarus.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Create a backup of the Kubernetes cluster"
+    },
+    {
+      "label": "Clean Docker Environment",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-c", "docker-compose down && docker system prune -f"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Clean up Docker containers, networks, and unused images"
+    },
+    {
+      "label": "Generate Documentation",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "find docs/ -name '*.md' -exec echo 'Processing: {}' \\; && echo 'Documentation updated'"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Generate and update project documentation"
+    },
+
+    // === Chernarus-specific Infrastructure Tasks ===
+    {
+      "label": "🏗️ Setup Kubernetes Master (rpi)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/k8s-setup-master.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "detail": "Setup Kubernetes master node on Raspberry Pi (rpi)"
+    },
+    {
+      "label": "👥 Join Kubernetes Worker (lenlab)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/k8s-setup-worker.sh",
+      "args": ["${input:joinToken}", "${input:joinHash}"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "detail": "Join lenlab as worker node to Kubernetes cluster"
+    },
+    {
+      "label": "📊 Chernarus Health Check",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🔍 Checking Chernarus Infrastructure...' && docker-compose ps && echo -e '\\n📡 Network Status:' && ping -c 2 192.168.0.2 && ping -c 2 192.168.0.3 && echo -e '\\n☸️ Kubernetes Status:' && kubectl get nodes -o wide 2>/dev/null || echo 'Kubernetes not available'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Complete health check of Chernarus infrastructure (Docker + K8s + Network)"
+    },
+    {
+      "label": "🌐 Check Traefik Dashboard",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🚀 Opening Traefik Dashboard...' && curl -s http://localhost:8080/api/rawdata | jq '.routers | keys' || echo 'Traefik not responding on port 8080'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check Traefik reverse proxy status and routes"
+    },
+    {
+      "label": "🗄️ PostgreSQL Health Check",
+      "type": "shell",
+      "command": "docker",
+      "args": ["exec", "chernarus-postgresql", "pg_isready", "-U", "postgres"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check PostgreSQL database health and connectivity"
+    },
+    {
+      "label": "🤖 n8n Workflow Status",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🤖 Checking n8n automation engine...' && curl -s http://localhost:5678/healthz || echo 'n8n not responding on port 5678'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check n8n automation engine status"
+    },
+    {
+      "label": "🛡️ Pi-hole DNS Status",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🛡️ Checking Pi-hole DNS...' && dig @localhost terrerov.com +short || echo 'Pi-hole DNS not responding'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check Pi-hole DNS security service"
+    },
+    {
+      "label": "📈 Monitoring Stack Status",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '📈 Checking monitoring stack...' && curl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets | length' && curl -s http://localhost:3000/api/health | jq '.database' || echo 'Monitoring stack issues detected'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check Prometheus and Grafana monitoring stack"
+    },
+    {
+      "label": "💾 Full Chernarus Backup",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/backup-chernarus.sh",
+      "args": ["--full"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "detail": "Create complete backup of Chernarus infrastructure (Docker volumes + K8s + configs)"
+    },
+    {
+      "label": "🔄 Update Chernarus Stack",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🔄 Updating Chernarus stack...' && docker-compose pull && docker-compose up -d && echo '✅ Stack updated successfully'"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Pull latest images and update all Chernarus services"
+    },
+    {
+      "label": "🔍 Diagnose Network Issues",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🔍 Network Diagnostics...' && echo 'rpi connectivity:' && ping -c 3 192.168.0.2 && echo 'lenlab connectivity:' && ping -c 3 192.168.0.3 && echo 'Internet connectivity:' && ping -c 3 8.8.8.8 && echo 'DNS resolution:' && nslookup terrerov.com"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Comprehensive network connectivity and DNS diagnostics"
+    },
+    {
+      "label": "🧹 Cleanup Old Backups",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "find ~/backups -name 'chernarus_backup_*' -mtime +30 -exec rm -f {} \\; && echo 'Old backups cleaned (>30 days)'"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Clean up backup files older than 30 days"
+    }
+  ],
+
+  // === Input Variables for Interactive Tasks ===
+  "inputs": [
+    {
+      "id": "joinToken",
+      "description": "Kubernetes join token (get from: sudo kubeadm token create --print-join-command)",
+      "type": "promptString"
+    },
+    {
+      "id": "joinHash",
+      "description": "Kubernetes CA cert hash (from join command)",
+      "type": "promptString"
+    }
+  ]
+}

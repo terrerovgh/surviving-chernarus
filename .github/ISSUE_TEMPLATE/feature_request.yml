@@ -1,0 +1,158 @@
+name: 🚀 Feature Request
+description: Suggest a new feature for the Surviving Chernarus project
+title: "[FEATURE] "
+labels: ["enhancement", "needs-discussion"]
+assignees:
+  - terrerov
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please help us understand what you'd like to see.
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Feature Category
+      description: What type of feature is this?
+      options:
+        - 🏗️ Infrastructure (Kubernetes, Docker, Networking)
+        - 🔒 Security (SSL, Firewall, Authentication)
+        - 🤖 Automation (n8n Workflows, Scripts, CI/CD)
+        - 📊 Monitoring (Prometheus, Grafana, Alerting)
+        - 🌐 Web Services (Traefik, Hugo, Web Projects)
+        - 🗄️ Data & Storage (PostgreSQL, Backups, Persistence)
+        - 🛠️ Developer Experience (VS Code, Copilot, Tooling)
+        - 📱 User Interface (Dashboards, APIs, Frontend)
+        - ☁️ Cloud Integration (Cloudflare, External Services)
+        - 🎮 Gamification (Tasks, Achievements, Themes)
+        - 📚 Documentation (Guides, Examples, References)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      description: Which component would this feature impact?
+      options:
+        - Kubernetes Cluster (rpi + lenlab)
+        - Docker Services Stack
+        - Traefik (Reverse Proxy & SSL)
+        - PostgreSQL (Database)
+        - n8n (Automation Engine)
+        - Pi-hole (DNS Security)
+        - Squid (Berezino Checkpoint)
+        - Hugo (HQ Dashboard)
+        - Prometheus/Grafana (Monitoring)
+        - VS Code Configuration
+        - GitHub Actions (CI/CD)
+        - Backup & Recovery System
+        - Network & Security
+        - Multiple Components
+        - New Component
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+      placeholder: |
+        Describe the current limitation or pain point that this feature would address.
+
+        Examples:
+        - "Currently, we need to manually check service health..."
+        - "There's no way to automatically backup configuration..."
+        - "Developers need to manually configure their environment..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution
+      placeholder: |
+        How would you like this feature to work?
+
+        Be specific about:
+        - User interface or API design
+        - Integration points with existing services
+        - Configuration requirements
+        - Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Have you considered any alternative approaches?
+      placeholder: |
+        What other ways could this problem be solved?
+        Are there existing tools or services that could be integrated?
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Ideas
+      description: |
+        Do you have ideas about how this could be implemented?
+
+        **Technical considerations:**
+        - Would this require new containers/services?
+        - Any specific technologies or libraries?
+        - Impact on existing architecture?
+        - Resource requirements (CPU, Memory, Storage)?
+        - Network or security implications?
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature?
+      options:
+        - 🔴 High (Blocking current workflows)
+        - 🟡 Medium (Would significantly improve experience)
+        - 🟢 Low (Nice to have)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated Effort
+      description: How complex do you think this feature would be?
+      options:
+        - 🟢 Small (Few hours, configuration changes)
+        - 🟡 Medium (Few days, new scripts or minor services)
+        - 🟠 Large (Week+, major architecture changes)
+        - 🔴 Unknown (Needs investigation)
+
+  - type: checkboxes
+    id: volunteer
+    attributes:
+      label: Contribution
+      description: Are you willing to help implement this feature?
+      options:
+        - label: I can help with research and planning
+        - label: I can help with implementation
+        - label: I can help with testing
+        - label: I can help with documentation
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: |
+        Any other information that would be helpful?
+
+        **Consider including:**
+        - Links to relevant documentation or examples
+        - Screenshots or mockups
+        - Related issues or features
+        - Timeline requirements
+        - Dependencies on other work
