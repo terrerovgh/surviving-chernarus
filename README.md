@@ -25,6 +25,7 @@ activo con 2 nodos (rpi + lenlab)
 
 ---
 
+- **Load Balancing**: Traefik con detección automática de servicios ✅
 ## 🎯 ¿Qué es Surviving Chernarus?
 
 Surviving Chernarus es una plataforma de infraestructura híbrida **completamente
