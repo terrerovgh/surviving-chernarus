@@ -38,16 +38,16 @@ sudo pkill -f kube || true
 sudo systemctl start containerd
 sudo systemctl start kubelet
 
-# 8. Inicializar cluster con IP específico
-sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.0.2 --ignore-preflight-errors=Port-6443,Port-10259,Port-10257,Port-10250
+# 8. Inicializar cluster con dominio específico
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.0.2 --apiserver-cert-extra-sans=rpi.terrerov.com --ignore-preflight-errors=Port-6443,Port-10259,Port-10257,Port-10250
 
 # 9. Configurar kubectl para terrerov
 sudo -u terrerov mkdir -p /home/terrerov/.kube
 sudo cp -i /etc/kubernetes/admin.conf /home/terrerov/.kube/config
 sudo chown terrerov:terrerov /home/terrerov/.kube/config
 
-# Corregir endpoint del servidor para evitar problemas de certificados
-sudo -u terrerov sed -i 's|server: https://127.0.0.1:6443|server: https://192.168.0.2:6443|g' /home/terrerov/.kube/config
+# Corregir endpoint del servidor para usar dominio
+sudo -u terrerov sed -i 's|server: https://127.0.0.1:6443|server: https://rpi.terrerov.com:6443|g' /home/terrerov/.kube/config
 
 # 10. Instalar Flannel CNI
 KUBECONFIG=/home/terrerov/.kube/config sudo -u terrerov kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml

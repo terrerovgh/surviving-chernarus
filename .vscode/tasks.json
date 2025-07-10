@@ -20,7 +20,7 @@
         "clear": false
       },
       "problemMatcher": [],
-      "detail": "Deploy complete Surviving Chernarus infrastructure stack (Traefik, PostgreSQL, n8n, Pi-hole, etc.)"
+      "detail": "Deploy complete Surviving Chernarus infrastructure stack"
     },
     {
       "label": "🛑 Stop Chernarus Services",
@@ -58,129 +58,42 @@
       "command": "docker-compose",
       "args": ["logs", "-f"],
       "group": "test",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "View real-time logs from all services"
+    },
+
+    // === Load Balancer & HTTPS Configuration ===
+    {
+      "label": "⚡ Setup Load Balancer & HTTPS",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/setup-loadbalancer.sh",
+      "args": [],
+      "group": "build",
       "presentation": {
         "echo": true,
         "reveal": "always",
         "focus": true,
         "panel": "new"
       },
-      "isBackground": true,
       "problemMatcher": [],
-      "detail": "View real-time logs from all services"
+      "detail": "Configure Kubernetes Load Balancer with HTTPS for domain access (https://n8n.terrerov.com, etc.)"
     },
     {
-      "label": "Check Kubernetes Cluster Status",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/cluster-status.sh",
-      "args": [],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": [],
-      "detail": "Check the status of the Kubernetes cluster"
-    },
-    {
-      "label": "Deploy to Kubernetes",
-      "type": "shell",
-      "command": "kubectl",
-      "args": ["apply", "-f", "kubernetes/"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": [],
-      "detail": "Deploy all Kubernetes manifests",
-      "dependsOn": "Check Kubernetes Cluster Status"
-    },
-    {
-      "label": "Lint Shell Scripts",
-      "type": "shell",
-      "command": "find",
-      "args": ["scripts/", "-name", "*.sh", "-exec", "shellcheck", "{}", "+"],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": {
-        "owner": "shellcheck",
-        "fileLocation": "absolute",
-        "pattern": [
-          {
-            "regexp": "^(.+):(\\d+):(\\d+):\\s+(\\w+):\\s+(.+)$",
-            "file": 1,
-            "line": 2,
-            "column": 3,
-            "severity": 4,
-            "message": 5
-          }
-        ]
-      },
-      "detail": "Run ShellCheck on all shell scripts"
-    },
-    {
-      "label": "Format Markdown Files",
-      "type": "shell",
-      "command": "prettier",
-      "args": ["--write", "docs/**/*.md", "*.md"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "silent",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": [],
-      "detail": "Format all Markdown files using Prettier"
-    },
-    {
-      "label": "Backup Kubernetes Cluster",
-      "type": "shell",
-      "command": "${workspaceFolder}/scripts/backup-chernarus.sh",
-      "args": [],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": [],
-      "detail": "Create a backup of the Kubernetes cluster"
-    },
-    {
-      "label": "Clean Docker Environment",
-      "type": "shell",
-      "command": "bash",
-      "args": ["-c", "docker-compose down && docker system prune -f"],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": [],
-      "detail": "Clean up Docker containers, networks, and unused images"
-    },
-    {
-      "label": "Generate Documentation",
+      "label": "🔒 Check SSL Certificates Status",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "find docs/ -name '*.md' -exec echo 'Processing: {}' \\; && echo 'Documentation updated'"
+        "echo '🔒 Checking SSL Certificates...' && kubectl get certificates -A 2>/dev/null || echo 'No certificates found' && echo '🌐 Checking Ingress status:' && kubectl get ingress -A -o wide 2>/dev/null || echo 'No ingress found' && echo '⚡ Checking LoadBalancer services:' && kubectl get svc -A | grep LoadBalancer || echo 'No LoadBalancer services found'"
       ],
-      "group": "build",
+      "group": "test",
       "presentation": {
         "echo": true,
         "reveal": "always",
@@ -188,10 +101,28 @@
         "panel": "shared"
       },
       "problemMatcher": [],
-      "detail": "Generate and update project documentation"
+      "detail": "Check SSL certificates and LoadBalancer status"
+    },
+    {
+      "label": "🌍 Test HTTPS Domain Access",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🌍 Testing HTTPS Domain Access...' && LB_IP=$(kubectl get svc -n chernarus-system traefik-loadbalancer -o jsonpath='{.spec.externalIPs[0]}' 2>/dev/null || echo '192.168.0.2') && echo \"LoadBalancer IP: $LB_IP\" && echo 'Testing n8n.terrerov.com:' && curl -H 'Host: n8n.terrerov.com' -I http://$LB_IP 2>/dev/null | head -1 || echo 'n8n not accessible' && echo 'Testing traefik.terrerov.com:' && curl -H 'Host: traefik.terrerov.com' -I http://$LB_IP 2>/dev/null | head -1 || echo 'traefik not accessible' && echo 'Testing terrerov.com:' && curl -H 'Host: terrerov.com' -I http://$LB_IP 2>/dev/null | head -1 || echo 'terrerov.com not accessible'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Test domain access via LoadBalancer IP with Host headers"
     },
 
-    // === Chernarus-specific Infrastructure Tasks ===
+    // === Kubernetes Operations ===
     {
       "label": "🏗️ Setup Kubernetes Master (rpi)",
       "type": "shell",
@@ -201,11 +132,11 @@
       "presentation": {
         "echo": true,
         "reveal": "always",
-        "focus": true,
-        "panel": "new"
+        "focus": false,
+        "panel": "shared"
       },
       "problemMatcher": [],
-      "detail": "Setup Kubernetes master node on Raspberry Pi (rpi)"
+      "detail": "Setup Kubernetes master node on rpi.terrerov.com"
     },
     {
       "label": "👥 Join Kubernetes Worker (lenlab)",
@@ -216,19 +147,66 @@
       "presentation": {
         "echo": true,
         "reveal": "always",
-        "focus": true,
-        "panel": "new"
+        "focus": false,
+        "panel": "shared"
       },
       "problemMatcher": [],
-      "detail": "Join lenlab as worker node to Kubernetes cluster"
+      "detail": "Join lenlab.terrerov.com as worker node to Kubernetes cluster"
     },
+    {
+      "label": "🚀 Deploy to Kubernetes",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/deploy-temp.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Deploy Surviving Chernarus to Kubernetes cluster"
+    },
+    {
+      "label": "🔑 Setup kubectl Access",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/get-kubeconfig.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Configure kubectl to access the Kubernetes cluster from master"
+    },
+    {
+      "label": "📊 K8s Cluster Status",
+      "type": "shell",
+      "command": "kubectl",
+      "args": ["get", "all", "-A"],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Show status of all Kubernetes resources across namespaces"
+    },
+
+    // === Health Checks & Diagnostics ===
     {
       "label": "📊 Chernarus Health Check",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "echo '🔍 Checking Chernarus Infrastructure...' && docker-compose ps && echo -e '\\n📡 Network Status:' && ping -c 2 192.168.0.2 && ping -c 2 192.168.0.3 && echo -e '\\n☸️ Kubernetes Status:' && kubectl get nodes -o wide 2>/dev/null || echo 'Kubernetes not available'"
+        "echo '🔍 Checking Chernarus Infrastructure...' && docker-compose ps && echo -e '\\n📡 Network Status:' && ping -c 2 rpi.terrerov.com && ping -c 2 lenlab.terrerov.com && echo -e '\\n☸️ Kubernetes Status:' && kubectl get nodes -o wide 2>/dev/null || echo 'Kubernetes not available'"
       ],
       "group": "test",
       "presentation": {
@@ -241,12 +219,12 @@
       "detail": "Complete health check of Chernarus infrastructure (Docker + K8s + Network)"
     },
     {
-      "label": "🌐 Check Traefik Dashboard",
+      "label": "🔍 Diagnose Network Issues",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "echo '🚀 Opening Traefik Dashboard...' && curl -s http://localhost:8080/api/rawdata | jq '.routers | keys' || echo 'Traefik not responding on port 8080'"
+        "echo '🔍 Network Diagnostics...' && echo 'rpi connectivity:' && ping -c 3 rpi.terrerov.com && echo 'lenlab connectivity:' && ping -c 3 lenlab.terrerov.com && echo 'Internet connectivity:' && ping -c 3 8.8.8.8 && echo 'DNS resolution:' && nslookup terrerov.com"
       ],
       "group": "test",
       "presentation": {
@@ -256,13 +234,15 @@
         "panel": "shared"
       },
       "problemMatcher": [],
-      "detail": "Check Traefik reverse proxy status and routes"
+      "detail": "Comprehensive network connectivity and DNS diagnostics"
     },
+
+    // === Architecture Verification ===
     {
-      "label": "🗄️ PostgreSQL Health Check",
+      "label": "🔍 Verify Distributed Architecture",
       "type": "shell",
-      "command": "docker",
-      "args": ["exec", "chernarus-postgresql", "pg_isready", "-U", "postgres"],
+      "command": "${workspaceFolder}/scripts/verify-distributed-architecture.sh",
+      "args": [],
       "group": "test",
       "presentation": {
         "echo": true,
@@ -271,15 +251,15 @@
         "panel": "shared"
       },
       "problemMatcher": [],
-      "detail": "Check PostgreSQL database health and connectivity"
+      "detail": "Comprehensive verification of the distributed Chernarus architecture"
     },
     {
-      "label": "🤖 n8n Workflow Status",
+      "label": "🌍 Verify Services by Domain Name",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "echo '🤖 Checking n8n automation engine...' && curl -s http://localhost:5678/healthz || echo 'n8n not responding on port 5678'"
+        "echo '🌍 Verifying Services by Domain Name...' && echo '=== KUBERNETES SERVICES ===' && echo 'Traefik Dashboard (NodePort 30365):' && curl -I http://lenlab.terrerov.com:30365/dashboard/ 2>/dev/null | head -1 || curl -I http://rpi.terrerov.com:30365/dashboard/ 2>/dev/null | head -1 || echo 'Not accessible via K8s NodePort' && echo 'Traefik HTTP (NodePort 30273):' && curl -I http://lenlab.terrerov.com:30273/ 2>/dev/null | head -1 || curl -I http://rpi.terrerov.com:30273/ 2>/dev/null | head -1 || echo 'Not accessible via K8s NodePort' && echo '=== DOCKER COMPOSE SERVICES ===' && echo 'n8n (Docker):' && curl -I http://lenlab.terrerov.com:5678/ 2>/dev/null | head -1 || echo 'Not accessible via Docker port' && echo 'PostgreSQL:' && nc -z lenlab.terrerov.com 5432 && echo 'PostgreSQL: Available via domain' || echo 'PostgreSQL: Not accessible via domain'"
       ],
       "group": "test",
       "presentation": {
@@ -289,15 +269,17 @@
         "panel": "shared"
       },
       "problemMatcher": [],
-      "detail": "Check n8n automation engine status"
+      "detail": "Verify all services via domain names (K8s NodePorts + Docker Compose ports)"
     },
+
+    // === Service-Specific Checks (Current Reality - All on lenlab) ===
     {
-      "label": "🛡️ Pi-hole DNS Status",
+      "label": "🌐 Check Traefik Dashboard (K8s NodePort)",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "echo '🛡️ Checking Pi-hole DNS...' && dig @localhost terrerov.com +short || echo 'Pi-hole DNS not responding'"
+        "echo '🚀 Checking Traefik Dashboard via Kubernetes NodePort...' && echo 'Trying lenlab NodePort:' && curl -s http://lenlab.terrerov.com:30365/api/rawdata | jq '.routers | keys' 2>/dev/null || echo 'Trying rpi NodePort:' && curl -s http://rpi.terrerov.com:30365/api/rawdata | jq '.routers | keys' 2>/dev/null || echo 'Traefik dashboard not responding on NodePort 30365'"
       ],
       "group": "test",
       "presentation": {
@@ -307,7 +289,61 @@
         "panel": "shared"
       },
       "problemMatcher": [],
-      "detail": "Check Pi-hole DNS security service"
+      "detail": "Check Traefik reverse proxy via Kubernetes NodePort (30365)"
+    },
+    {
+      "label": "🗄️ PostgreSQL Health Check (lenlab)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🗄️ Checking PostgreSQL on lenlab...' && docker exec postgres_db pg_isready -U postgres || echo 'PostgreSQL container not responding on lenlab'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check PostgreSQL database health on lenlab"
+    },
+    {
+      "label": "🤖 n8n Workflow Status (lenlab)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🤖 Checking n8n automation engine on lenlab...' && curl -s http://lenlab.terrerov.com:5678/healthz || echo 'n8n not responding on lenlab.terrerov.com:5678'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check n8n automation engine status on lenlab"
+    },
+    {
+      "label": "🛡️ Pi-hole DNS Status (rpi)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🛡️ Checking Pi-hole DNS on rpi...' && dig @rpi.terrerov.com terrerov.com +short 2>/dev/null || echo 'Pi-hole DNS not responding on rpi'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check Pi-hole DNS security service on rpi"
     },
     {
       "label": "📈 Monitoring Stack Status",
@@ -315,7 +351,7 @@
       "command": "bash",
       "args": [
         "-c",
-        "echo '📈 Checking monitoring stack...' && curl -s http://localhost:9090/api/v1/targets | jq '.data.activeTargets | length' && curl -s http://localhost:3000/api/health | jq '.database' || echo 'Monitoring stack issues detected'"
+        "echo '📈 Checking monitoring stack...' && echo 'Prometheus (lenlab):' && curl -s http://lenlab.terrerov.com:9090/api/v1/targets 2>/dev/null | jq '.data.activeTargets | length' 2>/dev/null || echo 'Prometheus not available on lenlab' && echo 'Grafana (via Traefik on rpi):' && curl -s https://grafana.terrerov.com/api/health 2>/dev/null | jq '.database' 2>/dev/null || curl -s http://rpi.terrerov.com:3000/api/health 2>/dev/null | jq '.database' 2>/dev/null || echo 'Grafana not available'"
       ],
       "group": "test",
       "presentation": {
@@ -325,8 +361,48 @@
         "panel": "shared"
       },
       "problemMatcher": [],
-      "detail": "Check Prometheus and Grafana monitoring stack"
+      "detail": "Check Prometheus (lenlab) and Grafana (rpi via Traefik) monitoring stack"
     },
+
+    // === Service Discovery ===
+    {
+      "label": "🔍 Service Discovery Check",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🔍 Service Discovery Check...' && echo '=== KUBERNETES SERVICES (NodePorts) ===' && echo 'Traefik Dashboard (30365):' && curl -I http://lenlab.terrerov.com:30365/dashboard/ 2>/dev/null | head -1 || echo 'Not available' && echo 'Traefik HTTP (30273):' && curl -I http://lenlab.terrerov.com:30273/ 2>/dev/null | head -1 || echo 'Not available' && echo 'Traefik HTTPS (31822):' && curl -I http://lenlab.terrerov.com:31822/ 2>/dev/null | head -1 || echo 'Not available' && echo '=== DOCKER COMPOSE SERVICES ===' && echo 'PostgreSQL:' && nc -z lenlab.terrerov.com 5432 && echo 'PostgreSQL: Available' || echo 'PostgreSQL: Not available' && echo 'n8n:' && curl -I http://lenlab.terrerov.com:5678/ 2>/dev/null | head -1 || echo 'n8n: Not available'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Discover all available services (K8s NodePorts + Docker Compose)"
+    },
+    {
+      "label": "🚀 Show Kubernetes Service Ports",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🚀 Kubernetes Service Ports...' && kubectl get svc -A -o custom-columns='NAMESPACE:.metadata.namespace,NAME:.metadata.name,TYPE:.spec.type,CLUSTER-IP:.spec.clusterIP,EXTERNAL-IP:.status.loadBalancer.ingress[0].ip,PORTS:.spec.ports[*].port,NODEPORTS:.spec.ports[*].nodePort' | grep -v '<none>' || echo 'No services found'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Show all Kubernetes service ports and NodePorts"
+    },
+
+    // === Backup & Maintenance ===
     {
       "label": "💾 Full Chernarus Backup",
       "type": "shell",
@@ -336,8 +412,8 @@
       "presentation": {
         "echo": true,
         "reveal": "always",
-        "focus": true,
-        "panel": "new"
+        "focus": false,
+        "panel": "shared"
       },
       "problemMatcher": [],
       "detail": "Create complete backup of Chernarus infrastructure (Docker volumes + K8s + configs)"
@@ -361,30 +437,12 @@
       "detail": "Pull latest images and update all Chernarus services"
     },
     {
-      "label": "🔍 Diagnose Network Issues",
-      "type": "shell",
-      "command": "bash",
-      "args": [
-        "-c",
-        "echo '🔍 Network Diagnostics...' && echo 'rpi connectivity:' && ping -c 3 192.168.0.2 && echo 'lenlab connectivity:' && ping -c 3 192.168.0.3 && echo 'Internet connectivity:' && ping -c 3 8.8.8.8 && echo 'DNS resolution:' && nslookup terrerov.com"
-      ],
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": [],
-      "detail": "Comprehensive network connectivity and DNS diagnostics"
-    },
-    {
       "label": "🧹 Cleanup Old Backups",
       "type": "shell",
       "command": "bash",
       "args": [
         "-c",
-        "find ~/backups -name 'chernarus_backup_*' -mtime +30 -exec rm -f {} \\; && echo 'Old backups cleaned (>30 days)'"
+        "find ~/backups -name 'chernarus_backup_*' -mtime +30 -exec rm -f {} \\; 2>/dev/null && echo 'Old backups cleaned (>30 days)' || echo 'No backups to clean'"
       ],
       "group": "build",
       "presentation": {
@@ -396,41 +454,49 @@
       "problemMatcher": [],
       "detail": "Clean up backup files older than 30 days"
     },
+    {
+      "label": "🧹 Clean Docker Environment",
+      "type": "shell",
+      "command": "bash",
+      "args": ["-c", "docker-compose down && docker system prune -f"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Clean up Docker containers, networks, and unused images"
+    },
 
-    // === Kubernetes Deployment Tasks ===
+    // === Development & Documentation ===
     {
-      "label": "🚀 Deploy to Kubernetes",
+      "label": "📝 Generate Documentation",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/deploy-temp.sh",
-      "args": [],
+      "command": "bash",
+      "args": [
+        "-c",
+        "find docs/ -name '*.md' -exec echo 'Processing: {}' \\; 2>/dev/null && echo 'Documentation updated' || echo 'Documentation directory not found'"
+      ],
       "group": "build",
       "presentation": {
         "echo": true,
         "reveal": "always",
-        "focus": true,
-        "panel": "new"
+        "focus": false,
+        "panel": "shared"
       },
-      "detail": "Deploy Surviving Chernarus to Kubernetes cluster (shows setup instructions)"
+      "problemMatcher": [],
+      "detail": "Generate and update project documentation"
     },
     {
-      "label": "🔑 Setup kubectl Access",
+      "label": "🔍 Lint Shell Scripts",
       "type": "shell",
-      "command": "${workspaceFolder}/scripts/get-kubeconfig.sh",
-      "args": [],
-      "group": "build",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": true,
-        "panel": "new"
-      },
-      "detail": "Configure kubectl to access the Kubernetes cluster from master"
-    },
-    {
-      "label": "📊 K8s Cluster Status",
-      "type": "shell",
-      "command": "kubectl",
-      "args": ["get", "all", "-A"],
+      "command": "bash",
+      "args": [
+        "-c",
+        "if command -v shellcheck >/dev/null 2>&1; then find scripts/ -name '*.sh' -exec shellcheck {} + 2>/dev/null || echo 'No shell scripts found or shellcheck issues detected'; else echo 'shellcheck not installed. Install with: sudo apt install shellcheck'; fi"
+      ],
       "group": "test",
       "presentation": {
         "echo": true,
@@ -438,20 +504,263 @@
         "focus": false,
         "panel": "shared"
       },
-      "detail": "Show status of all Kubernetes resources across namespaces"
-    }
-  ],
+      "problemMatcher": [],
+      "detail": "Run ShellCheck on all shell scripts"
+    },
+    {
+      "label": "📝 Format Markdown Files",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "if command -v prettier >/dev/null 2>&1; then prettier --write 'docs/**/*.md' '*.md' 2>/dev/null || echo 'No markdown files found'; else echo 'prettier not installed. Install with: npm install -g prettier'; fi"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Format all Markdown files using Prettier"
+    },
 
-  // === Input Variables for Interactive Tasks ===
+    // === SSL & Security ===
+    {
+      "label": "🔐 Verify SSL Certificates",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/verify-ssl-certificates.sh",
+      "args": [],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check SSL certificate status for all domains"
+    },
+    {
+      "label": "🔧 Setup Domain Resolution",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/setup-domain-resolution.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Configure domain resolution for rpi.terrerov.com and lenlab.terrerov.com"
+    },
+
+    // === Architecture-Specific Tasks ===
+    {
+      "label": "🏠 Setup rpi (Master Node)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/setup-rpi.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Setup rpi as Kubernetes master with Traefik, Pi-hole, and SSL services"
+    },
+    {
+      "label": "💻 Setup lenlab (Worker Node)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/setup-lenlab.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Setup lenlab as Kubernetes worker with PostgreSQL and Prometheus"
+    },
+
+    // === HTTPS Domain Access Tests ===
+    {
+      "label": "🛠️ Fix Domain Access Issues",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🛠️ Diagnosing and fixing domain access issues...' && echo '=== Current Ingress ===' && kubectl get ingress -A && echo '' && echo '=== Traefik Pod Status ===' && kubectl get pods -n chernarus-system -l app=traefik && echo '' && echo '=== Service Status ===' && kubectl get svc -n surviving-chernarus && echo '' && echo '=== Testing Direct Service Access ===' && kubectl port-forward -n surviving-chernarus svc/n8n-service 8888:5678 --address=0.0.0.0 &>/dev/null & PF_PID=$! && sleep 3 && curl -I http://localhost:8888/ 2>/dev/null | head -1 && kill $PF_PID 2>/dev/null || echo 'Direct service access failed' && echo '' && echo '=== Cleaning up old ACME solvers ===' && kubectl delete ingress -n surviving-chernarus -l acme.cert-manager.io/http01-solver=true 2>/dev/null || echo 'No ACME solvers to clean' && kubectl delete ingress -n chernarus-system -l acme.cert-manager.io/http01-solver=true 2>/dev/null || echo 'No ACME solvers to clean'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "detail": "Diagnose and fix domain access issues by testing services and cleaning configuration"
+    },
+    {
+      "label": "🌐 Test HTTPS Domain Access",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🌐 Testing HTTPS Domain Access via LoadBalancer...' && echo 'LoadBalancer IP: 192.168.0.2, 192.168.0.3' && echo '' && echo '=== Testing n8n.terrerov.com ===' && curl -k -H 'Host: n8n.terrerov.com' https://192.168.0.2/ -I 2>/dev/null | head -3 || echo 'n8n not accessible via HTTPS' && echo '' && echo '=== Testing hq.terrerov.com ===' && curl -k -H 'Host: hq.terrerov.com' https://192.168.0.2/ -I 2>/dev/null | head -3 || echo 'HQ not accessible via HTTPS' && echo '' && echo '=== Testing traefik.terrerov.com ===' && curl -k -H 'Host: traefik.terrerov.com' https://192.168.0.2/ -I 2>/dev/null | head -3 || echo 'Traefik not accessible via HTTPS' && echo '' && echo '=== Testing pihole.terrerov.com ===' && curl -k -H 'Host: pihole.terrerov.com' https://192.168.0.2/ -I 2>/dev/null | head -3 || echo 'Pi-hole not accessible via HTTPS'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Test HTTPS access to all services via domain names through LoadBalancer"
+    },
+    {
+      "label": "🔐 Check SSL Certificates Status",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🔐 Checking SSL Certificates Status...' && echo '=== Certificates ===' && kubectl get certificates -A && echo '' && echo '=== Certificate Details ===' && kubectl describe certificate terrerov-wildcard-tls -n surviving-chernarus | grep -A 5 'Status:' && echo '' && echo '=== Secrets ===' && kubectl get secrets -A | grep tls && echo '' && echo '=== ClusterIssuers ===' && kubectl get clusterissuers"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Check the status of SSL certificates and Let's Encrypt ClusterIssuers"
+    },
+    {
+      "label": "🚀 Setup LoadBalancer Access",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/setup-loadbalancer.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Setup and configure LoadBalancer for HTTPS domain access"
+    },
+    {
+      "label": "📋 Show LoadBalancer Configuration",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '📋 LoadBalancer Configuration...' && echo '=== LoadBalancer Services ===' && kubectl get svc -A | grep LoadBalancer && echo '' && echo '=== External IPs ===' && kubectl get svc traefik-loadbalancer -n chernarus-system -o jsonpath='{.spec.externalIPs}' && echo '' && echo '' && echo '=== Ingress Rules ===' && kubectl get ingress -A && echo '' && echo '=== Testing LoadBalancer Access ===' && echo 'HTTP (Port 80):' && curl -I http://192.168.0.2:80/ -H 'Host: hq.terrerov.com' 2>/dev/null | head -1 || echo 'HTTP not responding' && echo 'HTTPS (Port 443):' && curl -k -I https://192.168.0.2:443/ -H 'Host: hq.terrerov.com' 2>/dev/null | head -1 || echo 'HTTPS not responding'"
+      ],
+      "group": "test",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": [],
+      "detail": "Show complete LoadBalancer configuration and test connectivity"
+    },
+    {
+      "label": "� SOLUCIÓN FINAL: Fix Domain Access",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/fix-domain-access.sh",
+      "args": [],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "detail": "Solución completa para problemas de certificado inválido y 404 en dominios HTTPS"
+    },
+    {
+      "label": "🌐 Add DNS to /etc/hosts",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🌐 Agregando entradas DNS a /etc/hosts...' && echo '192.168.0.2 n8n.terrerov.com hq.terrerov.com traefik.terrerov.com terrerov.com' | sudo tee -a /etc/hosts && echo '✅ DNS agregado. Ahora puedes acceder a:' && echo '   • https://n8n.terrerov.com' && echo '   • https://hq.terrerov.com' && echo '   • https://traefik.terrerov.com' && echo '⚠️  Acepta el certificado auto-firmado en el navegador'"
+      ],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "detail": "Agregar entradas DNS a /etc/hosts para acceso local a los dominios"
+    },
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🚀 Starting n8n port-forward on http://localhost:5678' && echo 'Press Ctrl+C to stop' && kubectl port-forward -n surviving-chernarus svc/n8n-service 5678:5678 --address=0.0.0.0"
+      ],
+      "group": "test",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "detail": "Access n8n directly via port-forward on http://localhost:5678"
+    },
+    {
+      "label": "🏠 Quick Access: HQ Dashboard via Port-Forward",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-c",
+        "echo '🏠 Starting HQ Dashboard port-forward on http://localhost:8080' && echo 'Press Ctrl+C to stop' && kubectl port-forward -n surviving-chernarus svc/hugo-dashboard-service 8080:80 --address=0.0.0.0"
+      ],
+      "group": "test",
+      "isBackground": true,
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "new"
+      },
+      "problemMatcher": [],
+      "detail": "Access HQ Dashboard directly via port-forward on http://localhost:8080"
+    },
+
+    // === End of Tasks ===
+  ],
   "inputs": [
     {
       "id": "joinToken",
-      "description": "Kubernetes join token (get from: sudo kubeadm token create --print-join-command)",
+      "description": "Kubernetes join token",
+      "default": "",
       "type": "promptString"
     },
     {
       "id": "joinHash",
-      "description": "Kubernetes CA cert hash (from join command)",
+      "description": "Kubernetes join hash",
+      "default": "",
       "type": "promptString"
     }
   ]

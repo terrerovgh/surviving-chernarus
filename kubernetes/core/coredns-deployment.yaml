@@ -1,0 +1,78 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: chernarus-system
+  labels:
+    app: coredns
+    tier: dns
+    k8s-app: coredns
+    kubernetes.io/cluster-service: "true"
+data:
+  Corefile: |
+    .:53 {
+        log
+        errors
+        hosts {
+            192.168.0.2 n8n.terrerov.com hq.terrerov.com traefik.terrerov.com terrerov.com api.terrerov.com grafana.terrerov.com monitoring.terrerov.com
+            fallthrough
+        }
+        forward . 8.8.8.8 1.1.1.1
+        cache 30
+        reload
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns
+  namespace: chernarus-system
+  labels:
+    app: coredns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coredns
+  template:
+    metadata:
+      labels:
+        app: coredns
+    spec:
+      containers:
+      - name: coredns
+        image: coredns/coredns:1.11.1
+        args: ["-conf", "/etc/coredns/Corefile"]
+        ports:
+        - containerPort: 53
+          protocol: UDP
+        - containerPort: 53
+          protocol: TCP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/coredns
+      volumes:
+      - name: config-volume
+        configMap:
+          name: coredns-custom
+      hostNetwork: true
+      dnsPolicy: Default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coredns
+  namespace: chernarus-system
+spec:
+  type: ClusterIP
+  ports:
+  - name: dns-udp
+    port: 53
+    protocol: UDP
+    targetPort: 53
+  - name: dns-tcp
+    port: 53
+    protocol: TCP
+    targetPort: 53
+  selector:
+    app: coredns

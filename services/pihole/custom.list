@@ -5,21 +5,25 @@
 # CUSTOM DNS ENTRIES FOR CHERNARUS SERVICES
 # ============================================================================
 
-# Main domain
-192.168.0.2 terrerov.com
+# Domain mappings for cluster nodes
+192.168.0.2 rpi.terrerov.com
+192.168.0.3 lenlab.terrerov.com
+
+# Main domain (pointing to master node)
+rpi.terrerov.com terrerov.com
 
 # Chernarus services (pointing to Traefik on rpi)
-192.168.0.2 hq.terrerov.com
-192.168.0.2 n8n.terrerov.com
-192.168.0.2 radio.terrerov.com
-192.168.0.2 monitor.terrerov.com
-192.168.0.2 files.terrerov.com
-192.168.0.2 vault.terrerov.com
+rpi.terrerov.com hq.terrerov.com
+rpi.terrerov.com n8n.terrerov.com
+rpi.terrerov.com radio.terrerov.com
+rpi.terrerov.com monitor.terrerov.com
+rpi.terrerov.com files.terrerov.com
+rpi.terrerov.com vault.terrerov.com
 
 # Administrative interfaces
-192.168.0.2 pihole.terrerov.com
-192.168.0.2 traefik.terrerov.com
-192.168.0.2 squid.terrerov.com
+rpi.terrerov.com pihole.terrerov.com
+rpi.terrerov.com traefik.terrerov.com
+rpi.terrerov.com squid.terrerov.com
 
 # Direct service access (for troubleshooting)
 192.168.0.2 rpi.local
@@ -29,10 +33,10 @@
 # INTERNAL SERVICE DISCOVERY
 # ============================================================================
 
-# Kubernetes internal services
-192.168.0.3 postgres.chernarus.local
-192.168.0.3 n8n.chernarus.local
-192.168.0.3 redis.chernarus.local
+# Kubernetes internal services (pointing to worker node)
+lenlab.terrerov.com postgres.chernarus.local
+lenlab.terrerov.com n8n.chernarus.local
+lenlab.terrerov.com redis.chernarus.local
 
 # Docker Compose services (development)
 127.0.0.1 postgres_db.docker.local

@@ -9,6 +9,10 @@ sudo nmcli con mod "$(nmcli -g NAME con show --active | head -n1)" ipv4.dns "1.1
 sudo nmcli con mod "$(nmcli -g NAME con show --active | head -n1)" ipv4.method manual
 sudo nmcli con down "$(nmcli -g NAME con show --active | head -n1)" && sudo nmcli con up "$(nmcli -g NAME con show --active | head -n1)"
 
+# Configurar hostname en /etc/hosts para resolución local
+echo "192.168.0.2 rpi.terrerov.com rpi" | sudo tee -a /etc/hosts
+echo "192.168.0.3 lenlab.terrerov.com lenlab" | sudo tee -a /etc/hosts
+
 # 2. Crear usuario terrerov
 if ! id terrerov &>/dev/null; then
   sudo useradd -m -s /bin/bash terrerov

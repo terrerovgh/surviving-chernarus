@@ -11,9 +11,9 @@ tráfico
 El sistema opera como un **cluster híbrido Kubernetes completamente funcional**
 distribuido en dos nodos físicos:
 
-- **rpi (Master, 192.168.0.2):** Raspberry Pi 5 ✅ Ready. Control plane K8s,
+- **rpi (Master, rpi.terrerov.com):** Raspberry Pi 5 ✅ Ready. Control plane K8s,
   servicios de red (Traefik, Pi-hole).
-- **lenlab (Worker, 192.168.0.3):** Laptop Lenovo ✅ Ready. Cargas pesadas
+- **lenlab (Worker, lenlab.terrerov.com):** Laptop Lenovo ✅ Ready. Cargas pesadas
   (PostgreSQL, n8n, Prometheus, Grafana, aplicaciones web).ura del Colectivo
   Chernarus
 
@@ -22,9 +22,9 @@ distribuido en dos nodos físicos:
 El sistema opera en un clúster híbrido (K3s + Docker Compose) distribuido en dos
 nodos:
 
-- **rpi (Master, 192.168.0.2):** Raspberry Pi 5. Orquesta el clúster, servicios
+- **rpi (Master, rpi.terrerov.com):** Raspberry Pi 5. Orquesta el clúster, servicios
   de red (hostapd, nftables, Pi-hole, Traefik).
-- **lenlab (Worker, 192.168.0.3):** Laptop Lenovo. Ejecuta cargas pesadas
+- **lenlab (Worker, lenlab.terrerov.com):** Laptop Lenovo. Ejecuta cargas pesadas
   (PostgreSQL, n8n, Prometheus, Grafana, Squid, Hugo, proyectos web).
 
 ## Servicios Principales - **ESTADO DE PRODUCCIÓN**

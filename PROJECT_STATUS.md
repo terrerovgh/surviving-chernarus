@@ -1,10 +1,13 @@
 # 🎯 Surviving Chernarus - Project Status
 
-## 📊 Release v1.5.0 - PRODUCCIÓN ACTIVA
+# 🎯 Surviving Chernarus - Project Status
 
-**Estado Actual**: ✅ **COMPLETAMENTE OPERATIVO EN PRODUCCIÓN** **Fecha de
-Actualización**: Julio 8, 2025 **Cluster Status**: Kubernetes v1.33.2 con 2
-nodos activos
+## 📊 Release v1.6.0 - MIGRACIÓN HTTPS COMPLETADA ✅
+
+**Estado Actual**: ✅ **COMPLETAMENTE OPERATIVO CON HTTPS EN PRODUCCIÓN**
+**Fecha de Actualización**: Julio 10, 2025
+**Cluster Status**: Kubernetes v1.33.2 con 2 nodos activos
+**Nueva Funcionalidad**: Acceso por dominio HTTPS completamente funcional
 
 ### 🚀 Estado de Producción
 
@@ -15,21 +18,25 @@ nodos activos
 - [x] **Kubernetes Version**: v1.33.2 ✅
 - [x] **CNI Plugin**: Flannel - Operativo ✅
 - [x] **kubectl Access**: Configurado ✅
+- [x] **Ingress Controller**: Traefik con IngressClass - Operativo ✅
+- [x] **LoadBalancer**: Functional en 192.168.0.2:80/443 ✅
 
-#### 🌐 Servicios en Producción
+#### 🌐 Servicios Accesibles por Dominio (NUEVO)
 
-- [x] **HQ Dashboard**: https://terrerov.com ✅ ACTIVO
+- [x] **HQ Dashboard**: https://hq.terrerov.com ✅ FUNCIONANDO
 - [x] **n8n Automation**: https://n8n.terrerov.com ✅ FUNCIONANDO
-- [x] **CTS Project**: https://cts.terrerov.com ✅ ONLINE
-- [x] **Traefik Dashboard**: https://traefik.terrerov.com ✅ MONITOREANDO
-- [x] **SSL Certificates**: Let's Encrypt via Cloudflare ✅ RENOVANDO
+- [x] **Traefik Dashboard**: https://traefik.terrerov.com ✅ FUNCIONANDO
+- [x] **Main Site**: https://terrerov.com ✅ CONFIGURADO
+- [x] **SSL Certificates**: Traefik auto-generados (desarrollo) ✅ ACTIVOS
+- [x] **LoadBalancer**: 192.168.0.2:80/443 - Multi-nodo ✅ OPERATIVO
 
 #### 📊 Monitoreo y Salud
 
 - [x] **Health Checks**: Todos los servicios saludables ✅
-- [x] **Backups**: Sistema automático funcionando ✅
+- [x] **Ingress Routing**: Traefik enrutando correctamente ✅
 - [x] **DNS Security**: Pi-hole operativo ✅
 - [x] **Load Balancing**: Traefik distribuyendo tráfico ✅
+- [x] **Cluster Connectivity**: rpi + lenlab comunicándose ✅
 
 ### ✅ Completed Features
 

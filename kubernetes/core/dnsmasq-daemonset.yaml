@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dnsmasq-config
+  namespace: chernarus-system
+data:
+  custom.conf: |
+    # Use Google DNS as upstream
+    no-resolv
+    server=8.8.8.8
+    server=1.1.1.1
+    # Cluster and service host mappings
+    address=/n8n.terrerov.com/192.168.0.2
+    address=/hq.terrerov.com/192.168.0.2
+    address=/traefik.terrerov.com/192.168.0.2
+    address=/terrerov.com/192.168.0.2
+    address=/api.terrerov.com/192.168.0.2
+    # Additional subdomains if needed
+    address=/grafana.terrerov.com/192.168.0.2
+    address=/monitoring.terrerov.com/192.168.0.2
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: dnsmasq
+  namespace: chernarus-system
+  labels:
+    app: dnsmasq
+spec:
+  selector:
+    matchLabels:
+      app: dnsmasq
+  template:
+    metadata:
+      labels:
+        app: dnsmasq
+    spec:
+      hostNetwork: true
+      dnsPolicy: Default
+      containers:
+      - name: dnsmasq
+        image: jpillora/dnsmasq:latest
+        args:
+        - --log-facility=-
+        - --conf-file=/etc/dnsmasq.d/custom.conf
+        volumeMounts:
+        - name: config
+          mountPath: /etc/dnsmasq.d/custom.conf
+          subPath: custom.conf
+      volumes:
+      - name: config
+        configMap:
+          name: dnsmasq-config

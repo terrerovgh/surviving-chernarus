@@ -1,25 +1,17 @@
+---
+# Ingress simplificado para servicios HTTPS
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: chernarus-ingress
+  name: chernarus-simple-ingress
   namespace: surviving-chernarus
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    cert-manager.io/cluster-issuer: cloudflare-dns-issuer  # <--- issuer de Cloudflare
-    traefik.ingress.kubernetes.io/router.middlewares: surviving-chernarus-redirect-https@kubernetescrd
+    traefik.ingress.kubernetes.io/router.rule: "Host(`n8n.terrerov.com`) || Host(`hq.terrerov.com`) || Host(`terrerov.com`) || Host(`www.terrerov.com`) || Host(`pihole.terrerov.com`)"
 spec:
-  tls:
-  - hosts:
-    - terrerov.com
-    - www.terrerov.com
-    - hq.terrerov.com
-    - n8n.terrerov.com
-    - traefik.terrerov.com
-    - pihole.terrerov.com
-    secretName: chernarus-tls-cert
+  ingressClassName: traefik
   rules:
-  # Main domain - Hugo Dashboard
+  # Dominio principal - HQ Dashboard
   - host: terrerov.com
     http:
       paths:
@@ -74,20 +66,16 @@ spec:
             port:
               number: 80
 ---
+# Ingress para Traefik Dashboard
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: traefik-dashboard-ingress
+  name: traefik-simple-ingress
   namespace: chernarus-system
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
-    traefik.ingress.kubernetes.io/router.tls: "true"
-    cert-manager.io/cluster-issuer: cloudflare-dns-issuer  # <--- issuer de Cloudflare
 spec:
-  tls:
-  - hosts:
-    - traefik.terrerov.com
-    secretName: traefik-tls-cert
+  ingressClassName: traefik
   rules:
   - host: traefik.terrerov.com
     http:
@@ -99,14 +87,3 @@ spec:
             name: traefik-dashboard-service
             port:
               number: 8080
----
-# Middleware para redirigir HTTP a HTTPS
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: redirect-https
-  namespace: default
-spec:
-  redirectScheme:
-    scheme: https
-    permanent: true

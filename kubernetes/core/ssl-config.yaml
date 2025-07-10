@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cloudflare-credentials
+  namespace: chernarus-system
+type: Opaque
+data:
+  # Codifica tus credenciales reales de Cloudflare en base64
+  # echo -n "terrerov@gmail.com" | base64
+  # echo -n "tu_cloudflare_api_token" | base64
+  CLOUDFLARE_EMAIL: dGVycmVyb3ZAZ21haWwuY29t  # terrerov@gmail.com
+  CF_DNS_API_TOKEN: V3J6RmgzNUxiVDRBX1U2cW1EUDlwdjdfTk42anVOYU9DM2pRNVBrWA==  # WrzFh35LbT4A_U6qmDP9pv7_tN6juNaOC3jQ5PkX
+---
+# Middleware para redireccionar HTTP a HTTPS
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: redirect-https
+  namespace: chernarus-system
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+# Middleware para headers de seguridad
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: security-headers
+  namespace: chernarus-system
+spec:
+  headers:
+    customRequestHeaders:
+      X-Forwarded-Proto: "https"
+    customResponseHeaders:
+      X-Frame-Options: "SAMEORIGIN"
+      X-Content-Type-Options: "nosniff"
+      X-XSS-Protection: "1; mode=block"
+      Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+---
+# Certificado TLS wildcard para todos los subdominios
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: terrerov-wildcard-cert
+  namespace: chernarus-system
+spec:
+  secretName: terrerov-wildcard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - "terrerov.com"
+    - "*.terrerov.com"
+  acme:
+    config:
+      - dns01:
+          provider: cloudflare
+        domains:
+          - "terrerov.com"
+          - "*.terrerov.com"

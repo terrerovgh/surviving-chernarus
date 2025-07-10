@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik-loadbalancer
+  namespace: chernarus-system
+  annotations:
+    # Para MetalLB (si lo usas)
+    metallb.universe.tf/address-pool: default
+    # Para permitir tráfico externo
+    service.beta.kubernetes.io/external-traffic: OnlyLocal
+spec:
+  type: LoadBalancer
+  # Especifica IPs externas si las tienes disponibles
+  externalIPs:
+    - 192.168.0.2  # rpi IP
+    - 192.168.0.3  # lenlab IP
+  ports:
+    # HTTP
+    - name: web
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    # HTTPS
+    - name: websecure
+      port: 443
+      targetPort: 443
+      protocol: TCP
+    # Dashboard (opcional, para acceso directo)
+    - name: dashboard
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: traefik
+---
+# Configuración de Traefik con SSL y certificados automáticos
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: traefik-config
+  namespace: chernarus-system
+data:
+  traefik.yml: |
+    global:
+      checkNewVersion: false
+      sendAnonymousUsage: false
+
+    api:
+      dashboard: true
+      insecure: false
+
+    entryPoints:
+      web:
+        address: ":80"
+        http:
+          redirections:
+            entrypoint:
+              to: websecure
+              scheme: https
+              permanent: true
+      websecure:
+        address: ":443"
+
+    providers:
+      kubernetesIngress:
+        endpoints:
+          - "https://kubernetes.default.svc:443"
+        ingressClass: traefik
+      kubernetesCRD:
+        endpoints:
+          - "https://kubernetes.default.svc:443"
+
+    certificatesResolvers:
+      letsencrypt:
+        acme:
+          email: terrerov@gmail.com
+          storage: /data/acme.json
+          httpChallenge:
+            entryPoint: web
+          # O usar DNS challenge con Cloudflare
+          # dnsChallenge:
+          #   provider: cloudflare
+          #   resolvers:
+          #     - "1.1.1.1:53"
+          #     - "8.8.8.8:53"
+
+    log:
+      level: INFO
+
+    accessLog: {}
+
+    metrics:
+      prometheus:
+        addEntryPointsLabels: true
+        addServicesLabels: true

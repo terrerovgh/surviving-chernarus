@@ -1,25 +1,26 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: chernarus-ingress
+  name: chernarus-https-ingress
   namespace: surviving-chernarus
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    cert-manager.io/cluster-issuer: cloudflare-dns-issuer  # <--- issuer de Cloudflare
-    traefik.ingress.kubernetes.io/router.middlewares: surviving-chernarus-redirect-https@kubernetescrd
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    traefik.ingress.kubernetes.io/router.middlewares: chernarus-system-security-headers@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
+  ingressClassName: traefik
   tls:
   - hosts:
     - terrerov.com
     - www.terrerov.com
     - hq.terrerov.com
     - n8n.terrerov.com
-    - traefik.terrerov.com
     - pihole.terrerov.com
-    secretName: chernarus-tls-cert
+    secretName: terrerov-selfsigned-tls
   rules:
-  # Main domain - Hugo Dashboard
+  # Dominio principal - HQ Dashboard
   - host: terrerov.com
     http:
       paths:
@@ -62,6 +63,17 @@ spec:
             name: n8n-service
             port:
               number: 5678
+  # Grafana Monitoring (comentado hasta que se implemente)
+  # - host: grafana.terrerov.com
+  #   http:
+  #     paths:
+  #     - path: /
+  #       pathType: Prefix
+  #       backend:
+  #         service:
+  #           name: grafana-service
+  #           port:
+  #             number: 3000
   # Pi-hole DNS Admin
   - host: pihole.terrerov.com
     http:
@@ -74,20 +86,24 @@ spec:
             port:
               number: 80
 ---
+# Ingress para Traefik Dashboard
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: traefik-dashboard-ingress
+  name: traefik-dashboard-https
   namespace: chernarus-system
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
     traefik.ingress.kubernetes.io/router.tls: "true"
-    cert-manager.io/cluster-issuer: cloudflare-dns-issuer  # <--- issuer de Cloudflare
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
+    traefik.ingress.kubernetes.io/router.middlewares: chernarus-system-security-headers@kubernetescrd
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
+  ingressClassName: traefik
   tls:
   - hosts:
     - traefik.terrerov.com
-    secretName: traefik-tls-cert
+    secretName: terrerov-selfsigned-tls
   rules:
   - host: traefik.terrerov.com
     http:
@@ -99,14 +115,3 @@ spec:
             name: traefik-dashboard-service
             port:
               number: 8080
----
-# Middleware para redirigir HTTP a HTTPS
-apiVersion: traefik.io/v1alpha1
-kind: Middleware
-metadata:
-  name: redirect-https
-  namespace: default
-spec:
-  redirectScheme:
-    scheme: https
-    permanent: true

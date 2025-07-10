@@ -30,8 +30,8 @@ echo "🛡️ === PI-HOLE DNS ==="
 PIHOLE_IP=$(kubectl get svc pihole-service -n surviving-chernarus -o jsonpath='{.spec.clusterIP}')
 PIHOLE_NODEPORT=$(kubectl get svc pihole-service -n surviving-chernarus -o jsonpath='{.spec.ports[0].nodePort}')
 echo "ClusterIP: $PIHOLE_IP"
-echo "NodePort: 192.168.0.2:$PIHOLE_NODEPORT"
-echo "Web Interface: http://localhost:8081/admin/ (password: 100A.soledad1)"
+echo "NodePort: rpi.terrerov.com:$PIHOLE_NODEPORT"
+echo "Web Interface: http://rpi.terrerov.com:8081/admin/ (password: 100A.soledad1)"
 echo ""
 
 echo "🤖 === CLOUDFLARE DDNS ==="
@@ -68,7 +68,7 @@ echo "🌐 === ACCESO A SERVICIOS ==="
 echo "• Traefik Dashboard: https://traefik.terrerov.com (via Ingress)"
 echo "• Hugo Dashboard: https://terrerov.com, https://hq.terrerov.com"
 echo "• N8N Automation: https://n8n.terrerov.com"
-echo "• Pi-hole Admin: https://pihole.terrerov.com o http://localhost:8081/admin/"
+echo "• Pi-hole Admin: https://pihole.terrerov.com o http://rpi.terrerov.com:8081/admin/"
 echo ""
 
 echo "🔑 === CREDENCIALES ==="

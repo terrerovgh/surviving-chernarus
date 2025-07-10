@@ -114,9 +114,9 @@ graph TB
 ### 🌐 Topología de Red - **ESTADO ACTUAL: PRODUCCIÓN** ✅
 
 - **Master Node (rpi)**: Raspberry Pi 5 - Control plane Kubernetes v1.33.2,
-  servicios de red (192.168.0.2) ✅ **READY**
+  servicios de red (`rpi.terrerov.com` - 192.168.0.2) ✅ **READY**
 - **Worker Node (lenlab)**: Servidor x86 - Cargas pesadas, bases de datos
-  (192.168.0.3) ✅ **READY**
+  (`lenlab.terrerov.com` - 192.168.0.3) ✅ **READY**
 - **Networking**: Flannel CNI para comunicación pod-to-pod ✅ **OPERATIVO**
 - **Load Balancing**: Traefik con detección automática de servicios ✅
   **BALANCEANDO**
@@ -124,10 +124,19 @@ graph TB
 **📊 Cluster Status:**
 
 ```bash
-NAME     STATUS   ROLES           VERSION   INTERNAL-IP
-rpi      Ready    control-plane   v1.33.2   192.168.0.2
-lenlab   Ready    worker          v1.33.2   192.168.0.3
+NAME     STATUS   ROLES           VERSION   INTERNAL-IP      HOSTNAME
+rpi      Ready    control-plane   v1.33.2   192.168.0.2     rpi.terrerov.com
+lenlab   Ready    worker          v1.33.2   192.168.0.3     lenlab.terrerov.com
 ```
+
+### 🌍 Acceso a Servicios
+
+Todos los servicios web están accesibles a través de nombres de dominio:
+
+- **🏠 Dashboard Principal**: `http://terrerov.com`
+- **🤖 Automatización N8N**: `http://n8n.terrerov.com`
+- **⚡ Traefik Dashboard**: `http://traefik.terrerov.com:8080`
+- **🛡️ Pi-hole Admin**: `http://pihole.terrerov.com`
 
 ---
 
@@ -179,11 +188,11 @@ docker-compose up -d
 
 **Desarrollo Local:**
 
-- 🌐 **Traefik Dashboard**: http://localhost:8080
-- 🤖 **n8n Automation**: http://localhost:5678
-- 📊 **Grafana Monitoring**: http://localhost:3000
-- 🛡️ **Pi-hole Admin**: http://localhost/admin
-- 🗄️ **PostgreSQL**: localhost:5432
+- 🌐 **Traefik Dashboard**: http://rpi.terrerov.com:8080
+- 🤖 **n8n Automation**: http://rpi.terrerov.com:5678 (via Traefik)
+- 📊 **Grafana Monitoring**: http://rpi.terrerov.com:3000 (via Traefik)
+- 🛡️ **Pi-hole Admin**: http://rpi.terrerov.com/admin
+- 🗄️ **PostgreSQL**: lenlab.terrerov.com:5432
 
 ---
 
@@ -239,6 +248,30 @@ CLOUDFLARE_API_TOKEN=tu_api_token
 # === Monitoreo ===
 GRAFANA_ADMIN_PASSWORD=admin_password
 TELEGRAM_BOT_TOKEN=bot_token_opcional
+```
+
+### 🌐 Configuración de Resolución de Dominios
+
+**✅ CONFIGURACIÓN COMPLETADA** - Los nombres de dominio están configurados y funcionando:
+
+```bash
+# Verificar resolución de nombres
+ping rpi.terrerov.com      # ✅ 192.168.0.2 (Master Node)
+ping lenlab.terrerov.com   # ✅ 192.168.0.3 (Worker Node)
+ping terrerov.com          # ✅ rpi.terrerov.com (Servicios Web)
+ping n8n.terrerov.com      # ✅ rpi.terrerov.com (Automatización)
+```
+
+**🎯 Dominios Configurados**:
+- `rpi.terrerov.com` → Master Node (192.168.0.2)
+- `lenlab.terrerov.com` → Worker Node (192.168.0.3)
+- `master.terrerov.com` → Alias para Master Node
+- `worker.terrerov.com` → Alias para Worker Node
+- Todos los servicios web → `rpi.terrerov.com`
+
+**🔧 Para reconfigurar en otro nodo**:
+```bash
+./scripts/setup-domain-resolution.sh
 ```
 
 ### 📁 Estructura del Proyecto
@@ -465,7 +498,7 @@ sudo systemctl restart kubelet
 
 ```bash
 # Verificar Traefik
-curl -s http://localhost:8080/api/rawdata | jq '.routers'
+curl -s http://rpi.terrerov.com:8080/api/rawdata | jq '.routers'
 
 # Renovar certificados
 docker-compose restart traefik
