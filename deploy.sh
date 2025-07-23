@@ -1797,3 +1797,7 @@ if [ -n "$1" ]; then
             ;;
     esac
 fi
+
+# Fin del script
+log_info "Script completado exitosamente"
+exit 0
