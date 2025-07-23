@@ -436,6 +436,7 @@ else
             ;;
     esac
 done
+fi
 
 # Función para generar contraseñas seguras
 function generate_secure_password() {
