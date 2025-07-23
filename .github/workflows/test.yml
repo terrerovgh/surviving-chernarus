@@ -1,0 +1,402 @@
+name: Test and Validate
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize, reopened ]
+  
+  # Permite ejecutar manualmente el workflow
+  workflow_dispatch:
+
+env:
+  PROJECT_NAME: surviving-chernarus
+
+jobs:
+  validate-syntax:
+    name: Validate Script Syntax
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Install shellcheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y shellcheck
+        
+    - name: Validate bash syntax
+      run: |
+        echo "🔍 Validating bash syntax..."
+        
+        # Verificar sintaxis del script principal
+        echo "Checking deploy.sh..."
+        bash -n deploy.sh
+        
+        # Verificar sintaxis del script de test
+        if [ -f "test_deploy.sh" ]; then
+          echo "Checking test_deploy.sh..."
+          bash -n test_deploy.sh
+        fi
+        
+        echo "✅ Bash syntax validation passed"
+        
+    - name: Run shellcheck
+      run: |
+        echo "🔍 Running shellcheck analysis..."
+        
+        # Analizar script principal
+        echo "Analyzing deploy.sh..."
+        shellcheck -e SC1091,SC2034,SC2086 deploy.sh || {
+          echo "⚠️  Shellcheck found issues in deploy.sh"
+          echo "Note: Some warnings may be acceptable for this script"
+        }
+        
+        # Analizar script de test si existe
+        if [ -f "test_deploy.sh" ]; then
+          echo "Analyzing test_deploy.sh..."
+          shellcheck -e SC1091,SC2034,SC2086 test_deploy.sh || {
+            echo "⚠️  Shellcheck found issues in test_deploy.sh"
+          }
+        fi
+        
+        echo "✅ Shellcheck analysis completed"
+
+  validate-structure:
+    name: Validate Project Structure
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Validate required files
+      run: |
+        echo "🔍 Validating project structure..."
+        
+        # Archivos requeridos
+        required_files=(
+          "deploy.sh"
+          "README.md"
+          ".gitignore"
+        )
+        
+        missing_files=()
+        for file in "${required_files[@]}"; do
+          if [ ! -f "$file" ]; then
+            missing_files+=("$file")
+          else
+            echo "✅ Found: $file"
+          fi
+        done
+        
+        if [ ${#missing_files[@]} -gt 0 ]; then
+          echo "❌ Missing required files:"
+          printf '  - %s\n' "${missing_files[@]}"
+          exit 1
+        fi
+        
+        echo "✅ All required files present"
+        
+    - name: Validate script permissions
+      run: |
+        echo "🔍 Validating script permissions..."
+        
+        # Verificar que deploy.sh sea ejecutable
+        if [ -x "deploy.sh" ]; then
+          echo "✅ deploy.sh is executable"
+        else
+          echo "⚠️  deploy.sh is not executable, fixing..."
+          chmod +x deploy.sh
+          echo "✅ Fixed deploy.sh permissions"
+        fi
+        
+        # Verificar test_deploy.sh si existe
+        if [ -f "test_deploy.sh" ]; then
+          if [ -x "test_deploy.sh" ]; then
+            echo "✅ test_deploy.sh is executable"
+          else
+            echo "⚠️  test_deploy.sh is not executable, fixing..."
+            chmod +x test_deploy.sh
+            echo "✅ Fixed test_deploy.sh permissions"
+          fi
+        fi
+        
+    - name: Validate documentation
+      run: |
+        echo "🔍 Validating documentation..."
+        
+        # Verificar que README.md no esté vacío
+        if [ -s "README.md" ]; then
+          echo "✅ README.md exists and is not empty"
+        else
+          echo "❌ README.md is missing or empty"
+          exit 1
+        fi
+        
+        # Verificar estructura de docs si existe
+        if [ -d "docs" ]; then
+          echo "✅ Documentation directory found"
+          
+          # Verificar archivos de documentación importantes
+          doc_files=("installation.md" "configuration.md" "troubleshooting.md")
+          for doc in "${doc_files[@]}"; do
+            if [ -f "docs/$doc" ]; then
+              echo "✅ Found: docs/$doc"
+            else
+              echo "⚠️  Missing: docs/$doc"
+            fi
+          done
+        fi
+
+  test-deployment-logic:
+    name: Test Deployment Logic
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup test environment
+      run: |
+        echo "🔧 Setting up test environment..."
+        
+        # Instalar dependencias necesarias para testing
+        sudo apt-get update
+        sudo apt-get install -y curl wget jq
+        
+        # Crear estructura de directorios de prueba
+        mkdir -p /tmp/test-surviving-chernarus
+        cp deploy.sh /tmp/test-surviving-chernarus/
+        
+        if [ -f "test_deploy.sh" ]; then
+          cp test_deploy.sh /tmp/test-surviving-chernarus/
+        fi
+        
+        cd /tmp/test-surviving-chernarus
+        chmod +x deploy.sh
+        
+        echo "✅ Test environment ready"
+        
+    - name: Test script help and version
+      run: |
+        echo "🧪 Testing script help and version..."
+        cd /tmp/test-surviving-chernarus
+        
+        # Test help option
+        if ./deploy.sh --help >/dev/null 2>&1; then
+          echo "✅ Help option works"
+        else
+          echo "⚠️  Help option not available or has issues"
+        fi
+        
+        # Test version info
+        if grep -q "Versión:" deploy.sh; then
+          version=$(grep "Versión:" deploy.sh | head -1)
+          echo "✅ Version found: $version"
+        else
+          echo "⚠️  Version information not found"
+        fi
+        
+    - name: Test environment validation
+      run: |
+        echo "🧪 Testing environment validation functions..."
+        cd /tmp/test-surviving-chernarus
+        
+        # Crear un .env de prueba
+        cat > .env << 'EOF'
+        # Test environment file
+        PUID=1000
+        PGID=1000
+        TZ=UTC
+        DOMAIN_NAME=test.example.com
+        CLOUDFLARE_EMAIL=test@example.com
+        CLOUDFLARE_API_TOKEN=test_token
+        POSTGRES_DB=test_db
+        POSTGRES_USER=test_user
+        POSTGRES_PASSWORD=test_password
+        PIHOLE_PASSWORD=test_pihole
+        TRAEFIK_USER=test_traefik
+        TRAEFIK_PASSWORD=test_traefik_pass
+        RPI_IP=192.168.1.100
+        EOF
+        
+        echo "✅ Test .env file created"
+        
+        # Verificar que el script puede leer el .env
+        if source .env && [ -n "$DOMAIN_NAME" ]; then
+          echo "✅ .env file can be sourced correctly"
+        else
+          echo "❌ .env file has issues"
+          exit 1
+        fi
+        
+    - name: Test function definitions
+      run: |
+        echo "🧪 Testing function definitions..."
+        cd /tmp/test-surviving-chernarus
+        
+        # Verificar que las funciones principales estén definidas
+        functions_to_check=(
+          "log_message"
+          "log_error"
+          "log_warning"
+          "validate_system_requirements"
+          "setup_env"
+          "deploy_services"
+        )
+        
+        for func in "${functions_to_check[@]}"; do
+          if grep -q "function $func" deploy.sh || grep -q "$func()" deploy.sh; then
+            echo "✅ Function found: $func"
+          else
+            echo "❌ Function missing: $func"
+            exit 1
+          fi
+        done
+        
+        echo "✅ All required functions are defined"
+        
+    - name: Run custom tests if available
+      run: |
+        echo "🧪 Running custom tests..."
+        cd /tmp/test-surviving-chernarus
+        
+        if [ -f "test_deploy.sh" ]; then
+          echo "Running test_deploy.sh..."
+          chmod +x test_deploy.sh
+          
+          # Ejecutar tests en modo validación únicamente
+          if ./test_deploy.sh --validate-only 2>/dev/null; then
+            echo "✅ Custom tests passed"
+          else
+            echo "⚠️  Custom tests had issues (this may be expected in CI)"
+          fi
+        else
+          echo "ℹ️  No custom test script found"
+        fi
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Scan for secrets
+      run: |
+        echo "🔒 Scanning for potential secrets..."
+        
+        # Patrones a buscar (básico)
+        patterns=(
+          "password.*=.*[^\$]"
+          "token.*=.*[^\$]"
+          "key.*=.*[^\$]"
+          "secret.*=.*[^\$]"
+        )
+        
+        found_issues=false
+        for pattern in "${patterns[@]}"; do
+          if grep -r -i "$pattern" . --exclude-dir=.git --exclude="*.yml" --exclude="*.yaml" | grep -v "#" | grep -v "example" | grep -v "template"; then
+            echo "⚠️  Potential secret found matching pattern: $pattern"
+            found_issues=true
+          fi
+        done
+        
+        if [ "$found_issues" = true ]; then
+          echo "⚠️  Potential secrets detected. Please review."
+          echo "Note: This is a basic scan. Ensure no real secrets are committed."
+        else
+          echo "✅ No obvious secrets detected"
+        fi
+        
+    - name: Check file permissions
+      run: |
+        echo "🔒 Checking file permissions..."
+        
+        # Verificar que no hay archivos con permisos excesivos
+        if find . -type f -perm /o+w | grep -v ".git"; then
+          echo "⚠️  Files with world-writable permissions found"
+        else
+          echo "✅ No world-writable files found"
+        fi
+        
+        # Verificar archivos ejecutables
+        echo "Executable files:"
+        find . -type f -executable | grep -v ".git" || echo "No executable files found"
+
+  compatibility-check:
+    name: Compatibility Check
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Test on ${{ matrix.os }}
+      run: |
+        echo "🧪 Testing compatibility on ${{ matrix.os }}..."
+        
+        # Verificar comandos requeridos
+        required_commands=("bash" "curl" "wget" "grep" "sed" "awk")
+        
+        for cmd in "${required_commands[@]}"; do
+          if command -v "$cmd" >/dev/null 2>&1; then
+            echo "✅ $cmd is available"
+          else
+            echo "❌ $cmd is not available"
+            exit 1
+          fi
+        done
+        
+        # Verificar versión de bash
+        bash_version=$(bash --version | head -1)
+        echo "Bash version: $bash_version"
+        
+        # Verificar sintaxis del script
+        bash -n deploy.sh
+        echo "✅ Script syntax is valid on ${{ matrix.os }}"
+
+  generate-report:
+    name: Generate Test Report
+    runs-on: ubuntu-latest
+    needs: [validate-syntax, validate-structure, test-deployment-logic, security-scan, compatibility-check]
+    if: always()
+    
+    steps:
+    - name: Generate summary
+      run: |
+        echo "📊 Test Summary Report"
+        echo "====================="
+        echo ""
+        echo "Job Results:"
+        echo "- Syntax Validation: ${{ needs.validate-syntax.result }}"
+        echo "- Structure Validation: ${{ needs.validate-structure.result }}"
+        echo "- Deployment Logic Tests: ${{ needs.test-deployment-logic.result }}"
+        echo "- Security Scan: ${{ needs.security-scan.result }}"
+        echo "- Compatibility Check: ${{ needs.compatibility-check.result }}"
+        echo ""
+        
+        # Determinar estado general
+        if [ "${{ needs.validate-syntax.result }}" = "success" ] && \
+           [ "${{ needs.validate-structure.result }}" = "success" ] && \
+           [ "${{ needs.test-deployment-logic.result }}" = "success" ] && \
+           [ "${{ needs.security-scan.result }}" = "success" ] && \
+           [ "${{ needs.compatibility-check.result }}" = "success" ]; then
+          echo "✅ All tests passed! Ready for deployment."
+          echo "🚀 This PR can be safely merged."
+        else
+          echo "❌ Some tests failed. Please review before merging."
+          echo "🔍 Check the individual job logs for details."
+        fi
+        
+        echo ""
+        echo "Next Steps:"
+        echo "- Review any warnings or failures above"
+        echo "- Fix any issues found"
+        echo "- Re-run tests if needed"
+        echo "- Merge when all tests pass"

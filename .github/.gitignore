@@ -1,0 +1,39 @@
+# GitHub Actions specific gitignore
+
+# Temporary files created by setup script
+*.tmp
+*.temp
+
+# SSH keys (should never be committed)
+*.pem
+*.key
+id_rsa*
+surviving_chernarus_deploy*
+
+# Logs
+*.log
+
+# Backup files
+*.bak
+*.backup
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+
+# Local configuration
+.env.local
+.env.*.local
+
+# Test artifacts
+test-results/
+coverage/
+
+# Temporary directories
+tmp/
+temp/

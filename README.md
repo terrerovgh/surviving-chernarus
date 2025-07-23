@@ -13,6 +13,8 @@ Este proyecto proporciona un conjunto de herramientas para configurar y desplega
 
 ## Instalación
 
+### Instalación Manual
+
 1. Clona el repositorio o descarga el script `deploy.sh`
 2. Dale permisos de ejecución al script:
 
@@ -25,6 +27,36 @@ chmod +x deploy.sh
 ```bash
 ./deploy.sh
 ```
+
+### 🚀 Instalación Automática con GitHub Actions
+
+Este proyecto incluye CI/CD automático que despliega cambios directamente a tu Raspberry Pi:
+
+#### Configuración Rápida:
+
+```bash
+# Configurar GitHub Actions automáticamente
+./.github/setup-github-actions.sh
+```
+
+#### Configuración Manual:
+
+1. **Generar claves SSH**:
+   ```bash
+   ssh-keygen -t rsa -b 4096 -C "github-actions@surviving-chernarus"
+   ssh-copy-id terrerov@rpi.terrerov.com
+   ```
+
+2. **Configurar GitHub Secrets**:
+   - Ve a Settings → Secrets and variables → Actions
+   - Agrega `SSH_PRIVATE_KEY` con tu clave privada
+
+3. **Deployment Automático**:
+   - Push a `main` → Deployment automático
+   - Pull Request → Tests automáticos
+   - Manual → Ejecutar desde GitHub Actions
+
+📖 **Documentación completa**: [CI/CD Guide](docs/ci-cd.md)
 
 ## Uso del Script
 
@@ -183,6 +215,54 @@ docker compose down
 tar -czvf backup.tar.gz data
 docker compose up -d
 ```
+
+## 🔄 CI/CD con GitHub Actions
+
+### Workflows Disponibles
+
+#### 1. Deploy Workflow
+- **Trigger**: Push a `main`, PR mergeado, o ejecución manual
+- **Función**: Despliega automáticamente a la Raspberry Pi
+- **Incluye**: Backup, deployment, tests, reportes
+
+#### 2. Test Workflow
+- **Trigger**: Pull Requests
+- **Función**: Valida código antes del merge
+- **Incluye**: Sintaxis, estructura, seguridad, compatibilidad
+
+### Estado de los Workflows
+
+![Deploy Status](https://github.com/terrerovgh/surviving-chernarus/workflows/Deploy%20to%20Raspberry%20Pi/badge.svg)
+![Test Status](https://github.com/terrerovgh/surviving-chernarus/workflows/Test%20and%20Validate/badge.svg)
+
+### Configuración Rápida
+
+```bash
+# Configurar GitHub Actions
+./.github/setup-github-actions.sh
+
+# Seguir las instrucciones del script para:
+# 1. Generar claves SSH
+# 2. Configurar Raspberry Pi
+# 3. Configurar GitHub Secrets
+```
+
+### Monitoreo
+
+- **Logs**: Disponibles en GitHub Actions tab
+- **Reportes**: Generados automáticamente después de cada deployment
+- **Notificaciones**: Estado de deployment en tiempo real
+
+### Rollback
+
+```bash
+# Rollback automático desde la Raspberry Pi
+ssh terrerov@rpi.terrerov.com
+cd /opt/surviving-chernarus
+sudo ./deploy.sh rollback
+```
+
+📖 **Documentación completa de CI/CD**: [docs/ci-cd.md](docs/ci-cd.md)
 
 ### Restauración
 
