@@ -1,0 +1,64 @@
+# Archivo .gitignore para el proyecto Surviving Chernarus
+
+# Variables de entorno y archivos de configuración
+.env
+.env.*
+!.env.example
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Directorios de dependencias
+node_modules/
+
+# Archivos de logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos temporales
+*.tmp
+*.swp
+*.swo
+
+# Archivos de respaldo
+*~
+*.bak
+
+# Directorios de datos (si se generan localmente para pruebas)
+/data/
+
+# Archivos de configuración de IDE
+.idea/
+.vscode/
+.trae/
+*.sublime-*
+
+# Archivos compilados
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Archivos de caché
+.cache/
+.npm/
+
+# Archivos de certificados y claves
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.p12
+*.pfx
+*.p7b
+*.p7r
+*.spc
+*.sst
+
+# Archivos específicos del proyecto
+acme.json
