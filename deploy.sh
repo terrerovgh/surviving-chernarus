@@ -1,41 +1,211 @@
 #!/bin/bash
 
-# Script unificado para el proyecto "Surviving Chernarus"
+# Script unificado para el proyecto "Surviving Chernarus" - Versión Producción
 # Este script combina todas las funcionalidades de setup_env.sh, setup_network.sh y deploy.sh
-# con una interfaz mejorada usando whiptail
+# con una interfaz mejorada usando whiptail y mejoras de seguridad para producción
+#
+# Versión: 2.0.0
+# Fecha: $(date +%Y-%m-%d)
+# Autor: Surviving Chernarus Team
+# Licencia: MIT
+
+# Configuración de logging
+LOG_FILE="/var/log/surviving-chernarus-install.log"
+BACKUP_DIR="/opt/surviving-chernarus/backups/$(date +%Y%m%d_%H%M%S)"
+ROLLBACK_FILE="/opt/surviving-chernarus/rollback_info.json"
 
 # Colores para mensajes
 GREEN="\033[0;32m"
 YELLOW="\033[1;33m"
 RED="\033[0;31m"
+BLUE="\033[0;34m"
 NC="\033[0m" # No Color
+
+# Configuración de logging a archivo
+exec 1> >(tee -a "$LOG_FILE")
+exec 2> >(tee -a "$LOG_FILE" >&2)
+
+# Variables globales de seguridad
+MIN_DISK_SPACE=5000000  # 5GB en KB
+MIN_RAM=1000000         # 1GB en KB
+REQUIRED_ARCH=("aarch64" "armv7l" "x86_64")
+SUPPORTED_OS=("debian" "ubuntu" "raspbian")
 
 # Función para mostrar mensajes de progreso
 function log_message() {
-    echo -e "${GREEN}[INFO]${NC} $1"
+    echo -e "${GREEN}[INFO]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
 function log_warning() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
 }
 
 function log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[ERROR]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    create_rollback_point "error_occurred" "$1"
     exit 1
+}
+
+function log_debug() {
+    if [[ "$DEBUG" == "true" ]]; then
+        echo -e "${BLUE}[DEBUG]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
+    fi
+}
+
+# Función para crear puntos de rollback
+function create_rollback_point() {
+    local action="$1"
+    local description="$2"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    
+    mkdir -p "$(dirname "$ROLLBACK_FILE")"
+    
+    cat > "$ROLLBACK_FILE" << EOF
+{
+    "timestamp": "$timestamp",
+    "action": "$action",
+    "description": "$description",
+    "backup_dir": "$BACKUP_DIR",
+    "system_info": {
+        "hostname": "$(hostname)",
+        "os": "$(lsb_release -d 2>/dev/null | cut -f2 || echo 'Unknown')",
+        "arch": "$(uname -m)",
+        "kernel": "$(uname -r)"
+    }
+}
+EOF
+    log_debug "Punto de rollback creado: $action"
+}
+
+# Función para validar requisitos del sistema
+function validate_system_requirements() {
+    log_message "Validando requisitos del sistema..."
+    
+    # Verificar arquitectura
+    local current_arch=$(uname -m)
+    local arch_supported=false
+    for arch in "${REQUIRED_ARCH[@]}"; do
+        if [[ "$current_arch" == "$arch" ]]; then
+            arch_supported=true
+            break
+        fi
+    done
+    
+    if [[ "$arch_supported" == "false" ]]; then
+        log_warning "Arquitectura $current_arch no está oficialmente soportada. Arquitecturas soportadas: ${REQUIRED_ARCH[*]}"
+        if ! whiptail --title "Arquitectura no soportada" \
+                     --yesno "Tu arquitectura ($current_arch) no está oficialmente soportada.\n\n¿Deseas continuar bajo tu propio riesgo?" 10 78; then
+            log_error "Instalación cancelada por arquitectura no soportada"
+        fi
+    fi
+    
+    # Verificar espacio en disco
+    local available_space=$(df / | tail -1 | awk '{print $4}')
+    if [[ $available_space -lt $MIN_DISK_SPACE ]]; then
+        log_error "Espacio insuficiente en disco. Requerido: ${MIN_DISK_SPACE}KB, Disponible: ${available_space}KB"
+    fi
+    
+    # Verificar RAM
+    local available_ram=$(free | grep '^Mem:' | awk '{print $2}')
+    if [[ $available_ram -lt $MIN_RAM ]]; then
+        log_warning "RAM insuficiente. Recomendado: ${MIN_RAM}KB, Disponible: ${available_ram}KB"
+        if ! whiptail --title "RAM Insuficiente" \
+                     --yesno "Tu sistema tiene menos RAM de la recomendada.\n\nRecomendado: $(($MIN_RAM/1024))MB\nDisponible: $(($available_ram/1024))MB\n\n¿Deseas continuar?" 12 78; then
+            log_error "Instalación cancelada por RAM insuficiente"
+        fi
+    fi
+    
+    # Verificar sistema operativo
+    local os_id="unknown"
+    if [[ -f /etc/os-release ]]; then
+        os_id=$(grep '^ID=' /etc/os-release | cut -d'=' -f2 | tr -d '"')
+    fi
+    
+    local os_supported=false
+    for os in "${SUPPORTED_OS[@]}"; do
+        if [[ "$os_id" == "$os" ]]; then
+            os_supported=true
+            break
+        fi
+    done
+    
+    if [[ "$os_supported" == "false" ]]; then
+        log_warning "Sistema operativo $os_id no está oficialmente soportado. Sistemas soportados: ${SUPPORTED_OS[*]}"
+    fi
+    
+    # Verificar conectividad a internet
+    if ! ping -c 1 8.8.8.8 &> /dev/null; then
+        log_error "No hay conectividad a Internet. Verifica tu conexión de red."
+    fi
+    
+    # Verificar si Docker ya está instalado
+    if command -v docker &> /dev/null; then
+        log_warning "Docker ya está instalado. Versión: $(docker --version)"
+    fi
+    
+    log_message "Validación del sistema completada exitosamente"
+}
+
+# Función para crear backup de archivos críticos
+function create_backup() {
+    local file_path="$1"
+    local backup_name="$2"
+    
+    if [[ -f "$file_path" ]]; then
+        mkdir -p "$BACKUP_DIR"
+        cp "$file_path" "$BACKUP_DIR/${backup_name}.backup"
+        log_debug "Backup creado: $file_path -> $BACKUP_DIR/${backup_name}.backup"
+    fi
+}
+
+# Función mejorada para ejecutar comandos con manejo de errores
+function exec_cmd() {
+    local cmd="$1"
+    local description="$2"
+    local allow_failure="${3:-false}"
+    
+    log_debug "Ejecutando: $cmd"
+    
+    if [[ -n "$description" ]]; then
+        log_message "$description"
+    fi
+    
+    if eval "$cmd"; then
+        log_debug "Comando ejecutado exitosamente: $cmd"
+        return 0
+    else
+        local exit_code=$?
+        log_error "Error al ejecutar comando: $cmd (código de salida: $exit_code)"
+        
+        if [[ "$allow_failure" == "true" ]]; then
+            log_warning "Comando falló pero se permite continuar"
+            return $exit_code
+        else
+            if whiptail --title "Error de comando" \
+                       --yesno "Error al ejecutar: $cmd\n\nCódigo de salida: $exit_code\n\n¿Deseas continuar de todos modos?" 12 78; then
+                log_warning "Usuario decidió continuar después del error"
+                return $exit_code
+            else
+                log_error "Operación cancelada por el usuario después del error"
+            fi
+        fi
+    fi
 }
 
 # Verificar si whiptail está instalado
 if ! command -v whiptail &> /dev/null; then
-    log_error "whiptail no está instalado. Instalándolo..."
+    log_message "whiptail no está instalado. Instalándolo..."
     if command -v apt-get &> /dev/null; then
-        sudo apt-get update && sudo apt-get install -y whiptail
+        exec_cmd "sudo apt-get update && sudo apt-get install -y whiptail" "Instalando whiptail"
     elif command -v yum &> /dev/null; then
-        sudo yum install -y newt
+        exec_cmd "sudo yum install -y newt" "Instalando newt (whiptail)"
     else
         log_error "No se pudo instalar whiptail. Por favor, instálalo manualmente."
-        exit 1
     fi
 fi
+
+# Validar requisitos del sistema antes de continuar
+validate_system_requirements
 
 # Mensaje de bienvenida
 whiptail --title "Surviving Chernarus - Instalador Unificado" \
@@ -44,12 +214,14 @@ whiptail --title "Surviving Chernarus - Instalador Unificado" \
 # Menú principal
 while true; do
     OPCION=$(whiptail --title "Surviving Chernarus - Menú Principal" \
-                     --menu "Selecciona una opción:" 15 78 5 \
+                     --menu "Selecciona una opción:" 18 78 7 \
                      "1" "Configurar variables de entorno (.env)" \
                      "2" "Configurar red (requiere sudo)" \
                      "3" "Desplegar servicios" \
                      "4" "Ver documentación" \
-                     "5" "Salir" 3>&1 1>&2 2>&3)
+                     "5" "Rollback del sistema" \
+                     "6" "Plan de recuperación ante desastres" \
+                     "7" "Salir" 3>&1 1>&2 2>&3)
     
     # Salir si se presiona Cancelar
     if [ $? -ne 0 ]; then
@@ -80,6 +252,19 @@ while true; do
             show_documentation
             ;;
         5)
+            # Rollback del sistema
+            if [ "$(id -u)" -ne 0 ]; then
+                whiptail --title "Error" \
+                         --msgbox "El rollback del sistema requiere privilegios de superusuario (sudo)." 8 78
+            else
+                rollback_system
+            fi
+            ;;
+        6)
+            # Plan de recuperación ante desastres
+            show_disaster_recovery
+            ;;
+        7)
             # Salir
             log_message "Saliendo del instalador."
             exit 0
@@ -87,12 +272,58 @@ while true; do
     esac
 done
 
+# Función para generar contraseñas seguras
+function generate_secure_password() {
+    local length="${1:-32}"
+    local password
+    
+    # Intentar diferentes métodos para generar contraseñas seguras
+    if command -v openssl &> /dev/null; then
+        password=$(openssl rand -base64 48 | tr -d "=+/" | cut -c1-$length)
+    elif command -v /dev/urandom &> /dev/null; then
+        password=$(tr -dc 'A-Za-z0-9!@#$%^&*()_+=' < /dev/urandom | head -c $length)
+    else
+        # Fallback menos seguro
+        password=$(date +%s | sha256sum | base64 | head -c $length)
+        log_warning "Usando método de generación de contraseñas menos seguro"
+    fi
+    
+    echo "$password"
+}
+
+# Función para validar entrada de email
+function validate_email() {
+    local email="$1"
+    local email_regex="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+    
+    if [[ $email =~ $email_regex ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Función para validar dominio
+function validate_domain() {
+    local domain="$1"
+    local domain_regex="^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$"
+    
+    if [[ $domain =~ $domain_regex ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Función para configurar variables de entorno
 function setup_env() {
+    create_rollback_point "setup_env_start" "Iniciando configuración de variables de entorno"
+    
     # Verificar si el archivo .env ya existe
     if [ -f ".env" ]; then
+        create_backup ".env" "env_file"
         if ! whiptail --title "Archivo .env existente" \
-                     --yesno "El archivo .env ya existe. ¿Deseas sobrescribirlo?" 8 78; then
+                     --yesno "El archivo .env ya existe. Se ha creado un backup.\n\n¿Deseas sobrescribirlo?" 10 78; then
             log_message "Operación cancelada por el usuario."
             return
         fi
@@ -109,54 +340,133 @@ function setup_env() {
         PGID=$(whiptail --title "ID de Grupo" --inputbox "Introduce el ID de Grupo (PGID):" 8 78 "$PGID" 3>&1 1>&2 2>&3)
     fi
     
-    # Zona horaria
-    TZ=$(whiptail --title "Zona Horaria" --inputbox "Introduce la zona horaria:" 8 78 "Europe/Madrid" 3>&1 1>&2 2>&3)
+    # Zona horaria con validación
+    while true; do
+        TZ=$(whiptail --title "Zona Horaria" --inputbox "Introduce la zona horaria (ej: Europe/Madrid, America/Mexico_City):" 10 78 "Europe/Madrid" 3>&1 1>&2 2>&3)
+        if [[ -n "$TZ" ]] && [[ -f "/usr/share/zoneinfo/$TZ" ]]; then
+            break
+        else
+            whiptail --title "Error" --msgbox "Zona horaria inválida. Por favor, introduce una zona horaria válida." 8 78
+        fi
+    done
     
-    # Configuración de dominio y Cloudflare
-    DOMAIN_NAME=$(whiptail --title "Nombre de Dominio" --inputbox "Introduce el nombre de dominio:" 8 78 "example.com" 3>&1 1>&2 2>&3)
-    CLOUDFLARE_EMAIL=$(whiptail --title "Email de Cloudflare" --inputbox "Introduce el email de Cloudflare:" 8 78 "user@example.com" 3>&1 1>&2 2>&3)
-    CLOUDFLARE_API_TOKEN=$(whiptail --title "Token API de Cloudflare" --passwordbox "Introduce el token API de Cloudflare:" 8 78 3>&1 1>&2 2>&3)
+    # Configuración de dominio con validación
+    while true; do
+        DOMAIN_NAME=$(whiptail --title "Nombre de Dominio" --inputbox "Introduce el nombre de dominio (ej: midominio.com):" 10 78 "example.com" 3>&1 1>&2 2>&3)
+        if [[ -n "$DOMAIN_NAME" ]] && validate_domain "$DOMAIN_NAME"; then
+            break
+        else
+            whiptail --title "Error" --msgbox "Dominio inválido. Por favor, introduce un dominio válido (ej: midominio.com)." 8 78
+        fi
+    done
+    
+    # Email de Cloudflare con validación
+    while true; do
+        CLOUDFLARE_EMAIL=$(whiptail --title "Email de Cloudflare" --inputbox "Introduce el email de Cloudflare:" 10 78 "user@example.com" 3>&1 1>&2 2>&3)
+        if [[ -n "$CLOUDFLARE_EMAIL" ]] && validate_email "$CLOUDFLARE_EMAIL"; then
+            break
+        else
+            whiptail --title "Error" --msgbox "Email inválido. Por favor, introduce un email válido." 8 78
+        fi
+    done
+    
+    # Token API de Cloudflare con validación
+    while true; do
+        CLOUDFLARE_API_TOKEN=$(whiptail --title "Token API de Cloudflare" --passwordbox "Introduce el token API de Cloudflare (mínimo 40 caracteres):" 10 78 3>&1 1>&2 2>&3)
+        if [[ -n "$CLOUDFLARE_API_TOKEN" ]] && [[ ${#CLOUDFLARE_API_TOKEN} -ge 40 ]]; then
+            break
+        else
+            whiptail --title "Error" --msgbox "Token API inválido. Debe tener al menos 40 caracteres." 8 78
+        fi
+    done
     
     # Configuración de PostgreSQL
-    POSTGRES_DB=$(whiptail --title "Base de Datos PostgreSQL" --inputbox "Introduce el nombre de la base de datos:" 8 78 "n8n" 3>&1 1>&2 2>&3)
-    POSTGRES_USER=$(whiptail --title "Usuario PostgreSQL" --inputbox "Introduce el nombre de usuario:" 8 78 "n8n" 3>&1 1>&2 2>&3)
-    POSTGRES_PASSWORD=$(whiptail --title "Contraseña PostgreSQL" --passwordbox "Introduce la contraseña:" 8 78 3>&1 1>&2 2>&3)
+    POSTGRES_DB=$(whiptail --title "Base de Datos PostgreSQL" --inputbox "Introduce el nombre de la base de datos:" 10 78 "n8n" 3>&1 1>&2 2>&3)
+    POSTGRES_USER=$(whiptail --title "Usuario PostgreSQL" --inputbox "Introduce el nombre de usuario:" 10 78 "n8n" 3>&1 1>&2 2>&3)
     
-    # Si la contraseña está vacía, generar una aleatoria
-    if [ -z "$POSTGRES_PASSWORD" ]; then
-        POSTGRES_PASSWORD=$(openssl rand -base64 12)
-        whiptail --title "Contraseña Generada" --msgbox "Se ha generado una contraseña aleatoria para PostgreSQL: $POSTGRES_PASSWORD\n\nPor favor, anótala en un lugar seguro." 10 78
+    # Opción para generar contraseña automáticamente o introducir manualmente
+    if whiptail --title "Contraseña PostgreSQL" \
+               --yesno "¿Deseas generar una contraseña segura automáticamente para PostgreSQL?\n\nRecomendado: SÍ (más seguro)" 10 78; then
+        POSTGRES_PASSWORD=$(generate_secure_password 32)
+        whiptail --title "Contraseña Generada" --msgbox "Se ha generado una contraseña segura para PostgreSQL:\n\n$POSTGRES_PASSWORD\n\nPor favor, anótala en un lugar seguro. Esta información también se guardará en el archivo .env." 12 78
+    else
+        while true; do
+            POSTGRES_PASSWORD=$(whiptail --title "Contraseña PostgreSQL" --passwordbox "Introduce una contraseña segura (mínimo 12 caracteres):" 10 78 3>&1 1>&2 2>&3)
+            if [[ -n "$POSTGRES_PASSWORD" ]] && [[ ${#POSTGRES_PASSWORD} -ge 12 ]]; then
+                break
+            else
+                whiptail --title "Error" --msgbox "La contraseña debe tener al menos 12 caracteres." 8 78
+            fi
+        done
     fi
     
     # Configuración de Pi-hole
-    PIHOLE_PASSWORD=$(whiptail --title "Contraseña Pi-hole" --passwordbox "Introduce la contraseña para Pi-hole:" 8 78 3>&1 1>&2 2>&3)
-    
-    # Si la contraseña está vacía, generar una aleatoria
-    if [ -z "$PIHOLE_PASSWORD" ]; then
-        PIHOLE_PASSWORD=$(openssl rand -base64 8)
-        whiptail --title "Contraseña Generada" --msgbox "Se ha generado una contraseña aleatoria para Pi-hole: $PIHOLE_PASSWORD\n\nPor favor, anótala en un lugar seguro." 10 78
+    if whiptail --title "Contraseña Pi-hole" \
+               --yesno "¿Deseas generar una contraseña segura automáticamente para Pi-hole?\n\nRecomendado: SÍ (más seguro)" 10 78; then
+        PIHOLE_PASSWORD=$(generate_secure_password 24)
+        whiptail --title "Contraseña Generada" --msgbox "Se ha generado una contraseña segura para Pi-hole:\n\n$PIHOLE_PASSWORD\n\nPor favor, anótala en un lugar seguro." 12 78
+    else
+        while true; do
+            PIHOLE_PASSWORD=$(whiptail --title "Contraseña Pi-hole" --passwordbox "Introduce una contraseña segura (mínimo 8 caracteres):" 10 78 3>&1 1>&2 2>&3)
+            if [[ -n "$PIHOLE_PASSWORD" ]] && [[ ${#PIHOLE_PASSWORD} -ge 8 ]]; then
+                break
+            else
+                whiptail --title "Error" --msgbox "La contraseña debe tener al menos 8 caracteres." 8 78
+            fi
+        done
     fi
     
     # Configuración de Traefik
-    TRAEFIK_USER=$(whiptail --title "Usuario Traefik" --inputbox "Introduce el nombre de usuario para Traefik:" 8 78 "admin" 3>&1 1>&2 2>&3)
-    TRAEFIK_PASSWORD=$(whiptail --title "Contraseña Traefik" --passwordbox "Introduce la contraseña para Traefik:" 8 78 3>&1 1>&2 2>&3)
+    TRAEFIK_USER=$(whiptail --title "Usuario Traefik" --inputbox "Introduce el nombre de usuario para Traefik:" 10 78 "admin" 3>&1 1>&2 2>&3)
     
-    # Si la contraseña está vacía, generar una aleatoria
-    if [ -z "$TRAEFIK_PASSWORD" ]; then
-        TRAEFIK_PASSWORD=$(openssl rand -base64 10)
-        whiptail --title "Contraseña Generada" --msgbox "Se ha generado una contraseña aleatoria para Traefik: $TRAEFIK_PASSWORD\n\nPor favor, anótala en un lugar seguro." 10 78
+    if whiptail --title "Contraseña Traefik" \
+               --yesno "¿Deseas generar una contraseña segura automáticamente para Traefik?\n\nRecomendado: SÍ (más seguro)" 10 78; then
+        TRAEFIK_PASSWORD=$(generate_secure_password 24)
+        whiptail --title "Contraseña Generada" --msgbox "Se ha generado una contraseña segura para Traefik:\n\n$TRAEFIK_PASSWORD\n\nPor favor, anótala en un lugar seguro." 12 78
+    else
+        while true; do
+            TRAEFIK_PASSWORD=$(whiptail --title "Contraseña Traefik" --passwordbox "Introduce una contraseña segura (mínimo 8 caracteres):" 10 78 3>&1 1>&2 2>&3)
+            if [[ -n "$TRAEFIK_PASSWORD" ]] && [[ ${#TRAEFIK_PASSWORD} -ge 8 ]]; then
+                break
+            else
+                whiptail --title "Error" --msgbox "La contraseña debe tener al menos 8 caracteres." 8 78
+            fi
+        done
     fi
     
     # Generar hash para Traefik
     if command -v htpasswd &> /dev/null; then
         HASHED_PASSWORD=$(htpasswd -nb "$TRAEFIK_USER" "$TRAEFIK_PASSWORD")
     else
-        log_warning "htpasswd no está instalado. No se pudo generar el hash para Traefik."
-        HASHED_PASSWORD="$TRAEFIK_USER:$TRAEFIK_PASSWORD"
+        log_warning "htpasswd no está instalado. Instalándolo..."
+        if command -v apt-get &> /dev/null; then
+            exec_cmd "sudo apt-get install -y apache2-utils" "Instalando apache2-utils para htpasswd"
+            HASHED_PASSWORD=$(htpasswd -nb "$TRAEFIK_USER" "$TRAEFIK_PASSWORD")
+        else
+            log_warning "No se pudo instalar htpasswd. Usando hash básico."
+            HASHED_PASSWORD="$TRAEFIK_USER:$TRAEFIK_PASSWORD"
+        fi
     fi
     
-    # Configuración de red para Raspberry Pi
-    RPI_IP=$(whiptail --title "IP de Raspberry Pi" --inputbox "Introduce la dirección IP estática para la Raspberry Pi:" 8 78 "192.168.1.2" 3>&1 1>&2 2>&3)
+    # Configuración de red para Raspberry Pi con validación
+    while true; do
+        RPI_IP=$(whiptail --title "IP de Raspberry Pi" --inputbox "Introduce la dirección IP estática para la Raspberry Pi (formato: 192.168.1.2):" 10 78 "192.168.1.2" 3>&1 1>&2 2>&3)
+        if [[ $RPI_IP =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            # Validar que cada octeto esté en el rango válido
+            valid_ip=true
+            IFS='.' read -ra ADDR <<< "$RPI_IP"
+            for i in "${ADDR[@]}"; do
+                if [[ $i -lt 0 || $i -gt 255 ]]; then
+                    valid_ip=false
+                    break
+                fi
+            done
+            if [[ "$valid_ip" == "true" ]]; then
+                break
+            fi
+        fi
+        whiptail --title "Error" --msgbox "Dirección IP inválida. Por favor, introduce una IP válida (ej: 192.168.1.2)." 8 78
+    done
     
     # Crear archivo .env
     cat > .env << EOF
@@ -195,6 +505,8 @@ EOF
 
 # Función para configurar la red
 function setup_network() {
+    create_rollback_point "setup_network_start" "Iniciando configuración de red"
+    
     # Verificar si el archivo .env existe
     if [ ! -f ".env" ]; then
         whiptail --title "Error" \
@@ -211,13 +523,76 @@ function setup_network() {
         return
     fi
     
+    # Crear backups de archivos críticos de red
+    create_backup "/etc/hostname" "hostname"
+    create_backup "/etc/hosts" "hosts"
+    create_backup "/etc/resolv.conf" "resolv_conf"
+    create_backup "/etc/network/interfaces" "network_interfaces"
+    
+    # Verificar permisos de superusuario
+    if [ "$(id -u)" -ne 0 ]; then
+        log_error "Esta función requiere privilegios de superusuario. Ejecuta con sudo."
+        return
+    fi
+    
     # Obtener configuración de red actual
     CURRENT_HOSTNAME=$(hostname)
+    CURRENT_IP=$(hostname -I | awk '{print $1}')
+    CURRENT_GATEWAY=$(ip route | grep default | awk '{print $3}' | head -1)
+    CURRENT_DNS=$(grep nameserver /etc/resolv.conf | awk '{print $2}' | head -1)
     
-    # Solicitar configuración de red
-    NEW_HOSTNAME=$(whiptail --title "Nombre de Host" --inputbox "Introduce el nombre de host para la Raspberry Pi:" 8 78 "surviving-chernarus" 3>&1 1>&2 2>&3)
-    IP_ADDRESS=$(whiptail --title "Dirección IP" --inputbox "Introduce la dirección IP estática:" 8 78 "$RPI_IP" 3>&1 1>&2 2>&3)
-    GATEWAY=$(whiptail --title "Puerta de Enlace" --inputbox "Introduce la dirección de la puerta de enlace:" 8 78 "192.168.1.1" 3>&1 1>&2 2>&3)
+    log_message "Configuración actual: IP=$CURRENT_IP, Gateway=$CURRENT_GATEWAY, DNS=$CURRENT_DNS"
+    
+    # Solicitar y validar hostname
+    while true; do
+        NEW_HOSTNAME=$(whiptail --title "Configuración de Red" \
+                               --inputbox "Introduce el nuevo hostname (solo letras, números y guiones):" 10 78 "$CURRENT_HOSTNAME" 3>&1 1>&2 2>&3)
+        if [[ "$NEW_HOSTNAME" =~ ^[a-zA-Z0-9-]+$ ]] && [[ ${#NEW_HOSTNAME} -le 63 ]]; then
+            break
+        fi
+        whiptail --title "Error" --msgbox "Hostname inválido. Debe contener solo letras, números y guiones, máximo 63 caracteres." 8 78
+    done
+    
+    # Solicitar y validar IP estática
+    while true; do
+        IP_ADDRESS=$(whiptail --title "Dirección IP" --inputbox "Introduce la dirección IP estática:" 8 78 "$RPI_IP" 3>&1 1>&2 2>&3)
+        if [[ $IP_ADDRESS =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            valid_ip=true
+            IFS='.' read -ra ADDR <<< "$IP_ADDRESS"
+            for i in "${ADDR[@]}"; do
+                if [[ $i -lt 0 || $i -gt 255 ]]; then
+                    valid_ip=false
+                    break
+                fi
+            done
+            if [[ "$valid_ip" == "true" ]]; then
+                break
+            fi
+        fi
+        whiptail --title "Error" --msgbox "Dirección IP inválida. Introduce una IP válida (ej: 192.168.1.2)." 8 78
+    done
+    
+    # Solicitar y validar gateway
+    while true; do
+        GATEWAY=$(whiptail --title "Configuración de Red" \
+                          --inputbox "Introduce la puerta de enlace (gateway):" 10 78 "$CURRENT_GATEWAY" 3>&1 1>&2 2>&3)
+        if [[ $GATEWAY =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            valid_gateway=true
+            IFS='.' read -ra ADDR <<< "$GATEWAY"
+            for i in "${ADDR[@]}"; do
+                if [[ $i -lt 0 || $i -gt 255 ]]; then
+                    valid_gateway=false
+                    break
+                fi
+            done
+            if [[ "$valid_gateway" == "true" ]]; then
+                break
+            fi
+        fi
+        whiptail --title "Error" --msgbox "Dirección de gateway inválida. Introduce una IP válida." 8 78
+    done
+    
+    # Solicitar y validar DNS
     DNS_SERVERS=$(whiptail --title "Servidores DNS" --inputbox "Introduce los servidores DNS (separados por espacios):" 8 78 "1.1.1.1 1.0.0.1" 3>&1 1>&2 2>&3)
     
     # Actualizar .env con la nueva IP
@@ -230,22 +605,60 @@ function setup_network() {
     # Actualizar /etc/hosts
     sed -i "s/127.0.1.1.*/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
     
-    # Configurar interfaz de red eth0
-    cat > /etc/network/interfaces.d/eth0 << EOF
-auto eth0
-iface eth0 inet static
+    # Detectar interfaz de red principal
+    INTERFACE=$(ip route | grep default | awk '{print $5}' | head -1)
+    if [[ -z "$INTERFACE" ]]; then
+        INTERFACE="eth0"  # Fallback por defecto
+        log_warning "No se pudo detectar la interfaz de red principal, usando eth0 por defecto"
+    fi
+    log_message "Configurando interfaz de red: $INTERFACE"
+    
+    # Crear backup de la configuración actual de la interfaz
+    if [[ -f "/etc/network/interfaces.d/$INTERFACE" ]]; then
+        create_backup "/etc/network/interfaces.d/$INTERFACE" "interface_$INTERFACE"
+    fi
+    
+    # Configurar interfaz de red
+    cat > /etc/network/interfaces.d/$INTERFACE << EOF
+auto $INTERFACE
+iface $INTERFACE inet static
     address $IP_ADDRESS/24
     gateway $GATEWAY
 EOF
     
-    # Configurar resolv.conf
+    # Configurar resolv.conf con validación de DNS
     cat > /etc/resolv.conf << EOF
 # Generated by Surviving Chernarus setup_network
 EOF
     
+    # Validar y agregar servidores DNS
     for DNS in $DNS_SERVERS; do
-        echo "nameserver $DNS" >> /etc/resolv.conf
+        if [[ $DNS =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+            valid_dns=true
+            IFS='.' read -ra ADDR <<< "$DNS"
+            for i in "${ADDR[@]}"; do
+                if [[ $i -lt 0 || $i -gt 255 ]]; then
+                    valid_dns=false
+                    break
+                fi
+            done
+            if [[ "$valid_dns" == "true" ]]; then
+                echo "nameserver $DNS" >> /etc/resolv.conf
+                log_debug "DNS agregado: $DNS"
+            else
+                log_warning "DNS inválido ignorado: $DNS"
+            fi
+        else
+            log_warning "DNS inválido ignorado: $DNS"
+        fi
     done
+    
+    # Verificar que al menos un DNS fue configurado
+    if ! grep -q "nameserver" /etc/resolv.conf; then
+        log_warning "No se configuró ningún DNS válido, agregando DNS por defecto"
+        echo "nameserver 1.1.1.1" >> /etc/resolv.conf
+        echo "nameserver 1.0.0.1" >> /etc/resolv.conf
+    fi
     
     # Preguntar si se desea reiniciar
     if whiptail --title "Reiniciar Sistema" \
@@ -260,6 +673,8 @@ EOF
 
 # Función para desplegar servicios
 function deploy_services() {
+    create_rollback_point "deploy_services_start" "Iniciando despliegue de servicios"
+    
     # Verificar si el archivo .env existe
     if [ ! -f ".env" ]; then
         whiptail --title "Error" \
@@ -269,6 +684,18 @@ function deploy_services() {
     
     # Cargar variables de entorno desde el archivo .env
     source .env
+    
+    # Verificar permisos de superusuario
+    if [ "$(id -u)" -ne 0 ]; then
+        log_error "Esta función requiere privilegios de superusuario. Ejecuta con sudo."
+        return
+    fi
+    
+    # Validar requisitos del sistema antes de continuar
+    if ! validate_system_requirements; then
+        log_error "Los requisitos del sistema no se cumplen. Abortando despliegue."
+        return
+    fi
     
     # Verificar variables requeridas
     required_vars=("PUID" "PGID" "TZ" "DOMAIN_NAME" "CLOUDFLARE_EMAIL" "CLOUDFLARE_API_TOKEN" \
@@ -291,18 +718,7 @@ function deploy_services() {
         fi
     fi
     
-    # Función para ejecutar comandos
-    exec_cmd() {
-        eval "$1"
-        if [ $? -ne 0 ]; then
-            if ! whiptail --title "Error de comando" \
-                         --yesno "Error al ejecutar: $1\n\n¿Deseas continuar de todos modos?" 10 78; then
-                log_error "Operación cancelada por el usuario."
-                return 1
-            fi
-        fi
-        return 0
-    }
+    # Nota: La función exec_cmd ya está definida globalmente
     
     # Mostrar resumen de la instalación
     if ! whiptail --title "Resumen de la instalación" \
@@ -321,12 +737,25 @@ function deploy_services() {
         # 2. Instalación y configuración de UFW
         echo "20"
         log_message "2. Instalando y configurando UFW..."
-        exec_cmd "sudo apt install ufw -y"
-        exec_cmd "sudo ufw default deny incoming"
-        exec_cmd "sudo ufw default allow outgoing"
-        exec_cmd "sudo ufw allow ssh"
-        exec_cmd "sudo ufw allow http"
-        exec_cmd "sudo ufw allow https"
+        
+        # Crear backups de configuración UFW
+        create_backup "/etc/ufw" "ufw_config"
+        create_backup "/etc/default/ufw" "ufw_default"
+        
+        if ! exec_cmd "sudo apt install ufw -y" "Instalando UFW"; then
+            log_error "Error crítico: No se pudo instalar UFW"
+            return 1
+        fi
+        
+        exec_cmd "sudo ufw --force reset" "Reseteando configuración UFW"
+        exec_cmd "sudo ufw default deny incoming" "Configurando política por defecto (deny incoming)"
+        exec_cmd "sudo ufw default allow outgoing" "Configurando política por defecto (allow outgoing)"
+        exec_cmd "sudo ufw allow ssh" "Permitiendo SSH"
+        exec_cmd "sudo ufw allow http" "Permitiendo HTTP"
+        exec_cmd "sudo ufw allow https" "Permitiendo HTTPS"
+        exec_cmd "sudo ufw allow 53" "Permitiendo DNS"
+        exec_cmd "sudo ufw allow 8080/tcp" "Permitiendo Traefik Dashboard"
+        exec_cmd "sudo ufw allow 9091/tcp" "Permitiendo rTorrent"
         
         # 3. Configuración de UFW para Docker
         echo "30"
@@ -376,34 +805,101 @@ EOF
         echo "40"
         log_message "4. Instalando Docker y Docker Compose..."
         
-        # Instalar dependencias
-        exec_cmd "sudo apt install ca-certificates curl gnupg -y"
-        
-        # Añadir la clave GPG oficial de Docker
-        exec_cmd "sudo install -m 0755 -d /etc/apt/keyrings"
-        exec_cmd "curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg"
-        exec_cmd "sudo chmod a+r /etc/apt/keyrings/docker.gpg"
-        
-        # Configurar el repositorio apt de Docker
-        exec_cmd "echo \"deb [arch=\$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \$(. /etc/os-release && echo \"\$VERSION_CODENAME\") stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null"
-        
-        # Instalar Docker
-        exec_cmd "sudo apt update"
-        exec_cmd "sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y"
+        # Verificar si Docker ya está instalado
+        if command -v docker &> /dev/null; then
+            log_message "Docker ya está instalado, verificando versión..."
+            docker --version
+        else
+            # Instalar dependencias
+            if ! exec_cmd "sudo apt install ca-certificates curl gnupg lsb-release -y" "Instalando dependencias para Docker"; then
+                log_error "Error crítico: No se pudieron instalar las dependencias de Docker"
+                return 1
+            fi
+            
+            # Detectar distribución y arquitectura
+            DISTRO=$(lsb_release -is | tr '[:upper:]' '[:lower:]')
+            ARCH=$(dpkg --print-architecture)
+            log_message "Detectado: Distribución=$DISTRO, Arquitectura=$ARCH"
+            
+            # Verificar arquitectura soportada
+            if [[ "$ARCH" != "amd64" && "$ARCH" != "arm64" && "$ARCH" != "armhf" ]]; then
+                log_warning "Arquitectura $ARCH puede no estar completamente soportada"
+            fi
+            
+            # Añadir la clave GPG oficial de Docker
+            exec_cmd "sudo install -m 0755 -d /etc/apt/keyrings" "Creando directorio para claves GPG"
+            
+            # Usar la URL correcta según la distribución
+            if [[ "$DISTRO" == "ubuntu" ]]; then
+                GPG_URL="https://download.docker.com/linux/ubuntu/gpg"
+                REPO_URL="https://download.docker.com/linux/ubuntu"
+            else
+                GPG_URL="https://download.docker.com/linux/debian/gpg"
+                REPO_URL="https://download.docker.com/linux/debian"
+            fi
+            
+            if ! exec_cmd "curl -fsSL $GPG_URL | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg" "Descargando clave GPG de Docker"; then
+                log_error "Error crítico: No se pudo descargar la clave GPG de Docker"
+                return 1
+            fi
+            
+            exec_cmd "sudo chmod a+r /etc/apt/keyrings/docker.gpg" "Configurando permisos de clave GPG"
+            
+            # Configurar el repositorio apt de Docker
+            CODENAME=$(lsb_release -cs)
+            REPO_LINE="deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.gpg] $REPO_URL $CODENAME stable"
+            
+            if ! exec_cmd "echo '$REPO_LINE' | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null" "Configurando repositorio de Docker"; then
+                log_error "Error crítico: No se pudo configurar el repositorio de Docker"
+                return 1
+            fi
+            
+            # Actualizar e instalar Docker
+            if ! exec_cmd "sudo apt update" "Actualizando lista de paquetes"; then
+                log_error "Error crítico: No se pudo actualizar la lista de paquetes"
+                return 1
+            fi
+            
+            if ! exec_cmd "sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y" "Instalando Docker"; then
+                log_error "Error crítico: No se pudo instalar Docker"
+                return 1
+            fi
+        fi
         
         # 5. Post-instalación de Docker
         echo "50"
         log_message "5. Configurando permisos de Docker..."
-        exec_cmd "sudo usermod -aG docker \$USER"
-        exec_cmd "newgrp docker"
-        exec_cmd "sudo systemctl enable docker"
-        exec_cmd "sudo systemctl start docker"
+        
+        # Configurar usuario para Docker
+        if ! groups $USER | grep -q docker; then
+            exec_cmd "sudo usermod -aG docker $USER" "Agregando usuario al grupo docker"
+            log_warning "Nota: Necesitarás cerrar sesión y volver a iniciar para que los cambios de grupo surtan efecto"
+        else
+            log_message "El usuario ya pertenece al grupo docker"
+        fi
+        
+        # Habilitar y iniciar Docker
+        exec_cmd "sudo systemctl enable docker" "Habilitando Docker al inicio"
+        exec_cmd "sudo systemctl start docker" "Iniciando servicio Docker"
+        
+        # Verificar que Docker esté funcionando
+        if ! exec_cmd "sudo systemctl is-active docker" "Verificando estado de Docker"; then
+            log_error "Error crítico: Docker no está funcionando correctamente"
+            return 1
+        fi
         
         # Verificar la instalación de Docker
         log_message "Verificando la instalación de Docker..."
-        exec_cmd "docker --version"
-        exec_cmd "docker compose version"
-        exec_cmd "docker run hello-world"
+        exec_cmd "docker --version" "Verificando versión de Docker"
+        exec_cmd "docker compose version" "Verificando versión de Docker Compose"
+        
+        # Probar Docker con una imagen simple (evitar hello-world en ARM)
+        if [[ "$(uname -m)" == "armv7l" || "$(uname -m)" == "aarch64" ]]; then
+            log_message "Probando Docker con imagen compatible con ARM..."
+            exec_cmd "docker run --rm alpine:latest echo 'Docker funciona correctamente en ARM'" "Probando Docker en ARM"
+        else
+            exec_cmd "docker run --rm hello-world" "Probando Docker con hello-world"
+        fi
         
         # 6. Crear estructura de directorios para el proyecto
         echo "60"
@@ -636,6 +1132,131 @@ EOF
     log_message "- Pi-hole: http://pihole.${DOMAIN_NAME}/admin"
     log_message "- n8n: https://n8n.${DOMAIN_NAME}"
     log_message "- rTorrent: https://rtorrent.${DOMAIN_NAME}"
+    
+    # Crear punto de rollback final
+    create_rollback_point "deploy_services_completed" "Despliegue de servicios completado exitosamente"
+}
+
+# Función para realizar rollback del sistema
+function rollback_system() {
+    if [[ ! -f "$ROLLBACK_FILE" ]]; then
+        whiptail --title "Error" --msgbox "No se encontró archivo de rollback. No hay puntos de restauración disponibles." 10 78
+        return
+    fi
+    
+    # Mostrar puntos de rollback disponibles
+    local rollback_points=()
+    while IFS= read -r line; do
+        if [[ $line =~ \"timestamp\":\"([^\"]+)\".*\"action\":\"([^\"]+)\".*\"description\":\"([^\"]+)\" ]]; then
+            rollback_points+=("${BASH_REMATCH[1]}" "${BASH_REMATCH[2]} - ${BASH_REMATCH[3]}")
+        fi
+    done < "$ROLLBACK_FILE"
+    
+    if [[ ${#rollback_points[@]} -eq 0 ]]; then
+        whiptail --title "Error" --msgbox "No hay puntos de rollback disponibles." 10 78
+        return
+    fi
+    
+    # Seleccionar punto de rollback
+    local selected_point
+    selected_point=$(whiptail --title "Seleccionar Punto de Rollback" \
+                             --menu "Selecciona un punto de restauración:" 20 78 10 \
+                             "${rollback_points[@]}" 3>&1 1>&2 2>&3)
+    
+    if [[ -z "$selected_point" ]]; then
+        return
+    fi
+    
+    # Confirmar rollback
+    if ! whiptail --title "Confirmar Rollback" \
+                 --yesno "¿Estás seguro de que quieres restaurar el sistema al punto: $selected_point?\n\nEsta acción puede ser irreversible." 12 78; then
+        return
+    fi
+    
+    log_message "Iniciando rollback al punto: $selected_point"
+    
+    # Restaurar archivos desde backups
+    if [[ -d "$BACKUP_DIR" ]]; then
+        log_message "Restaurando archivos desde backups..."
+        
+        # Restaurar configuración de red
+        for file in hostname hosts resolv_conf network_interfaces; do
+            if [[ -f "$BACKUP_DIR/${file}.backup" ]]; then
+                case $file in
+                    "hostname")
+                        exec_cmd "sudo cp '$BACKUP_DIR/${file}.backup' /etc/hostname" "Restaurando /etc/hostname"
+                        ;;
+                    "hosts")
+                        exec_cmd "sudo cp '$BACKUP_DIR/${file}.backup' /etc/hosts" "Restaurando /etc/hosts"
+                        ;;
+                    "resolv_conf")
+                        exec_cmd "sudo cp '$BACKUP_DIR/${file}.backup' /etc/resolv.conf" "Restaurando /etc/resolv.conf"
+                        ;;
+                    "network_interfaces")
+                        exec_cmd "sudo cp '$BACKUP_DIR/${file}.backup' /etc/network/interfaces" "Restaurando /etc/network/interfaces"
+                        ;;
+                esac
+            fi
+        done
+        
+        # Restaurar configuración UFW
+        if [[ -d "$BACKUP_DIR/ufw_config.backup" ]]; then
+            exec_cmd "sudo cp -r '$BACKUP_DIR/ufw_config.backup'/* /etc/ufw/" "Restaurando configuración UFW"
+        fi
+        
+        if [[ -f "$BACKUP_DIR/ufw_default.backup" ]]; then
+            exec_cmd "sudo cp '$BACKUP_DIR/ufw_default.backup' /etc/default/ufw" "Restaurando configuración por defecto de UFW"
+        fi
+    fi
+    
+    # Detener servicios Docker si están ejecutándose
+    if command -v docker &> /dev/null && docker ps -q &> /dev/null; then
+        log_message "Deteniendo servicios Docker..."
+        exec_cmd "cd /opt/surviving-chernarus && docker compose down" "Deteniendo servicios"
+    fi
+    
+    log_message "Rollback completado. Es recomendable reiniciar el sistema."
+    
+    if whiptail --title "Rollback Completado" \
+                --yesno "Rollback completado.\n\n¿Deseas reiniciar el sistema ahora para aplicar todos los cambios?" 10 78; then
+        log_message "Reiniciando sistema..."
+        sudo reboot
+    fi
+}
+
+# Función para mostrar información de recuperación ante desastres
+function show_disaster_recovery() {
+    local recovery_info="PLAN DE RECUPERACIÓN ANTE DESASTRES\n\n"
+    recovery_info+="1. BACKUPS AUTOMÁTICOS:\n"
+    recovery_info+="   - Ubicación: $BACKUP_DIR\n"
+    recovery_info+="   - Archivos respaldados: configuración de red, UFW, .env\n\n"
+    
+    recovery_info+="2. PUNTOS DE ROLLBACK:\n"
+    recovery_info+="   - Archivo: $ROLLBACK_FILE\n"
+    recovery_info+="   - Uso: ./deploy.sh rollback\n\n"
+    
+    recovery_info+="3. RECUPERACIÓN MANUAL:\n"
+    recovery_info+="   a) Detener servicios: cd /opt/surviving-chernarus && docker compose down\n"
+    recovery_info+="   b) Restaurar backups desde $BACKUP_DIR\n"
+    recovery_info+="   c) Reiniciar servicios de red: sudo systemctl restart networking\n"
+    recovery_info+="   d) Reiniciar Docker: sudo systemctl restart docker\n\n"
+    
+    recovery_info+="4. LOGS DEL SISTEMA:\n"
+    recovery_info+="   - Archivo principal: $LOG_FILE\n"
+    recovery_info+="   - Logs de Docker: docker logs <container_name>\n"
+    recovery_info+="   - Logs del sistema: journalctl -u docker\n\n"
+    
+    recovery_info+="5. CONTACTOS DE EMERGENCIA:\n"
+    recovery_info+="   - Documentación: https://github.com/tu-repo/surviving-chernarus\n"
+    recovery_info+="   - Issues: https://github.com/tu-repo/surviving-chernarus/issues\n\n"
+    
+    recovery_info+="6. VERIFICACIÓN POST-RECUPERACIÓN:\n"
+    recovery_info+="   - Verificar conectividad: ping 8.8.8.8\n"
+    recovery_info+="   - Verificar Docker: docker ps\n"
+    recovery_info+="   - Verificar servicios: curl -k https://$DOMAIN_NAME\n"
+    
+    whiptail --title "Plan de Recuperación ante Desastres" \
+             --msgbox "$recovery_info" 25 90
 }
 
 # Función para mostrar la documentación
@@ -669,7 +1290,7 @@ function show_documentation() {
         3)
             # Solución de problemas
             whiptail --title "Solución de Problemas" \
-                     --msgbox "Problemas comunes y soluciones:\n\n1. Error al configurar UFW para Docker\n   - Verifica que estás ejecutando el script con privilegios de superusuario\n   - Asegúrate de que UFW está instalado\n\n2. Error al instalar Docker\n   - Verifica tu conexión a Internet\n   - Asegúrate de que tu sistema está actualizado\n\n3. Los servicios no son accesibles\n   - Verifica que los contenedores están en ejecución con 'docker ps'\n   - Comprueba la configuración de Cloudflare\n   - Verifica que los puertos 80 y 443 están abiertos\n\n4. Problemas con Pi-hole\n   - Asegúrate de que no hay conflictos de puertos\n   - Verifica que el contenedor tiene los permisos necesarios\n\nPara más ayuda, consulta la documentación completa en:\nhttps://github.com/tu-usuario/surviving-chernarus" 20 78
+                     --msgbox "Problemas comunes y soluciones:\n\n1. Error al configurar UFW para Docker\n   - Verifica que estás ejecutando el script con privilegios de superusuario\n   - Asegúrate de que UFW está instalado\n\n2. Error al instalar Docker\n   - Verifica tu conexión a Internet\n   - Asegúrate de que tu sistema está actualizado\n\n3. Los servicios no son accesibles\n   - Verifica que los contenedores están en ejecución con 'docker ps'\n   - Comprueba la configuración de Cloudflare\n   - Verifica que los puertos 80 y 443 están abiertos\n\n4. Problemas con Pi-hole\n   - Asegúrate de que no hay conflictos de puertos\n   - Verifica que el contenedor tiene los permisos necesarios\n\n5. RECUPERACIÓN DEL SISTEMA:\n   - Usa './deploy.sh rollback' para restaurar configuraciones\n   - Consulta './deploy.sh recovery' para el plan de desastres\n   - Los backups se guardan en: $BACKUP_DIR\n   - Los logs están en: $LOG_FILE\n\nPara más ayuda, consulta la documentación completa en:\nhttps://github.com/tu-usuario/surviving-chernarus" 25 78
             show_documentation
             ;;
         4)
@@ -704,9 +1325,37 @@ if [ -n "$1" ]; then
             show_documentation
             exit 0
             ;;
+        rollback)
+            if [ "$(id -u)" -ne 0 ]; then
+                log_error "El rollback del sistema requiere privilegios de superusuario (sudo)."
+                exit 1
+            fi
+            rollback_system
+            exit 0
+            ;;
+        recovery)
+            show_disaster_recovery
+            exit 0
+            ;;
+        --help|-h)
+            echo "Uso: $0 [OPCIÓN]"
+            echo ""
+            echo "OPCIONES:"
+            echo "  env        Configurar variables de entorno"
+            echo "  network    Configurar red (requiere sudo)"
+            echo "  deploy     Desplegar servicios"
+            echo "  doc        Mostrar documentación"
+            echo "  rollback   Realizar rollback del sistema (requiere sudo)"
+            echo "  recovery   Mostrar plan de recuperación ante desastres"
+            echo "  --help, -h Mostrar esta ayuda"
+            echo ""
+            echo "Si no se proporciona ninguna opción, se mostrará el menú interactivo."
+            exit 0
+            ;;
         *)
             log_error "Argumento no válido: $1"
-            echo "Uso: $0 [env|network|deploy|doc]"
+            echo "Uso: $0 [env|network|deploy|doc|rollback|recovery|--help]"
+            echo "Ejecuta '$0 --help' para más información."
             exit 1
             ;;
     esac
