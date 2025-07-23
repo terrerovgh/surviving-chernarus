@@ -1,0 +1,65 @@
+# Configuración de GitHub Pages para Surviving Chernarus Wiki
+
+# Tema de Jekyll para GitHub Pages
+theme: jekyll-theme-cayman
+
+# Información del sitio
+title: Surviving Chernarus Wiki
+description: Documentación completa del ecosistema Surviving Chernarus
+
+# Configuración de idioma
+lang: es
+
+# Configuración de URL
+url: "https://wiki.terrerov.com"
+baseurl: ""
+
+# Configuración de navegación
+header_pages:
+  - index.md
+  - installation.md
+  - configuration.md
+  - daily-usage.md
+  - maintenance.md
+  - troubleshooting.md
+  - advanced-usage.md
+  - reference.md
+  - contributing.md
+
+# Plugins de Jekyll
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Excluir archivos y carpetas
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .gitignore
+
+# Configuración de Markdown
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+# Configuración de colores personalizados
+colors:
+  header: "#2c3e50"
+  link: "#3498db"
+  button: "#2c3e50"
+  button_hover: "#1a252f"
+
+# Información de contacto
+contact:
+  email: "contacto@terrerov.com"
+  github: "https://github.com/tuusuario/surviving-chernarus"
+  discord: "https://discord.gg/tucanal"
+
+# Configuración de Google Analytics (opcional)
+google_analytics: UA-XXXXXXXX-X
+
+# Configuración de búsqueda
+search: true

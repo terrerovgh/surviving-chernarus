@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="{{ site.lang | default: 'es-ES' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#157878">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+  {% seo %}
+</head>
+<body>
+  <header class="page-header">
+    <div class="container">
+      <h1 class="project-name">{{ site.title | default: "Surviving Chernarus Wiki" }}</h1>
+      <p class="project-tagline">{{ site.description | default: "Documentación del proyecto Surviving Chernarus" }}</p>
+      <a href="{{ site.baseurl }}/" class="btn">Inicio</a>
+      <a href="{{ site.baseurl }}/installation" class="btn">Instalación</a>
+      <a href="{{ site.baseurl }}/configuration" class="btn">Configuración</a>
+      <a href="{{ site.baseurl }}/daily-usage" class="btn">Uso Diario</a>
+      <a href="{{ site.baseurl }}/maintenance" class="btn">Mantenimiento</a>
+       <a href="{{ site.baseurl }}/troubleshooting" class="btn">Solución de Problemas</a>
+       <a href="{{ site.baseurl }}/advanced-usage" class="btn">Uso Avanzado</a>
+       <a href="{{ site.baseurl }}/reference" class="btn">Referencia</a>
+       <a href="{{ site.baseurl }}/contributing" class="btn">Contribuir</a>
+       {% if site.github.is_project_page %}
+         <a href="{{ site.github.repository_url }}" class="btn">Ver en GitHub</a>
+       {% endif %}
+    </div>
+  </header>
+
+  <main class="main-content">
+    {% if site.search %}
+    <div class="search-container">
+      <input type="text" id="search-input" class="search-input" placeholder="Buscar en la documentación...">
+    </div>
+    {% endif %}
+    
+    {% include nav.html %}
+    
+    <div class="content-wrapper">
+      {% if page.toc %}
+      <div class="toc">
+        <h2 class="toc-title">Contenido</h2>
+        <div id="toc-container"></div>
+      </div>
+      {% endif %}
+      
+      {{ content }}
+    </div>
+    
+    <footer class="site-footer">
+      <div class="container">
+        <p>{{ site.title }} - Documentación del Ecosistema</p>
+        <p>Contacto: <a href="mailto:{{ site.contact.email }}">{{ site.contact.email }}</a></p>
+        <p>
+          <a href="{{ site.contact.github }}">GitHub</a> | 
+          <a href="{{ site.contact.discord }}">Discord</a>
+        </p>
+      </div>
+    </footer>
+  </main>
+  
+  <a href="#" class="back-to-top" id="back-to-top">↑</a>
+  
+  <script>
+    // Generar tabla de contenidos
+    document.addEventListener('DOMContentLoaded', function() {
+      if (document.getElementById('toc-container')) {
+        const headings = document.querySelectorAll('h2, h3');
+        const tocContainer = document.getElementById('toc-container');
+        const toc = document.createElement('ul');
+        
+        headings.forEach(function(heading, index) {
+          const id = 'heading-' + index;
+          heading.id = id;
+          
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = '#' + id;
+          a.textContent = heading.textContent;
+          
+          if (heading.tagName === 'H3') {
+            li.style.marginLeft = '20px';
+          }
+          
+          li.appendChild(a);
+          toc.appendChild(li);
+        });
+        
+        tocContainer.appendChild(toc);
+      }
+      
+      // Botón para volver arriba
+      const backToTopButton = document.getElementById('back-to-top');
+      
+      window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+          backToTopButton.style.display = 'flex';
+        } else {
+          backToTopButton.style.display = 'none';
+        }
+      });
+      
+      backToTopButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      
+      // Inicializar con el botón oculto
+      backToTopButton.style.display = 'none';
+      
+      // Búsqueda simple
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+          if (e.key === 'Enter') {
+            const query = searchInput.value.toLowerCase();
+            if (query.length > 2) {
+              window.location.href = '{{ site.baseurl }}/search?q=' + encodeURIComponent(query);
+            }
+          }
+        });
+      }
+    });
+  </script>
+  
+  {% if site.google_analytics %}
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', '{{ site.google_analytics }}', 'auto');
+    ga('send', 'pageview');
+  </script>
+  {% endif %}
+</body>
+</html>

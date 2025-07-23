@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="300" viewBox="0 0 500 300">
+  <!-- Fondo con estilo de mapa topográfico -->
+  <defs>
+    <pattern id="topo-pattern" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M0,50 Q25,40 50,50 T100,50" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+      <path d="M0,70 Q25,60 50,70 T100,70" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+      <path d="M0,90 Q25,80 50,90 T100,90" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+    </pattern>
+  </defs>
+  
+  <!-- Fondo del mapa -->
+  <rect width="500" height="300" fill="#f8f8f8"/>
+  <rect width="500" height="300" fill="url(#topo-pattern)"/>
+  
+  <!-- Brújula -->
+  <circle cx="430" cy="50" r="30" fill="#fff" stroke="#333" stroke-width="2"/>
+  <path d="M430,20 L430,80 M400,50 L460,50" stroke="#333" stroke-width="2"/>
+  <text x="430" y="35" text-anchor="middle" font-family="Arial" font-size="12" fill="#333">N</text>
+  <text x="430" y="70" text-anchor="middle" font-family="Arial" font-size="12" fill="#333">S</text>
+  <text x="415" y="53" text-anchor="middle" font-family="Arial" font-size="12" fill="#333">O</text>
+  <text x="445" y="53" text-anchor="middle" font-family="Arial" font-size="12" fill="#333">E</text>
+  
+  <!-- Texto 404 principal -->
+  <text x="250" y="130" text-anchor="middle" font-family="Arial" font-weight="bold" font-size="80" fill="#157878">404</text>
+  
+  <!-- Icono de ubicación perdida -->
+  <g transform="translate(250, 180)">
+    <!-- Pin de ubicación -->
+    <path d="M0,-30 C-15,-30 -25,-15 -25,0 C-25,15 0,40 0,40 C0,40 25,15 25,0 C25,-15 15,-30 0,-30 Z" fill="#e74c3c" stroke="#c0392b" stroke-width="2"/>
+    <!-- Signo de interrogación dentro del pin -->
+    <path d="M-5,-5 C-5,-10 0,-15 5,-15 C10,-15 15,-10 15,-5 C15,0 10,5 5,5 L5,10" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="5" cy="15" r="2" fill="white"/>
+  </g>
+  
+  <!-- Texto descriptivo -->
+  <text x="250" y="240" text-anchor="middle" font-family="Arial" font-size="16" fill="#333">Ubicación no encontrada en el mapa</text>
+  
+  <!-- Líneas de coordenadas -->
+  <line x1="20" y1="20" x2="20" y2="280" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="480" y1="20" x2="480" y2="280" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="20" y1="20" x2="480" y2="20" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+  <line x1="20" y1="280" x2="480" y2="280" stroke="#ccc" stroke-width="1" stroke-dasharray="5,5"/>
+  
+  <!-- Coordenadas -->
+  <text x="25" y="35" font-family="Courier New" font-size="10" fill="#666">N 53°54'21"</text>
+  <text x="25" y="275" font-family="Courier New" font-size="10" fill="#666">S 53°54'21"</text>
+  <text x="425" y="35" font-family="Courier New" font-size="10" fill="#666">E 14°28'37"</text>
+  <text x="425" y="275" font-family="Courier New" font-size="10" fill="#666">W 14°28'37"</text>
+</svg>

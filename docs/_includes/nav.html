@@ -1,0 +1,13 @@
+<nav class="site-nav">
+  <ul>
+    <li><a href="{{ site.baseurl }}/" {% if page.url == "/" %}class="active"{% endif %}>Inicio</a></li>
+    <li><a href="{{ site.baseurl }}/installation" {% if page.url == "/installation.html" %}class="active"{% endif %}>Instalación</a></li>
+    <li><a href="{{ site.baseurl }}/configuration" {% if page.url == "/configuration.html" %}class="active"{% endif %}>Configuración</a></li>
+    <li><a href="{{ site.baseurl }}/daily-usage" {% if page.url == "/daily-usage.html" %}class="active"{% endif %}>Uso Diario</a></li>
+    <li><a href="{{ site.baseurl }}/maintenance" {% if page.url == "/maintenance.html" %}class="active"{% endif %}>Mantenimiento</a></li>
+    <li><a href="{{ site.baseurl }}/troubleshooting" {% if page.url == "/troubleshooting.html" %}class="active"{% endif %}>Solución de Problemas</a></li>
+    <li><a href="{{ site.baseurl }}/advanced-usage" {% if page.url == "/advanced-usage.html" %}class="active"{% endif %}>Uso Avanzado</a></li>
+    <li><a href="{{ site.baseurl }}/reference" {% if page.url == "/reference.html" %}class="active"{% endif %}>Referencia</a></li>
+    <li><a href="{{ site.baseurl }}/contributing" {% if page.url == "/contributing.html" %}class="active"{% endif %}>Contribuir</a></li>
+  </ul>
+</nav>

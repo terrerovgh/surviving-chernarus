@@ -2,104 +2,168 @@
 
 ## Descripción
 
-Surviving Chernarus es un ecosistema de servicios auto-hospedados diseñado para ser desplegado en una Raspberry Pi utilizando Raspberry Pi OS. El proyecto utiliza Docker y Docker Compose para crear un entorno completo con varios servicios útiles para la gestión de medios, automatización y monitoreo.
-
-## Servicios Incluidos
-
-- **Traefik**: Proxy inverso y balanceador de carga que gestiona el acceso a todos los servicios.
-- **PostgreSQL**: Base de datos relacional para almacenar datos de aplicaciones.
-- **Pi-hole**: Bloqueador de anuncios a nivel de red.
-- **n8n**: Plataforma de automatización de flujos de trabajo.
-- **rTorrent**: Cliente de BitTorrent para descargas.
-- **Heimdall**: Panel de control para acceder a todos los servicios.
+Este proyecto proporciona un conjunto de herramientas para configurar y desplegar varios servicios en una Raspberry Pi, incluyendo Traefik, PostgreSQL, Pi-hole, n8n, rtorrent y heimdall.
 
 ## Requisitos
 
-- Raspberry Pi (recomendado modelo 4 con al menos 4GB de RAM)
-- Raspberry Pi OS instalado
+- Raspberry Pi (recomendado Pi 4 o superior)
+- Raspberry Pi OS (64-bit recomendado)
 - Conexión a Internet
-- Dominio configurado con Cloudflare (opcional, pero recomendado para acceso remoto)
-
-## Scripts Disponibles
-
-1. **setup_env.sh**: Configura las variables de entorno necesarias para el despliegue.
-2. **setup_network.sh**: Configura la red en la Raspberry Pi con los valores proporcionados.
-3. **deploy.sh**: Despliega todos los servicios en la Raspberry Pi.
-4. **verify_deployment.sh**: Verifica que todos los servicios estén funcionando correctamente.
+- Dominio registrado en Cloudflare
 
 ## Instalación
 
-### 1. Clonar el Repositorio
+1. Clona el repositorio o descarga el script `deploy.sh`
+2. Dale permisos de ejecución al script:
 
 ```bash
-git clone https://github.com/tu-usuario/surviving-chernarus.git
-cd surviving-chernarus
+chmod +x deploy.sh
 ```
 
-### 2. Configurar Variables de Entorno
-
-```bash
-./setup_env.sh
-```
-
-Este script te pedirá información como:
-- PUID y PGID para los contenedores
-- Zona horaria
-- Nombre de dominio
-- Credenciales de Cloudflare (opcional)
-- Credenciales de PostgreSQL
-- Contraseña para Pi-hole
-- Usuario y contraseña para Traefik Dashboard
-
-### 3. Configurar la Red
-
-```bash
-sudo ./setup_network.sh
-```
-
-Este script configurará:
-- El nombre de host
-- El archivo /etc/hosts
-- La configuración de red para eth0
-- Los servidores DNS
-
-**Nota**: Después de ejecutar este script, es necesario reiniciar la Raspberry Pi.
-
-### 4. Desplegar los Servicios
+3. Ejecuta el script:
 
 ```bash
 ./deploy.sh
 ```
 
-Este script realizará las siguientes acciones:
-1. Actualizar el sistema
-2. Configurar UFW (firewall)
-3. Instalar Docker y Docker Compose
-4. Crear la estructura de directorios
-5. Configurar Traefik
-6. Desplegar todos los servicios con Docker Compose
+## Uso del Script
 
-### 5. Verificar el Despliegue
+El script proporciona un menú interactivo con las siguientes opciones:
+
+### 1. Configurar variables de entorno (.env)
+
+Esta opción te guiará a través de la configuración de todas las variables necesarias para el proyecto:
+
+- ID de usuario y grupo
+- Zona horaria
+- Configuración de dominio y Cloudflare
+- Configuración de PostgreSQL
+- Configuración de Pi-hole
+- Configuración de Traefik
+- Configuración de red para Raspberry Pi
+
+Todas estas variables se guardarán en el archivo `.env` para su uso posterior.
+
+### 2. Configurar red (requiere sudo)
+
+Esta opción debe ejecutarse con privilegios de superusuario. Te guiará a través de la configuración de red para tu Raspberry Pi:
+
+- Configuración de dirección IP estática
+- Configuración de puerta de enlace
+- Configuración de servidores DNS
+- Configuración de nombre de host
+
+Al finalizar, te preguntará si deseas reiniciar el sistema para aplicar los cambios.
+
+### 3. Desplegar servicios
+
+Esta opción desplegará todos los servicios necesarios para el proyecto Surviving Chernarus:
+
+1. Actualización del sistema
+2. Instalación y configuración de UFW
+3. Configuración de UFW para Docker
+4. Instalación de Docker y Docker Compose
+5. Configuración de permisos de Docker
+6. Creación de estructura de directorios
+7. Configuración de Traefik
+8. Creación de docker-compose.yml
+9. Inicio de los servicios
+
+El script mostrará una barra de progreso durante la instalación y te informará cuando el proceso haya finalizado.
+
+### 4. Ver documentación
+
+Esta opción proporciona acceso a la documentación del proyecto:
+
+- Información general
+- Guía de instalación
+- Solución de problemas
+
+### 5. Salir
+
+Sale del script.
+
+## Uso desde la línea de comandos
+
+También puedes ejecutar el script con argumentos para acceder directamente a una función específica:
 
 ```bash
-./verify_deployment.sh
+# Configurar variables de entorno
+./deploy.sh env
+
+# Configurar red (requiere sudo)
+sudo ./deploy.sh network
+
+# Desplegar servicios
+./deploy.sh deploy
+
+# Ver documentación
+./deploy.sh doc
 ```
 
-Este script verificará que todos los servicios estén funcionando correctamente.
+## Servicios desplegados
 
-## Acceso a los Servicios
+El script despliega los siguientes servicios:
 
-Una vez desplegado, puedes acceder a los servicios a través de las siguientes URLs:
+- **Traefik**: Proxy inverso y balanceador de carga
+- **PostgreSQL**: Sistema de gestión de bases de datos relacional
+- **Pi-hole**: Bloqueador de anuncios y rastreadores a nivel de red
+- **n8n**: Plataforma de automatización de flujos de trabajo
+- **rtorrent**: Cliente BitTorrent
+- **heimdall**: Panel de control para acceder a todos los servicios
 
-- Panel de control: `https://tu-dominio.com`
-- Traefik Dashboard: `https://traefik.tu-dominio.com`
-- Pi-hole: `https://pihole.tu-dominio.com`
-- n8n: `https://n8n.tu-dominio.com`
-- rTorrent: `https://rtorrent.tu-dominio.com`
+## Acceso a los servicios
 
-## Mantenimiento
+Una vez desplegados, puedes acceder a los servicios a través de las siguientes URLs:
 
-### Actualizar los Servicios
+- **Traefik Dashboard**: https://traefik.tudominio.com
+- **Pi-hole**: https://pihole.tudominio.com
+- **n8n**: https://n8n.tudominio.com
+- **rtorrent**: https://rtorrent.tudominio.com
+- **heimdall**: https://heimdall.tudominio.com o https://tudominio.com
+
+## Solución de Problemas
+
+Si encuentras algún problema durante la ejecución del script:
+
+1. Verifica que estás ejecutando el script con los permisos adecuados
+2. Asegúrate de que tu Raspberry Pi tiene conexión a Internet
+3. Verifica que el archivo `.env` existe y contiene todas las variables necesarias
+4. Consulta la sección de documentación del script para soluciones a problemas comunes
+
+### Problemas comunes
+
+#### El script no puede instalar paquetes
+
+Asegúrate de que tu Raspberry Pi tiene conexión a Internet y que los repositorios están actualizados:
+
+```bash
+sudo apt update
+```
+
+#### Los servicios no son accesibles a través de las URLs
+
+1. Verifica que Traefik está funcionando correctamente:
+
+```bash
+docker ps | grep traefik
+```
+
+2. Comprueba que los registros DNS de Cloudflare apuntan a la IP de tu Raspberry Pi
+3. Verifica que los puertos 80 y 443 están abiertos en tu router y redirigidos a tu Raspberry Pi
+
+#### Error al iniciar los servicios con Docker Compose
+
+Verifica los logs de Docker Compose:
+
+```bash
+cd /opt/surviving-chernarus
+docker compose logs
+```
+
+## Actualización de servicios
+
+Para actualizar los servicios después de la instalación inicial:
 
 ```bash
 cd /opt/surviving-chernarus
@@ -107,48 +171,46 @@ docker compose pull
 docker compose up -d
 ```
 
-### Actualizar el Sistema
+## Backup y restauración
+
+### Backup
+
+Para realizar una copia de seguridad de los datos:
 
 ```bash
-sudo apt update
-sudo apt upgrade -y
+cd /opt/surviving-chernarus
+docker compose down
+tar -czvf backup.tar.gz data
+docker compose up -d
 ```
 
-### Realizar Copias de Seguridad
+### Restauración
 
-Es recomendable realizar copias de seguridad regulares del directorio `/opt/surviving-chernarus`.
+Para restaurar una copia de seguridad:
 
-## Solución de Problemas
-
-Si encuentras problemas durante la implementación:
-
-1. Verifica los logs de los contenedores:
-   ```bash
-   docker logs [nombre-del-contenedor]
-   ```
-
-2. Reinicia todos los servicios:
-   ```bash
-   cd /opt/surviving-chernarus && docker compose restart
-   ```
-
-3. Detén todos los servicios:
-   ```bash
-   cd /opt/surviving-chernarus && docker compose down
-   ```
-
-4. Inicia todos los servicios:
-   ```bash
-   cd /opt/surviving-chernarus && docker compose up -d
-   ```
+```bash
+cd /opt/surviving-chernarus
+docker compose down
+rm -rf data
+tar -xzvf backup.tar.gz
+docker compose up -d
+```
 
 ## Seguridad
 
-- Cambia regularmente las contraseñas de los servicios
-- Mantén el sistema actualizado
-- Utiliza HTTPS para todas las conexiones
-- Configura correctamente el firewall (UFW)
+El script configura UFW para permitir solo el tráfico necesario. Por defecto, solo se permiten los puertos 22 (SSH), 80 (HTTP) y 443 (HTTPS).
+
+Se recomienda:
+
+1. Cambiar el puerto SSH por defecto
+2. Configurar la autenticación por clave SSH en lugar de contraseña
+3. Mantener el sistema y los contenedores actualizados
+4. Revisar regularmente los logs en busca de actividad sospechosa
+
+## Contribuciones
+
+Las contribuciones son bienvenidas. Por favor, abre un issue o un pull request para sugerir cambios o mejoras.
 
 ## Licencia
 
-Este proyecto está licenciado bajo la licencia MIT.
+Este proyecto está licenciado bajo la licencia MIT. Consulta el archivo LICENSE para más detalles.
