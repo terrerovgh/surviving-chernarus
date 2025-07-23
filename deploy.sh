@@ -4,15 +4,37 @@
 # Este script combina todas las funcionalidades de setup_env.sh, setup_network.sh y deploy.sh
 # con una interfaz mejorada usando whiptail y mejoras de seguridad para producción
 #
-# Versión: 2.0.0
+# Versión: 2.1.0
 # Fecha: $(date +%Y-%m-%d)
 # Autor: Surviving Chernarus Team
 # Licencia: MIT
+#
+# Uso:
+#   ./deploy.sh                    # Modo interactivo (por defecto)
+#   ./deploy.sh --silent           # Modo silencioso con valores por defecto
+#   ./deploy.sh --silent --config  # Modo silencioso con archivo de configuración
+#   ./deploy.sh --help             # Mostrar ayuda
+
+# Variables para modo silencioso
+SILENT_MODE=false
+USE_CONFIG_FILE=false
+CONFIG_FILE="silent_config.env"
 
 # Configuración de logging
 LOG_FILE="/var/log/surviving-chernarus-install.log"
 BACKUP_DIR="/opt/surviving-chernarus/backups/$(date +%Y%m%d_%H%M%S)"
 ROLLBACK_FILE="/opt/surviving-chernarus/rollback_info.json"
+
+# Valores por defecto para modo silencioso
+DEFAULT_PUID=$(id -u)
+DEFAULT_PGID=$(id -g)
+DEFAULT_TZ="Europe/Madrid"
+DEFAULT_DOMAIN="example.com"
+DEFAULT_CLOUDFLARE_EMAIL="user@example.com"
+DEFAULT_POSTGRES_DB="n8n"
+DEFAULT_POSTGRES_USER="n8n"
+DEFAULT_TRAEFIK_USER="admin"
+DEFAULT_RPI_IP="192.168.1.2"
 
 # Colores para mensajes
 GREEN="\033[0;32m"
@@ -50,6 +72,120 @@ function log_debug() {
     if [[ "$DEBUG" == "true" ]]; then
         echo -e "${BLUE}[DEBUG]${NC} $(date '+%Y-%m-%d %H:%M:%S') - $1"
     fi
+}
+
+# Función para mostrar ayuda
+function show_help() {
+    cat << EOF
+Surviving Chernarus - Instalador Unificado v2.1.0
+
+Uso: $0 [OPCIONES]
+
+OPCIONES:
+    --silent           Ejecutar en modo silencioso con valores por defecto
+    --config           Usar archivo de configuración (requiere --silent)
+    --help             Mostrar esta ayuda
+    --debug            Habilitar modo debug
+
+MODO SILENCIOSO:
+    En modo silencioso, el script utilizará valores por defecto o los valores
+    del archivo de configuración 'silent_config.env' si se especifica --config.
+
+    Ejemplo de archivo silent_config.env:
+        DOMAIN_NAME=midominio.com
+        CLOUDFLARE_EMAIL=mi@email.com
+        CLOUDFLARE_API_TOKEN=mi_token_cloudflare
+        POSTGRES_PASSWORD=mi_password_seguro
+        PIHOLE_PASSWORD=mi_password_pihole
+        TRAEFIK_PASSWORD=mi_password_traefik
+        RPI_IP=192.168.1.100
+        TZ=America/Mexico_City
+
+EJEMPLOS:
+    $0                              # Modo interactivo
+    $0 --silent                     # Modo silencioso con valores por defecto
+    $0 --silent --config            # Modo silencioso con archivo de configuración
+    $0 --help                       # Mostrar ayuda
+
+EOF
+}
+
+# Función para procesar argumentos de línea de comandos
+function process_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --silent)
+                SILENT_MODE=true
+                shift
+                ;;
+            --config)
+                USE_CONFIG_FILE=true
+                shift
+                ;;
+            --help)
+                show_help
+                exit 0
+                ;;
+            --debug)
+                DEBUG=true
+                shift
+                ;;
+            *)
+                echo "Opción desconocida: $1"
+                show_help
+                exit 1
+                ;;
+        esac
+    done
+
+    # Validar combinaciones de argumentos
+    if [[ "$USE_CONFIG_FILE" == "true" && "$SILENT_MODE" == "false" ]]; then
+        log_error "La opción --config requiere --silent"
+    fi
+}
+
+# Función para cargar configuración desde archivo
+function load_config_file() {
+    if [[ "$USE_CONFIG_FILE" == "true" ]]; then
+        if [[ -f "$CONFIG_FILE" ]]; then
+            log_message "Cargando configuración desde $CONFIG_FILE"
+            source "$CONFIG_FILE"
+        else
+            log_warning "Archivo de configuración $CONFIG_FILE no encontrado. Usando valores por defecto."
+        fi
+    fi
+}
+
+# Función para generar archivo de configuración de ejemplo
+function generate_example_config() {
+    cat > "${CONFIG_FILE}.example" << EOF
+# Archivo de configuración para modo silencioso
+# Copia este archivo a '$CONFIG_FILE' y modifica los valores según tus necesidades
+
+# Configuración de dominio y Cloudflare (REQUERIDO)
+DOMAIN_NAME=midominio.com
+CLOUDFLARE_EMAIL=mi@email.com
+CLOUDFLARE_API_TOKEN=mi_token_cloudflare_de_40_caracteres_minimo
+
+# Contraseñas (se generarán automáticamente si no se especifican)
+# POSTGRES_PASSWORD=mi_password_postgres_seguro
+# PIHOLE_PASSWORD=mi_password_pihole
+# TRAEFIK_PASSWORD=mi_password_traefik
+
+# Configuración de red
+RPI_IP=192.168.1.100
+
+# Zona horaria
+TZ=America/Mexico_City
+
+# Configuración de base de datos (opcional)
+# POSTGRES_DB=n8n
+# POSTGRES_USER=n8n
+
+# Usuario de Traefik (opcional)
+# TRAEFIK_USER=admin
+EOF
+    log_message "Archivo de configuración de ejemplo generado: ${CONFIG_FILE}.example"
 }
 
 # Función para crear puntos de rollback
@@ -192,8 +328,17 @@ function exec_cmd() {
     fi
 }
 
-# Verificar si whiptail está instalado
-if ! command -v whiptail &> /dev/null; then
+# Procesar argumentos de línea de comandos
+process_arguments "$@"
+
+# Cargar configuración si está en modo silencioso
+if [[ "$SILENT_MODE" == "true" ]]; then
+    load_config_file
+    generate_example_config
+fi
+
+# Verificar si whiptail está instalado (solo en modo interactivo)
+if [[ "$SILENT_MODE" == "false" ]] && ! command -v whiptail &> /dev/null; then
     log_message "whiptail no está instalado. Instalándolo..."
     if command -v apt-get &> /dev/null; then
         exec_cmd "sudo apt-get update && sudo apt-get install -y whiptail" "Instalando whiptail"
@@ -207,46 +352,66 @@ fi
 # Validar requisitos del sistema antes de continuar
 validate_system_requirements
 
-# Mensaje de bienvenida
-whiptail --title "Surviving Chernarus - Instalador Unificado" \
-         --msgbox "Bienvenido al instalador unificado de Surviving Chernarus.\n\nEste asistente te guiará a través de todo el proceso de configuración y despliegue del proyecto." 12 78
-
-# Menú principal
-while true; do
-    OPCION=$(whiptail --title "Surviving Chernarus - Menú Principal" \
-                     --menu "Selecciona una opción:" 18 78 7 \
-                     "1" "Configurar variables de entorno (.env)" \
-                     "2" "Configurar red (requiere sudo)" \
-                     "3" "Desplegar servicios" \
-                     "4" "Ver documentación" \
-                     "5" "Rollback del sistema" \
-                     "6" "Plan de recuperación ante desastres" \
-                     "7" "Salir" 3>&1 1>&2 2>&3)
+# Ejecutar en modo silencioso o interactivo
+if [[ "$SILENT_MODE" == "true" ]]; then
+    log_message "Ejecutando en modo silencioso..."
     
-    # Salir si se presiona Cancelar
-    if [ $? -ne 0 ]; then
-        log_message "Operación cancelada por el usuario."
-        exit 0
+    # Ejecutar todas las funciones automáticamente
+    setup_env_silent
+    
+    # Solo configurar red si se ejecuta como root
+    if [ "$(id -u)" -eq 0 ]; then
+        setup_network_silent
+    else
+        log_warning "Saltando configuración de red (requiere sudo)"
     fi
     
-    case $OPCION in
-        1)
-            # Configurar variables de entorno
-            setup_env
-            ;;
-        2)
-            # Configurar red
-            if [ "$(id -u)" -ne 0 ]; then
-                whiptail --title "Error" \
-                         --msgbox "Este script debe ejecutarse con privilegios de superusuario (sudo)." 8 78
-            else
-                setup_network
-            fi
-            ;;
-        3)
-            # Desplegar servicios
-            deploy_services
-            ;;
+    # Desplegar servicios
+    deploy_services_silent
+    
+    log_message "Instalación silenciosa completada exitosamente."
+    exit 0
+else
+    # Mensaje de bienvenida
+    whiptail --title "Surviving Chernarus - Instalador Unificado" \
+             --msgbox "Bienvenido al instalador unificado de Surviving Chernarus.\n\nEste asistente te guiará a través de todo el proceso de configuración y despliegue del proyecto." 12 78
+    
+    # Menú principal
+    while true; do
+        OPCION=$(whiptail --title "Surviving Chernarus - Menú Principal" \
+                         --menu "Selecciona una opción:" 18 78 7 \
+                         "1" "Configurar variables de entorno (.env)" \
+                         "2" "Configurar red (requiere sudo)" \
+                         "3" "Desplegar servicios" \
+                         "4" "Ver documentación" \
+                         "5" "Rollback del sistema" \
+                         "6" "Plan de recuperación ante desastres" \
+                         "7" "Salir" 3>&1 1>&2 2>&3)
+        
+        # Salir si se presiona Cancelar
+        if [ $? -ne 0 ]; then
+            log_message "Operación cancelada por el usuario."
+            exit 0
+        fi
+        
+        case $OPCION in
+            1)
+                # Configurar variables de entorno
+                setup_env
+                ;;
+            2)
+                # Configurar red
+                if [ "$(id -u)" -ne 0 ]; then
+                    whiptail --title "Error" \
+                             --msgbox "Este script debe ejecutarse con privilegios de superusuario (sudo)." 8 78
+                else
+                    setup_network
+                fi
+                ;;
+            3)
+                # Desplegar servicios
+                deploy_services
+                ;;
         4)
             # Ver documentación
             show_documentation
@@ -1257,6 +1422,278 @@ function show_disaster_recovery() {
     
     whiptail --title "Plan de Recuperación ante Desastres" \
              --msgbox "$recovery_info" 25 90
+}
+
+# Función para configurar variables de entorno en modo silencioso
+function setup_env_silent() {
+    log_message "Configurando variables de entorno en modo silencioso..."
+    
+    # Usar valores por defecto o del archivo de configuración
+    PUID=${PUID:-$(id -u)}
+    PGID=${PGID:-$(id -g)}
+    TZ=${TZ:-"Europe/Madrid"}
+    DOMAIN_NAME=${DOMAIN_NAME:-"example.com"}
+    CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL:-"user@example.com"}
+    CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN:-"your_cloudflare_api_token_here"}
+    POSTGRES_DB=${POSTGRES_DB:-"n8n"}
+    POSTGRES_USER=${POSTGRES_USER:-"n8n"}
+    POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-$(generate_secure_password 32)}
+    PIHOLE_PASSWORD=${PIHOLE_PASSWORD:-$(generate_secure_password 24)}
+    TRAEFIK_USER=${TRAEFIK_USER:-"admin"}
+    TRAEFIK_PASSWORD=${TRAEFIK_PASSWORD:-$(generate_secure_password 24)}
+    RPI_IP=${RPI_IP:-"192.168.1.2"}
+    
+    # Generar hash para Traefik
+    if command -v htpasswd &> /dev/null; then
+        HASHED_PASSWORD=$(htpasswd -nb "$TRAEFIK_USER" "$TRAEFIK_PASSWORD")
+    else
+        log_warning "htpasswd no está instalado. Instalándolo..."
+        if command -v apt-get &> /dev/null; then
+            exec_cmd "sudo apt-get install -y apache2-utils" "Instalando apache2-utils para htpasswd"
+            HASHED_PASSWORD=$(htpasswd -nb "$TRAEFIK_USER" "$TRAEFIK_PASSWORD")
+        else
+            log_warning "No se pudo instalar htpasswd. Usando hash básico."
+            HASHED_PASSWORD="$TRAEFIK_USER:$TRAEFIK_PASSWORD"
+        fi
+    fi
+    
+    # Crear archivo .env
+    cat > .env << EOF
+# Configuración de usuario y grupo
+PUID=$PUID
+PGID=$PGID
+
+# Zona horaria
+TZ=$TZ
+
+# Configuración de dominio y Cloudflare
+DOMAIN_NAME=$DOMAIN_NAME
+CLOUDFLARE_EMAIL=$CLOUDFLARE_EMAIL
+CLOUDFLARE_API_TOKEN=$CLOUDFLARE_API_TOKEN
+
+# Configuración de PostgreSQL
+POSTGRES_DB=$POSTGRES_DB
+POSTGRES_USER=$POSTGRES_USER
+POSTGRES_PASSWORD=$POSTGRES_PASSWORD
+
+# Configuración de Pi-hole
+PIHOLE_PASSWORD=$PIHOLE_PASSWORD
+
+# Configuración de Traefik
+TRAEFIK_USER=$TRAEFIK_USER
+TRAEFIK_PASSWORD=$TRAEFIK_PASSWORD
+HASHED_PASSWORD=$HASHED_PASSWORD
+
+# Configuración de red para Raspberry Pi
+RPI_IP=$RPI_IP
+EOF
+    
+    log_message "Archivo .env creado correctamente en modo silencioso."
+    log_message "Contraseñas generadas automáticamente:"
+    log_message "  - PostgreSQL: $POSTGRES_PASSWORD"
+    log_message "  - Pi-hole: $PIHOLE_PASSWORD"
+    log_message "  - Traefik: $TRAEFIK_PASSWORD"
+}
+
+# Función para configurar la red en modo silencioso
+function setup_network_silent() {
+    log_message "Configurando red en modo silencioso..."
+    
+    # Verificar permisos de superusuario
+    if [ "$(id -u)" -ne 0 ]; then
+        log_error "Esta función requiere privilegios de superusuario. Ejecuta con sudo."
+        return 1
+    fi
+    
+    # Verificar si el archivo .env existe
+    if [ ! -f ".env" ]; then
+        log_error "El archivo .env no existe. Ejecutando setup_env_silent primero..."
+        setup_env_silent
+    fi
+    
+    # Cargar variables de entorno desde el archivo .env
+    source .env
+    
+    # Verificar que RPI_IP está definido
+    if [ -z "$RPI_IP" ]; then
+        log_error "La variable RPI_IP no está definida en el archivo .env"
+        return 1
+    fi
+    
+    create_rollback_point "setup_network_silent_start" "Iniciando configuración de red silenciosa"
+    
+    # Crear backups de archivos críticos de red
+    create_backup "/etc/hostname" "hostname"
+    create_backup "/etc/hosts" "hosts"
+    create_backup "/etc/resolv.conf" "resolv_conf"
+    create_backup "/etc/network/interfaces" "network_interfaces"
+    
+    # Configuración automática usando valores por defecto
+    NEW_HOSTNAME="surviving-chernarus"
+    IP_ADDRESS="$RPI_IP"
+    GATEWAY="${RPI_IP%.*}.1"  # Asumir gateway en .1
+    DNS_SERVERS="1.1.1.1 1.0.0.1"
+    
+    log_message "Configuración automática: IP=$IP_ADDRESS, Gateway=$GATEWAY, Hostname=$NEW_HOSTNAME"
+    
+    # Actualizar .env con la nueva IP
+    sed -i "s/RPI_IP=.*/RPI_IP=$IP_ADDRESS/g" .env
+    
+    # Configurar hostname
+    echo "$NEW_HOSTNAME" > /etc/hostname
+    hostname "$NEW_HOSTNAME"
+    
+    # Actualizar /etc/hosts
+    sed -i "s/127.0.1.1.*/127.0.1.1\t$NEW_HOSTNAME/g" /etc/hosts
+    
+    # Detectar interfaz de red principal
+    INTERFACE=$(ip route | grep default | awk '{print $5}' | head -1)
+    if [[ -z "$INTERFACE" ]]; then
+        INTERFACE="eth0"  # Fallback por defecto
+        log_warning "No se pudo detectar la interfaz de red principal, usando eth0 por defecto"
+    fi
+    log_message "Configurando interfaz de red: $INTERFACE"
+    
+    # Crear backup de la configuración actual de la interfaz
+    if [[ -f "/etc/network/interfaces.d/$INTERFACE" ]]; then
+        create_backup "/etc/network/interfaces.d/$INTERFACE" "interface_$INTERFACE"
+    fi
+    
+    # Configurar interfaz de red
+    cat > /etc/network/interfaces.d/$INTERFACE << EOF
+auto $INTERFACE
+iface $INTERFACE inet static
+    address $IP_ADDRESS/24
+    gateway $GATEWAY
+EOF
+    
+    # Configurar resolv.conf
+    cat > /etc/resolv.conf << EOF
+# Generated by Surviving Chernarus setup_network_silent
+nameserver 1.1.1.1
+nameserver 1.0.0.1
+EOF
+    
+    log_message "Configuración de red completada en modo silencioso."
+    log_warning "Es necesario reiniciar el sistema para aplicar los cambios de red."
+}
+
+# Función para desplegar servicios en modo silencioso
+function deploy_services_silent() {
+    log_message "Desplegando servicios en modo silencioso..."
+    
+    # Verificar permisos de superusuario
+    if [ "$(id -u)" -ne 0 ]; then
+        log_error "Esta función requiere privilegios de superusuario. Ejecuta con sudo."
+        return 1
+    fi
+    
+    # Verificar si el archivo .env existe
+    if [ ! -f ".env" ]; then
+        log_error "El archivo .env no existe. Ejecutando setup_env_silent primero..."
+        setup_env_silent
+    fi
+    
+    # Cargar variables de entorno desde el archivo .env
+    source .env
+    
+    create_rollback_point "deploy_services_silent_start" "Iniciando despliegue de servicios silencioso"
+    
+    # Validar requisitos del sistema antes de continuar
+    if ! validate_system_requirements; then
+        log_error "Los requisitos del sistema no se cumplen. Abortando despliegue."
+        return 1
+    fi
+    
+    log_message "Iniciando instalación automática de servicios..."
+    
+    # 1. Actualización del sistema
+    log_message "1. Actualizando el sistema..."
+    exec_cmd "sudo apt update && sudo apt full-upgrade -y && sudo apt autoremove -y"
+    
+    # 2. Instalación y configuración de UFW
+    log_message "2. Instalando y configurando UFW..."
+    
+    # Crear backups de configuración UFW
+    create_backup "/etc/ufw" "ufw_config"
+    create_backup "/etc/default/ufw" "ufw_default"
+    
+    if ! exec_cmd "sudo apt install ufw -y" "Instalando UFW"; then
+        log_error "Error crítico: No se pudo instalar UFW"
+        return 1
+    fi
+    
+    exec_cmd "sudo ufw --force reset" "Reseteando configuración UFW"
+    exec_cmd "sudo ufw default deny incoming" "Configurando política por defecto (deny incoming)"
+    exec_cmd "sudo ufw default allow outgoing" "Configurando política por defecto (allow outgoing)"
+    exec_cmd "sudo ufw allow ssh" "Permitiendo SSH"
+    exec_cmd "sudo ufw allow http" "Permitiendo HTTP"
+    exec_cmd "sudo ufw allow https" "Permitiendo HTTPS"
+    exec_cmd "sudo ufw allow 53" "Permitiendo DNS"
+    exec_cmd "sudo ufw allow 8080/tcp" "Permitiendo Traefik Dashboard"
+    exec_cmd "sudo ufw allow 9091/tcp" "Permitiendo rTorrent"
+    
+    # 3. Configuración de UFW para Docker
+    log_message "3. Configurando UFW para Docker..."
+    
+    # Modificar DEFAULT_FORWARD_POLICY
+    exec_cmd "sudo sed -i 's/DEFAULT_FORWARD_POLICY=\"DROP\"/DEFAULT_FORWARD_POLICY=\"ACCEPT\"/g' /etc/default/ufw"
+    
+    # Activar UFW
+    exec_cmd "sudo ufw --force enable"
+    
+    # 4. Instalación de Docker y Docker Compose
+    log_message "4. Instalando Docker y Docker Compose..."
+    
+    # Verificar si Docker ya está instalado
+    if command -v docker &> /dev/null; then
+        log_message "Docker ya está instalado, verificando versión..."
+        docker --version
+    else
+        # Instalar dependencias
+        if ! exec_cmd "sudo apt install ca-certificates curl gnupg lsb-release -y" "Instalando dependencias para Docker"; then
+            log_error "Error crítico: No se pudieron instalar las dependencias de Docker"
+            return 1
+        fi
+        
+        # Detectar distribución y arquitectura
+        DISTRO=$(lsb_release -is | tr '[:upper:]' '[:lower:]')
+        ARCH=$(dpkg --print-architecture)
+        log_message "Detectado: Distribución=$DISTRO, Arquitectura=$ARCH"
+        
+        # Añadir la clave GPG oficial de Docker
+        exec_cmd "sudo install -m 0755 -d /etc/apt/keyrings" "Creando directorio para claves GPG"
+        
+        # Usar la URL correcta según la distribución
+        if [[ "$DISTRO" == "ubuntu" ]]; then
+            GPG_URL="https://download.docker.com/linux/ubuntu/gpg"
+            REPO_URL="https://download.docker.com/linux/ubuntu"
+        else
+            # Asumir Debian para Raspberry Pi OS
+            GPG_URL="https://download.docker.com/linux/debian/gpg"
+            REPO_URL="https://download.docker.com/linux/debian"
+        fi
+        
+        exec_cmd "curl -fsSL $GPG_URL | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg" "Descargando clave GPG de Docker"
+        exec_cmd "sudo chmod a+r /etc/apt/keyrings/docker.gpg" "Configurando permisos de clave GPG"
+        
+        # Añadir el repositorio de Docker
+        echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.gpg] $REPO_URL $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+        
+        # Actualizar la lista de paquetes e instalar Docker
+        exec_cmd "sudo apt update" "Actualizando lista de paquetes"
+        exec_cmd "sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y" "Instalando Docker"
+    fi
+    
+    # 5. Configuración de permisos de Docker
+    log_message "5. Configurando permisos de Docker..."
+    exec_cmd "sudo usermod -aG docker $USER" "Añadiendo usuario al grupo docker"
+    exec_cmd "sudo systemctl enable docker" "Habilitando Docker al inicio"
+    exec_cmd "sudo systemctl start docker" "Iniciando servicio Docker"
+    
+    log_message "Instalación completada en modo silencioso."
+    log_message "IMPORTANTE: Es necesario cerrar sesión y volver a iniciar para que los cambios de grupo surtan efecto."
+    log_message "Después de reiniciar la sesión, ejecuta 'docker ps' para verificar que Docker funciona correctamente."
 }
 
 # Función para mostrar la documentación
