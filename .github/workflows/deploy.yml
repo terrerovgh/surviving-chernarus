@@ -7,15 +7,14 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    # This job runs on the self-hosted runner
+    runs-on: self-hosted
+
     steps:
-      - name: SSH and Deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/terrerov/surviving-chernarus
-            git pull origin main
-            docker compose up -d --remove-orphans
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy Docker Stack
+        run: |
+          echo "Deploying on self-hosted runner..."
+          docker compose up -d --remove-orphans
