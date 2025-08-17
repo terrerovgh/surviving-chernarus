@@ -2,12 +2,29 @@ name: Deploy to Raspberry Pi
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*' # Se activa con cualquier tag que empiece por 'v', ej. v1.0, v2.3.1
 
 jobs:
+  lint:
+    name:  Lint and Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Validate Docker Compose file
+        run: |
+          # Instala una versión compatible de Docker Compose
+          sudo apt-get update
+          sudo apt-get install -y docker-compose
+          # El comando 'config' parsea el archivo y devuelve un error si es inválido
+          docker-compose -f docker-compose.yml config
+          echo "✅ docker-compose.yml tiene una sintaxis válida."
+
   deploy:
-    # This job runs on the self-hosted runner
+    name: Deploy to Raspberry Pi
+    needs: lint # El job 'deploy' solo se ejecuta si 'lint' es exitoso
     runs-on: self-hosted
 
     steps:
@@ -17,4 +34,33 @@ jobs:
       - name: Deploy Docker Stack
         run: |
           echo "Deploying on self-hosted runner..."
-          docker compose up -d --remove-orphans
+          # Carga las variables de .env para que docker-compose las use
+          set -a
+          source /home/terrerov/.env
+          set +a
+          docker compose -f /home/terrerov/surviving-chernarus/docker-compose.yml up -d --remove-orphans
+
+      - name: Notify on Success
+        if: success()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ✅ **Despliegue Exitoso en Surviving Chernarus**
+            **Tag:** `${{ github.ref_name }}`
+            **Commit:** `${{ github.sha }}`
+            El nuevo código ha sido desplegado en la Raspberry Pi.
+
+      - name: Notify on Failure
+        if: failure()
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ❌ **¡FALLO EN EL DESPLIEGUE!**
+            **Proyecto:** Surviving Chernarus
+            **Tag:** `${{ github.ref_name }}`
+            **Revisa los logs aquí:**
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}

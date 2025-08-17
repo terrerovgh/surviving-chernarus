@@ -28,13 +28,30 @@ El flujo de CI/CD se compone de tres elementos principales:
 
 ## 3. Flujo de Trabajo del Despliegue
 
-1.  El operador (o la IA) realiza un `git push` a la rama `main` del repositorio en GitHub.
-2.  Este evento activa el workflow definido en `deploy.yml`.
-3.  GitHub Actions ve que el trabajo está configurado para ejecutarse en un `self-hosted` runner.
-4.  GitHub envía el trabajo al runner `surviving-chernarus-runner` que está escuchando activamente desde la Raspberry Pi.
-5.  El runner en la Pi recibe el trabajo y ejecuta los pasos definidos:
-    a.  **`actions/checkout@v3`**: Descarga la última versión del código de la rama `main`.
-    b.  **`docker compose up -d --remove-orphans`**: Revisa el archivo `docker-compose.yml` y aplica los cambios necesarios, creando, actualizando o eliminando contenedores para que coincidan con el estado definido en el código.
+El despliegue se controla mediante **tags de Git**. Un simple `push` a la rama `main` ya no activa un despliegue; se requiere la creación intencionada de un "release" a través de un tag.
+
+1.  **Creación de un Tag:** El operador crea y sube un tag de Git (ej. `v1.0.1`).
+    ```bash
+    git tag v1.0.1
+    git push origin v1.0.1
+    ```
+2.  **Activación del Workflow:** Este evento (`push` de un tag que empieza por `v*`) activa el workflow en GitHub Actions.
+3.  **Job 1: `lint` (Ejecutado en la nube de GitHub):**
+    *   Se inicia una máquina virtual temporal de Ubuntu.
+    *   Descarga el código.
+    *   Ejecuta `docker-compose config` para verificar que la sintaxis del archivo `docker-compose.yml` es válida.
+    *   Si este paso falla, todo el workflow se detiene y se envía una notificación de error.
+4.  **Job 2: `deploy` (Ejecutado en la Raspberry Pi):**
+    *   Este job solo se inicia si el job `lint` se ha completado con éxito (`needs: lint`).
+    *   GitHub envía el trabajo al runner `surviving-chernarus-runner`.
+    *   El runner en la Pi ejecuta los siguientes pasos:
+        a.  **`actions/checkout@v3`**: Descarga el código correspondiente al tag que activó el workflow.
+        b.  **`docker compose up -d`**: Carga las variables del archivo `~/.env` y aplica los cambios definidos en `docker-compose.yml`.
+5.  **Notificación:**
+    *   Al finalizar el job `deploy`, se envía una notificación a Telegram indicando si el despliegue fue exitoso o si falló.
+
+Este flujo de trabajo de dos etapas asegura que solo se intente desplegar código que ha pasado una verificación de sintaxis básica, reduciendo la probabilidad de errores en producción.
+
 
 ## 4. Gestión del Runner Auto-Alojado
 
