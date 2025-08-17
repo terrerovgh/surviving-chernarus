@@ -26,3 +26,6 @@ La documentación completa del proyecto se encuentra en el directorio `/docs`.
 
 -   **[/docs/logs/2025-08-17_phase_1_outpost_setup.md](./docs/logs/2025-08-17_phase_1_outpost_setup.md):** Registro cronológico de todas las acciones realizadas durante la Fase 1.
 -   **[/docs/logs/2025-08-17_phase_2_command_center_setup.md](./docs/logs/2025-08-17_phase_2_command_center_setup.md):** Registro cronológico de todas las acciones realizadas durante la Fase 2.
+
+<!-- CI/CD Test -->
+
