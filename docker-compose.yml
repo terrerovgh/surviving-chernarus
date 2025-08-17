@@ -68,6 +68,7 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=${N8N_USER}
       - N8N_PASSWORD=${N8N_PASSWORD}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       - postgres
     labels:

@@ -19,20 +19,24 @@ Este tablero sigue la metodología Kanban para visualizar el flujo de trabajo y 
 
 ### 📝 To Do
 
-*   `Fase 5: Crear script de backup.`
-*   `Fase 5: Crear y configurar workflow de n8n.`
+*   `Fase 6: Crear y desplegar workflow de n8n.`
+*   `Fase 6: Guiar en la configuración de credenciales y activación.`
 
 ---
 
 ### ⚙️ In Progress
 
-*   `Fase 5: Instalar y configurar rclone.`
+*   `Fase 6: Configurar entorno de n8n para Gemini.`
 
 ---
 
 ### ✅ Done
 
-*   **Planificación:** Planificar y documentar la Fase 5.
+*   **Planificación:** Planificar y documentar la Fase 6.
+*   **Fase 5: Integración de CI/CD y Despliegue Automatizado**
+    *   Configurar repositorio Git y flujo de CI/CD con GitHub Actions.
+    *   Implementar runner auto-alojado en la Raspberry Pi.
+    *   Configurar sistema de DNS Dinámico (DDNS) para el runner.
 *   **Fase 4: Activación del Perímetro Defensivo**
     *   Configurar Hotspot Wi-Fi (hostapd, dnsmasq).
     *   Habilitar Enrutamiento y NAT con iptables.
@@ -40,16 +44,8 @@ Este tablero sigue la metodología Kanban para visualizar el flujo de trabajo y 
     *   Desplegar `StarySobor_RadioPost` (Pi-hole).
 *   **Fase 2: El Centro de Mando**
     *   Crear `docker-compose.yml` para la pila de servicios principal.
-    *   Crear archivo `.env` y `.gitignore`.
-    *   Crear estructura de configuración para `CoastalHighway_Router` (Traefik).
-    *   Desplegar y verificar la pila de servicios.
 *   **Fase 1: Configuración del Anfitrión**
-    *   Actualizar y asegurar el sistema anfitrión.
-    *   Instalar herramientas esenciales.
-    *   Configurar red estática y SSH seguro.
-    *   Configurar disco duro externo para almacenamiento persistente.
-    *   Instalar y configurar Docker.
-    *   Configurar firewall `ufw`.
+    *   Preparación del sistema, red, almacenamiento y Docker.
 *   **Fase 0: Planificación y Documentación**
     *   Crear `README.md` y documentos de planificación.
     *   Implementar tablero Kanban.
