@@ -3,83 +3,109 @@
 **Nombre Clave:** `El Plan de Contingencia (The Contingency Plan)`
 **Operador IA:** `Stalker`
 
-## 1. Filosofía y Enfoque
+Este documento detalla la arquitectura y el proceso de configuración del sistema de despliegue automatizado para "Surviving Chernarus".
 
-Para la gestión de la configuración y los despliegues del proyecto "Surviving Chernarus", se ha adoptado un enfoque de **Infraestructura como Código (IaC)** gestionado a través de un flujo de **Integración Continua y Despliegue Continuo (CI/CD)**.
+## 1. Arquitectura y Flujo de Trabajo
 
-El método inicial de usar SSH para el despliegue fue descartado debido a una limitación crítica: la Raspberry Pi a menudo operará en redes que bloquean las conexiones SSH entrantes.
+El sistema se basa en un modelo de **Infraestructura como Código (IaC)** donde toda la configuración reside en un repositorio Git. Los despliegues son gestionados por **GitHub Actions** y ejecutados por un **runner auto-alojado** en la propia Raspberry Pi.
 
-La solución implementada invierte el flujo de control: en lugar de que un sistema externo "empuje" los cambios a la Pi, **la propia Pi "escucha" los cambios desde GitHub y los aplica localmente**. Esto se logra mediante un **runner auto-alojado (self-hosted runner) de GitHub Actions**.
+### Flujo de Despliegue:
 
-### Ventajas de este Modelo:
+1.  **Disparador (Trigger):** El flujo se inicia al crear y subir un **tag de Git** al repositorio que coincida con el patrón `v*` (ej. `v1.0.0`, `v1.2.3`).
+2.  **Job 1: Validación (`lint`):**
+    *   Se ejecuta en un runner temporal en la nube de GitHub.
+    *   Verifica que la sintaxis del archivo `docker-compose.yml` es correcta.
+    *   Este paso previene que errores de configuración básicos lleguen a la Raspberry Pi.
+3.  **Job 2: Despliegue (`deploy`):**
+    *   Solo se ejecuta si el job `lint` ha sido exitoso.
+    *   Se ejecuta en el **runner auto-alojado** en la Raspberry Pi.
+    *   Descarga el código fuente correspondiente al tag.
+    *   Ejecuta `docker compose up -d` para aplicar los cambios.
+4.  **Job 3: Notificación (`notify`):**
+    *   Se ejecuta al finalizar el despliegue.
+    *   Envía un mensaje a Telegram indicando el resultado (éxito o fallo) del proceso.
 
-*   **Seguridad:** No se necesita abrir ningún puerto SSH en el firewall. El runner establece una conexión saliente segura con GitHub.
-*   **Fiabilidad:** Funciona detrás de cualquier firewall o NAT, ya que no depende de una IP pública estática o de la redirección de puertos.
-*   **Automatización Completa:** El despliegue es un proceso "manos libres". Un simple `git push` a la rama `main` es suficiente para actualizar la pila de servicios.
-*   **Control de Versiones:** Toda la configuración de la infraestructura (`docker-compose.yml`, scripts, etc.) está versionada en Git, proporcionando un historial completo de cambios y la capacidad de revertir a estados anteriores.
+---
 
-## 2. Componentes del Sistema
+## 2. Guía de Configuración Inicial
 
-El flujo de CI/CD se compone de tres elementos principales:
+Esta sección detalla los pasos necesarios para configurar el sistema de CI/CD desde cero.
 
-1.  **Repositorio Git:** El código fuente, la documentación y los archivos de configuración residen en el repositorio `terrerovgh/surviving-chernarus` en GitHub.
-2.  **Workflow de GitHub Actions (`.github/workflows/deploy.yml`):** Este archivo YAML define los pasos que se deben ejecutar cuando hay un cambio en el repositorio.
-3.  **Runner Auto-Alojado:** Un servicio que se ejecuta constantemente en la Raspberry Pi, escucha a GitHub y ejecuta los trabajos que se le asignan.
+### Paso 2.1: Configuración de Secretos en GitHub
 
-## 3. Flujo de Trabajo del Despliegue
+El workflow necesita credenciales para operar. Ve a la configuración de tu repositorio en `Settings > Secrets and variables > Actions` y añade los siguientes secretos:
 
-El despliegue se controla mediante **tags de Git**. Un simple `push` a la rama `main` ya no activa un despliegue; se requiere la creación intencionada de un "release" a través de un tag.
+*   **`TELEGRAM_TOKEN`**:
+    *   **Cómo obtenerlo:** Habla con `@BotFather` en Telegram, crea un nuevo bot y copia el token que te proporciona.
+*   **`TELEGRAM_TO`**:
+    *   **Cómo obtenerlo:** Habla con `@userinfobot` en Telegram y copia tu `Chat ID`.
 
-1.  **Creación de un Tag:** El operador crea y sube un tag de Git (ej. `v1.0.1`).
+### Paso 2.2: Instalación del Runner Auto-Alojado
+
+El runner es el software que conecta tu Raspberry Pi con GitHub Actions.
+
+1.  **Crear Directorio:**
     ```bash
-    git tag v1.0.1
-    git push origin v1.0.1
+    mkdir ~/actions-runner
     ```
-2.  **Activación del Workflow:** Este evento (`push` de un tag que empieza por `v*`) activa el workflow en GitHub Actions.
-3.  **Job 1: `lint` (Ejecutado en la nube de GitHub):**
-    *   Se inicia una máquina virtual temporal de Ubuntu.
-    *   Descarga el código.
-    *   Ejecuta `docker-compose config` para verificar que la sintaxis del archivo `docker-compose.yml` es válida.
-    *   Si este paso falla, todo el workflow se detiene y se envía una notificación de error.
-4.  **Job 2: `deploy` (Ejecutado en la Raspberry Pi):**
-    *   Este job solo se inicia si el job `lint` se ha completado con éxito (`needs: lint`).
-    *   GitHub envía el trabajo al runner `surviving-chernarus-runner`.
-    *   El runner en la Pi ejecuta los siguientes pasos:
-        a.  **`actions/checkout@v3`**: Descarga el código correspondiente al tag que activó el workflow.
-        b.  **`docker compose up -d`**: Carga las variables del archivo `~/.env` y aplica los cambios definidos en `docker-compose.yml`.
-5.  **Notificación:**
-    *   Al finalizar el job `deploy`, se envía una notificación a Telegram indicando si el despliegue fue exitoso o si falló.
+2.  **Descargar y Descomprimir:**
+    *   Ve a la página de runners de tu repositorio (`Settings > Actions > Runners > New self-hosted runner`).
+    *   Selecciona `Linux` y `ARM64`.
+    *   Copia y ejecuta los comandos de descarga y descompresión proporcionados por GitHub.
+3.  **Configurar el Runner:**
+    *   Obtén un token de registro desde la misma página de GitHub.
+    *   Ejecuta el script de configuración:
+        ```bash
+        ./config.sh --url https://github.com/terrerovgh/surviving-chernarus --token TU_TOKEN_DE_REGISTRO
+        ```
+4.  **Instalar como Servicio `systemd`:**
+    *   Esto hace que el runner se inicie automáticamente con el sistema.
+        ```bash
+        sudo ./svc.sh install
+        sudo systemctl start actions.runner.terrerovgh-surviving-chernarus.*.service
+        ```
 
-Este flujo de trabajo de dos etapas asegura que solo se intente desplegar código que ha pasado una verificación de sintaxis básica, reduciendo la probabilidad de errores en producción.
+### Paso 2.3: Configuración del DNS Dinámico (DDNS)
 
+Este sistema asegura que el dominio `rpi.terrerov.com` siempre apunte a la IP pública correcta.
 
-## 4. Gestión del Runner Auto-Alojado
-
-El runner está instalado en `/home/terrerov/actions-runner` y se ejecuta como un servicio `systemd`, lo que garantiza que se inicie automáticamente.
-
-### Comandos Útiles:
-
-*   **Verificar el estado del servicio:**
+1.  **Instalar Dependencias:**
     ```bash
-    sudo systemctl status actions.runner.terrerovgh-surviving-chernarus.surviving-chernarus-runner.service
+    sudo pacman -S --noconfirm jq cronie
+    sudo systemctl enable --now cronie.service
     ```
+2.  **Configurar Variables de Entorno:**
+    *   Asegúrate de que tu archivo `~/.env` contiene las siguientes variables con los valores correctos:
+        *   `DOMAIN`: Tu dominio (ej. `terrerov.com`).
+        *   `CF_API_TOKEN`: Tu token de API de Cloudflare.
+        *   `CF_EMAIL`: Tu email de Cloudflare.
+        *   `CF_ZONE_ID`: El Zone ID de tu dominio en Cloudflare.
+3.  **Crear el Script:** El script `scripts/ddns_update.sh` ya está en el repositorio.
+4.  **Programar el Cron Job:**
+    *   El siguiente comando añade una tarea que ejecuta el script cada 15 minutos:
+        ```bash
+        (crontab -l 2>/dev/null; echo "*/15 * * * * /home/terrerov/surviving-chernarus/scripts/ddns_update.sh") | crontab -
+        ```
 
-*   **Ver los logs del servicio:**
+---
+
+## 3. Uso en el Día a Día
+
+Una vez configurado, el proceso de despliegue es muy simple.
+
+1.  **Realiza tus cambios:** Modifica el código, `docker-compose.yml` o la documentación.
+2.  **Haz commit y push a `main`:**
     ```bash
-    sudo journalctl -u actions.runner.terrerovgh-surviving-chernarus.surviving-chernarus-runner.service -f
+    git add .
+    git commit -m "Un mensaje descriptivo de tus cambios"
+    git push origin main
     ```
-
-*   **Iniciar/Detener el servicio manualmente:**
-    ```bash
-    sudo systemctl start actions.runner.terrerovgh-surviving-chernarus.surviving-chernarus-runner.service
-    sudo systemctl stop actions.runner.terrerovgh-surviving-chernarus.surviving-chernarus-runner.service
-    ```
-
-## 5. Sistema de DNS Dinámico (DDNS)
-
-Para que el runner (y otros servicios futuros) pueda ser localizado de forma fiable, se ha implementado un sistema de DNS dinámico.
-
-*   Un script (`/home/terrerov/surviving-chernarus/scripts/ddns_update.sh`) se ejecuta cada 15 minutos a través de un `cron job`.
-*   El script verifica la IP pública actual de la red y la compara con el registro DNS de tipo `A` para `rpi.terrerov.com` en Cloudflare.
-*   Si las IPs difieren, el script actualiza automáticamente el registro en Cloudflare.
-*   Esto asegura que `rpi.terrerov.com` siempre apunte a la red correcta, aunque la IP pública cambie.
+3.  **Crea y sube un tag de versión:**
+    *   Decide qué tipo de cambio es (major, minor, patch) siguiendo el versionado semántico.
+    *   Crea el tag y súbelo. Esto activará el despliegue.
+        ```bash
+        # Ejemplo para un cambio menor
+        git tag v1.1.0
+        git push origin v1.1.0
+        ```
+4.  **Verifica:** Revisa la pestaña "Actions" en GitHub y espera la notificación en Telegram.
