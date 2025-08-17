@@ -22,6 +22,7 @@ La documentación completa del proyecto se encuentra en el directorio `/docs`.
 -   **[/docs/setup/01_host_setup.md](./docs/setup/01_host_setup.md):** Guía detallada para la preparación y aseguramiento del sistema anfitrión (Raspberry Pi).
 -   **[/docs/setup/02_core_services_setup.md](./docs/setup/02_core_services_setup.md):** Guía para el despliegue de la pila de servicios principal con Docker Compose.
 -   **[/docs/setup/03_cicd_setup.md](./docs/setup/03_cicd_setup.md):** Guía para la configuración del flujo de CI/CD y despliegue automatizado.
+-   **[/docs/setup/04_ai_assistant_setup.md](./docs/setup/04_ai_assistant_setup.md):** Guía detallada para la configuración del primer workflow de IA.
 
 ### Registros de Despliegue
 
