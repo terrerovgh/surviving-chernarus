@@ -1,0 +1,112 @@
+services:
+  ######################################################
+  # CoastalHighway_Router: Proxy Inverso (Traefik)
+  ######################################################
+  traefik:
+    image: traefik:latest
+    container_name: CoastalHighway_Router
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - secure_network
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/usbdata/docker_volumes/traefik/traefik.yml:/traefik.yml:ro
+      - /mnt/usbdata/docker_volumes/traefik/dynamic_conf:/dynamic_conf:ro
+      - /mnt/usbdata/docker_volumes/traefik/acme.json:/acme.json
+    environment:
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_DOMAIN}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=${HTTP_BASIC_AUTH}"
+
+  ######################################################
+  # Elektrozavodsk_Databank: Base de Datos (PostgreSQL)
+  ######################################################
+  postgres:
+    image: postgres:latest
+    container_name: Elektrozavodsk_Databank
+    restart: unless-stopped
+    networks:
+      - secure_network
+    volumes:
+      - /mnt/usbdata/docker_volumes/elektrozavodsk_db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+
+  ######################################################
+  # NWAF_Command_Center: Motor de Automatización (n8n)
+  ######################################################
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: NWAF_Command_Center
+    restart: unless-stopped
+    user: "1000:1000"
+    networks:
+      - secure_network
+    volumes:
+      - /mnt/usbdata/docker_volumes/n8n:/home/node/.n8n
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_USER}
+      - N8N_PASSWORD=${N8N_PASSWORD}
+    depends_on:
+      - postgres
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n.rule=Host(`${N8N_DOMAIN}`)"
+      - "traefik.http.routers.n8n.tls=true"
+      - "traefik.http.routers.n8n.tls.certresolver=cloudflare"
+      - "traefik.http.routers.n8n.entrypoints=websecure"
+      - "traefik.http.services.n8n.loadbalancer.server.port=5678"
+
+  ######################################################
+  # StarySobor_RadioPost: Bloqueador de DNS (Pi-hole)
+  ######################################################
+  pihole:
+    image: pihole/pihole:latest
+    container_name: StarySobor_RadioPost
+    restart: unless-stopped
+    networks:
+      - secure_network
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8080:80/tcp"
+    volumes:
+      - /mnt/usbdata/docker_volumes/pihole/etc-pihole:/etc/pihole
+      - /mnt/usbdata/docker_volumes/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+    environment:
+      - WEBPASSWORD=${WEBPASSWORD}
+      - TZ=UTC
+    cap_add:
+      - NET_ADMIN
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pihole.rule=Host(`${PIHOLE_DOMAIN}`)"
+      - "traefik.http.routers.pihole.tls=true"
+      - "traefik.http.routers.pihole.tls.certresolver=cloudflare"
+      - "traefik.http.routers.pihole.entrypoints=websecure"
+      - "traefik.http.services.pihole.loadbalancer.server.port=80"
+
+networks:
+  secure_network:
+    driver: bridge

@@ -1,0 +1,14 @@
+# Ignorar archivos de entorno con secretos
+.env
+.env.*
+
+# Archivos de certificados de Traefik
+acme.json
+
+# Ignorar todos los datos de volúmenes de Docker.
+# ¡IMPORTANTE! Estos datos son persistentes y no deben estar en el control de versiones.
+/mnt/usbdata/docker_volumes/
+
+# Archivos de sistema y logs
+*.log
+.DS_Store
