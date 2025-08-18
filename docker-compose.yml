@@ -69,6 +69,7 @@ services:
       - N8N_BASIC_AUTH_USER=${N8N_USER}
       - N8N_PASSWORD=${N8N_PASSWORD}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - N8N_WORKFLOWS_PATH=/home/node/.n8n/workflows
     depends_on:
       - postgres
     labels:
